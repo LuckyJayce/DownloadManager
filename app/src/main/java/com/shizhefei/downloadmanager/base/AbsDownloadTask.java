@@ -4,7 +4,13 @@ import com.shizhefei.downloadmanager.DownloadProgressSender;
 import com.shizhefei.mvc.ProgressSender;
 import com.shizhefei.task.ITask;
 
+import java.net.HttpURLConnection;
+
 public abstract class AbsDownloadTask implements ITask<Void> {
+
+    public abstract DownloadParams getDownloadParams();
+
+    public abstract DownloadEntity getDownloadEntity();
 
     @Override
     public Void execute(ProgressSender progressSender) throws Exception {

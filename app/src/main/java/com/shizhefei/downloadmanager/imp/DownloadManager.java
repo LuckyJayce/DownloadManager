@@ -1,25 +1,35 @@
 package com.shizhefei.downloadmanager.imp;
 
+import android.content.Context;
+
 import com.shizhefei.downloadmanager.base.DownloadEntity;
 import com.shizhefei.downloadmanager.base.DownloadListener;
 import com.shizhefei.downloadmanager.base.DownloadParams;
 import com.shizhefei.downloadmanager.base.DownloadTaskFactory;
+import com.shizhefei.downloadmanager.base.IDownloadDB;
 import com.shizhefei.downloadmanager.base.IdGenerator;
 
 public abstract class DownloadManager {
+    private static Context context;
     private static DownloadTaskFactory staticDownloadTaskFactory;
     private static IdGenerator staticIdGenerator;
+    private static IDownloadDB downloadDB;
 
-    public static void init(DownloadTaskFactory downloadTaskFactory, IdGenerator idGenerator) {
+    public static void init(Context context, DownloadTaskFactory downloadTaskFactory, IdGenerator idGenerator) {
+        DownloadManager.context = context.getApplicationContext();
         staticDownloadTaskFactory = downloadTaskFactory;
         staticIdGenerator = idGenerator;
     }
 
-    public static DownloadManager getLocal() {
+    public static Context getContext(){
+        return context;
+    }
+
+    public static LocalDownloadManager getLocal() {
         return new LocalDownloadManager(staticDownloadTaskFactory, staticIdGenerator);
     }
 
-    public static DownloadManager getRemote() {
+    public static RemoteDownloadManager getRemote() {
         return new RemoteDownloadManager();
     }
 
@@ -29,6 +39,8 @@ public abstract class DownloadManager {
      * @return 返回下载的id
      */
     public abstract long start(DownloadParams downloadParams, DownloadListener downloadListener);
+
+    public abstract long start(DownloadParams downloadParams);
 
     /**
      * 停止下载任务
@@ -44,9 +56,9 @@ public abstract class DownloadManager {
      */
     public abstract void cancel(long downloadId);
 
-    public abstract DownloadEntity getDownloadEntity(int id);
+    public abstract DownloadEntity getDownloadEntity(long id);
 
-    public abstract DownloadParams getDownloadParams(int id);
+    public abstract DownloadParams getDownloadParams(long id);
 
     public abstract DownloadEntity get(int position);
 

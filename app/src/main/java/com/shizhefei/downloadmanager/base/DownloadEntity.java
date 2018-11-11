@@ -1,25 +1,57 @@
 package com.shizhefei.downloadmanager.base;
 
-import com.shizhefei.downloadmanager.ErrorInfo;
+import android.support.annotation.NonNull;
+
 import com.shizhefei.downloadmanager.HttpInfo;
+import com.shizhefei.downloadmanager.exception.ErrorEntity;
+
+import java.util.List;
 
 public class DownloadEntity {
-    private int id;
+    public static final int STATUS_NEW = -1;
+    public static final int STATUS_pending = 0;//在队列中，还没开始
+    public static final int STATUS_START = 1;//开始
+    public static final int STATUS_CONNECTED = 2;//连接上服务器
+    public static final int STATUS_DOWNLOAD_ING = 3;
+    public static final int STATUS_PAUSED = 4;//连接上服务器
+    public static final int STATUS_FINISHED = 5;
+    public static final int STATUS_CONNECT_ING = 6;
+    public static final int STATUS_FAIL = 7;
+    private long id;
     private String url;
     private String dir;
     private String filename;
-    private int status;
-    private int step;
+    private String tempFileName;
+    private long startTime;//单位 毫秒
+    private int status = STATUS_NEW;
     private long total;
     private long current;
-    private HttpInfo httpInfo;
-    private ErrorInfo errorInfo;
+    private final HttpInfo httpInfo = new HttpInfo();
+    private ErrorEntity errorInfo;
+    //当线程下载为null，多线程下载 DownloadEntity对应多个DownloadItem
+    private List<DownloadItem> downloadItems;
 
-    public int getId() {
+    public long getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(long startTime) {
+        this.startTime = startTime;
+    }
+
+    public String getTempFileName() {
+        return tempFileName;
+    }
+
+    public void setTempFileName(String tempFileName) {
+        this.tempFileName = tempFileName;
+    }
+
+    public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 
@@ -55,14 +87,6 @@ public class DownloadEntity {
         this.status = status;
     }
 
-    public int getStep() {
-        return step;
-    }
-
-    public void setStep(int step) {
-        this.step = step;
-    }
-
     public long getTotal() {
         return total;
     }
@@ -79,19 +103,24 @@ public class DownloadEntity {
         this.current = current;
     }
 
+    @NonNull
     public HttpInfo getHttpInfo() {
         return httpInfo;
     }
 
-    public void setHttpInfo(HttpInfo httpInfo) {
-        this.httpInfo = httpInfo;
-    }
-
-    public ErrorInfo getErrorInfo() {
+    public ErrorEntity getErrorInfo() {
         return errorInfo;
     }
 
-    public void setErrorInfo(ErrorInfo errorInfo) {
+    public void setErrorInfo(ErrorEntity errorInfo) {
         this.errorInfo = errorInfo;
+    }
+
+    public List<DownloadItem> getDownloadItems() {
+        return downloadItems;
+    }
+
+    public void setDownloadItems(List<DownloadItem> downloadItems) {
+        this.downloadItems = downloadItems;
     }
 }

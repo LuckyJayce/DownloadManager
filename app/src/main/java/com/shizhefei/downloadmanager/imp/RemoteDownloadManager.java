@@ -11,6 +11,11 @@ public class RemoteDownloadManager extends DownloadManager {
     }
 
     @Override
+    public long start(DownloadParams downloadParams) {
+        return 0;
+    }
+
+    @Override
     public void pause(long downloadId) {
 
     }
@@ -21,12 +26,12 @@ public class RemoteDownloadManager extends DownloadManager {
     }
 
     @Override
-    public DownloadEntity getDownloadEntity(int id) {
+    public DownloadEntity getDownloadEntity(long id) {
         return null;
     }
 
     @Override
-    public DownloadParams getDownloadParams(int id) {
+    public DownloadParams getDownloadParams(long id) {
         return null;
     }
 

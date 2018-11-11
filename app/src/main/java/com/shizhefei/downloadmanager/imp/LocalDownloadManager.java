@@ -4,6 +4,7 @@ import android.util.LongSparseArray;
 import android.util.Pair;
 
 import com.shizhefei.downloadmanager.ErrorInfo;
+import com.shizhefei.downloadmanager.base.AbsDownloadTask;
 import com.shizhefei.downloadmanager.base.DownloadEntity;
 import com.shizhefei.downloadmanager.base.DownloadListener;
 import com.shizhefei.downloadmanager.base.DownloadParams;
@@ -24,10 +25,10 @@ public class LocalDownloadManager extends DownloadManager {
     private DownloadTaskFactory downloadTaskFactory;
     private IdGenerator idGenerator;
     private TaskHelper taskHelper = new TaskHelper();
-    private LongSparseArray<Pair<RequestHandle, DownloadTask>> tasks = new LongSparseArray<>();
+    private LongSparseArray<Pair<RequestHandle, AbsDownloadTask>> tasks = new LongSparseArray<>();
     private LongSparseArray<DownloadListener> listeners = new LongSparseArray<>();
     private Set<DownloadListener> downloadListeners = new HashSet<>();
-    private List<DownloadTask> downloadEntities = new ArrayList<>();
+    private List<AbsDownloadTask> downloadEntities = new ArrayList<>();
 
     public LocalDownloadManager(DownloadTaskFactory downloadTaskFactory, IdGenerator idGenerator) {
         this.downloadTaskFactory = downloadTaskFactory;
@@ -35,25 +36,32 @@ public class LocalDownloadManager extends DownloadManager {
     }
 
     @Override
+    public long start(DownloadParams downloadParams) {
+        return start(downloadParams, null);
+    }
+
+    @Override
     public long start(DownloadParams downloadParams, DownloadListener downloadListener) {
         long downloadId = idGenerator.generateId(downloadParams);
-        listeners.put(downloadId, downloadListener);
+        if (downloadListener != null) {
+            listeners.put(downloadId, downloadListener);
+        }
 
-        DownloadTask downloadTask = downloadTaskFactory.buildDownloadTask(downloadParams);
+        AbsDownloadTask downloadTask = downloadTaskFactory.buildDownloadTask(downloadId, downloadParams);
         downloadEntities.add(downloadTask);
 
         IAsyncTask<Void> finalTask = Tasks.donOnCallback(Tasks.async(downloadTask), downloadListener);
 
         TaskHandle taskHandle = taskHelper.execute(finalTask, proxyDownloadListener);
 
-        tasks.put(downloadId, new Pair<RequestHandle, DownloadTask>(taskHandle, downloadTask));
+        tasks.put(downloadId, new Pair<RequestHandle, AbsDownloadTask>(taskHandle, downloadTask));
 
         return downloadId;
     }
 
     @Override
     public void pause(long downloadId) {
-        Pair<RequestHandle, DownloadTask> pair = tasks.get(downloadId);
+        Pair<RequestHandle, AbsDownloadTask> pair = tasks.get(downloadId);
         if (pair != null) {
             pair.first.cancle();
             tasks.remove(downloadId);
@@ -66,8 +74,8 @@ public class LocalDownloadManager extends DownloadManager {
     }
 
     @Override
-    public DownloadEntity getDownloadEntity(int id) {
-        Pair<RequestHandle, DownloadTask> data = tasks.get(id);
+    public DownloadEntity getDownloadEntity(long id) {
+        Pair<RequestHandle, AbsDownloadTask> data = tasks.get(id);
         if (data != null) {
             return data.second.getDownloadEntity();
         }
@@ -75,8 +83,8 @@ public class LocalDownloadManager extends DownloadManager {
     }
 
     @Override
-    public DownloadParams getDownloadParams(int id) {
-        Pair<RequestHandle, DownloadTask> data = tasks.get(id);
+    public DownloadParams getDownloadParams(long id) {
+        Pair<RequestHandle, AbsDownloadTask> data = tasks.get(id);
         if (data != null) {
             return data.second.getDownloadParams();
         }
@@ -85,7 +93,7 @@ public class LocalDownloadManager extends DownloadManager {
 
     @Override
     public DownloadEntity get(int position) {
-        DownloadTask downloadTask = downloadEntities.get(position);
+        AbsDownloadTask downloadTask = downloadEntities.get(position);
         if (downloadTask != null) {
             return downloadTask.getDownloadEntity();
         }
