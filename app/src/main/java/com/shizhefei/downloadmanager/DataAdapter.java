@@ -51,6 +51,7 @@ public class DataAdapter extends RecyclerView.Adapter {
         private final TextView infoTextView;
         private final View pauseButton;
         private final View removeButton;
+        private final View startButton;
         private DownloadInfo downloadInfo;
         private Context context;
 
@@ -62,17 +63,19 @@ public class DataAdapter extends RecyclerView.Adapter {
             infoTextView = itemView.findViewById(R.id.item_download_info_textView);
             pauseButton = itemView.findViewById(R.id.item_download_pasuse_button);
             removeButton = itemView.findViewById(R.id.item_download_remove_button);
+            startButton = itemView.findViewById(R.id.item_download_start_button);
 
             removeButton.setOnClickListener(onClickListener);
             pauseButton.setOnClickListener(onClickListener);
+            startButton.setOnClickListener(onClickListener);
         }
 
         public void setData(DownloadInfo downloadInfo) {
             this.downloadInfo = downloadInfo;
             String tempPath = downloadInfo.getDir() + File.separator + downloadInfo.getTempFileName();
             StringBuilder name = new StringBuilder();
-            name.append("downloadId:").append(downloadInfo.getId()).append("  ");
-            name.append(tempPath).append(" / ").append(downloadInfo.getFilename()).append("\n").append(downloadInfo.getUrl());
+            name.append("downloadId:").append(downloadInfo.getId()).append("  status:").append(DownloadInfo.getStatusText(downloadInfo.getStatus())).append("\n");
+            name.append("file:").append(tempPath).append(" / ").append(downloadInfo.getFilename()).append("\n").append(downloadInfo.getUrl());
             fileNameTextView.setText(name);
             int p;
             if (downloadInfo.getTotal() <= 0) {
@@ -95,6 +98,8 @@ public class DataAdapter extends RecyclerView.Adapter {
                     downloadManager.remove(downloadInfo.getId());
                 } else if (v == pauseButton) {
                     downloadManager.pause(downloadInfo.getId());
+                } else if (v == startButton) {
+                    downloadManager.restartPauseOrFail(downloadInfo.getId(), null);
                 }
             }
         };

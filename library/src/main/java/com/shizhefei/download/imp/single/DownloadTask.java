@@ -53,6 +53,7 @@ public class DownloadTask implements ITask<Void>, RemoveHandler.OnRemoveListener
         File saveFileTemp = null;
         File saveFile = null;
         try {
+            Thread.sleep(5000);
             File saveDir = new File(downloadParams.getDir());
             String saveFileName = downloadParams.getFileName();
             String url = downloadParams.getUrl();

@@ -85,11 +85,6 @@ public class ProxyDownloadTask extends AbsDownloadTask {
     }
 
     @Override
-    public DownloadParams getDownloadParams() {
-        return downloadParams;
-    }
-
-    @Override
     public DownloadInfo getDownloadInfo() {
         return downloadInfoAgency.getInfo();
     }
@@ -98,8 +93,8 @@ public class ProxyDownloadTask extends AbsDownloadTask {
         @Override
         public void onPending(long downloadId) {
             super.onPending(downloadId);
-            downloadInfoAgency.setStartTime(System.currentTimeMillis());
             downloadInfoAgency.setStatus(DownloadInfo.STATUS_PENDING);
+            downloadInfoAgency.setStartTime(System.currentTimeMillis());
             downloadDB.replace(downloadParams, downloadInfoAgency.getInfo());
         }
 
@@ -147,6 +142,7 @@ public class ProxyDownloadTask extends AbsDownloadTask {
         @Override
         public void onError(long downloadId, int errorCode, String errorMessage) {
             errorInfoAgency.set(errorCode, errorMessage);
+            downloadInfoAgency.setStatus(DownloadInfo.STATUS_FAIL);
             downloadDB.update(downloadInfoAgency.getInfo());
         }
 

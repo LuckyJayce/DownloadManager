@@ -69,13 +69,13 @@ public class DownloadDB {
     }
 
     @NonNull
-    public List<DownloadInfo> findAll() {
-        List<DownloadInfo> list = new ArrayList<>();
+    public List<DownloadInfo.Agency> findAll() {
+        List<DownloadInfo.Agency> list = new ArrayList<>();
         try {
             SQLiteDatabase database = dbHelper.getReadableDatabase();
             Cursor cursor = database.rawQuery(SQL_SELECT_ALL, new String[]{});
             while (cursor.moveToNext()) {
-                list.add(get(cursor).getInfo());
+                list.add(get(cursor));
             }
             cursor.close();
         } catch (Exception e) {

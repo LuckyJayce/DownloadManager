@@ -5,7 +5,5 @@ import com.shizhefei.task.IAsyncTask;
 
 public abstract class AbsDownloadTask implements IAsyncTask<Void> {
 
-    public abstract DownloadParams getDownloadParams();
-
     public abstract DownloadInfo getDownloadInfo();
 }

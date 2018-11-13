@@ -20,6 +20,11 @@ public class RemoteDownloadManager extends DownloadManager {
     }
 
     @Override
+    public long restartPauseOrFail(long downloadId, DownloadListener downloadListener) {
+        return 0;
+    }
+
+    @Override
     public void pause(long downloadId) {
 
     }

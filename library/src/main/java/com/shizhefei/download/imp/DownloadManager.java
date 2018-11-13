@@ -91,6 +91,15 @@ public abstract class DownloadManager {
     public abstract long start(DownloadParams downloadParams);
 
     /**
+     * 执行之前失败,停止且现在未在执行中的任务
+     * 如果已经在执行则不会重新执行
+     *
+     * @param downloadId
+     * @return
+     */
+    public abstract long restartPauseOrFail(long downloadId, DownloadListener downloadListener);
+
+    /**
      * 停止下载任务
      *
      * @param downloadId

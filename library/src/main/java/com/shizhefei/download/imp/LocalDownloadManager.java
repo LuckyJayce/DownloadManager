@@ -2,6 +2,7 @@ package com.shizhefei.download.imp;
 
 import android.content.Context;
 import android.os.AsyncTask;
+import android.util.Log;
 import android.util.LongSparseArray;
 
 import com.shizhefei.download.base.AbsDownloadTask;
@@ -50,12 +51,55 @@ public class LocalDownloadManager extends DownloadManager {
                 return downloadDB.addAndGetDownloadId();
             }
         };
-        downloadInfoList = downloadDB.findAll();
+        List<DownloadInfo.Agency> infoList = downloadDB.findAll();
+        downloadInfoList = new ArrayList<>(infoList.size());
+        for (DownloadInfo.Agency info : infoList) {
+            switch (info.getStatus()) {
+                case DownloadInfo.STATUS_CONNECTED:
+                case DownloadInfo.STATUS_DOWNLOAD_ING:
+                case DownloadInfo.STATUS_PENDING:
+                case DownloadInfo.STATUS_START:
+                    info.setStatus(DownloadInfo.STATUS_PAUSED);
+                    break;
+            }
+            downloadInfoList.add(info.getInfo());
+        }
     }
 
     @Override
     public long start(DownloadParams downloadParams) {
         return start(downloadParams, null);
+    }
+
+    @Override
+    public long restartPauseOrFail(long downloadId, DownloadListener downloadListener) {
+        int index = -1;
+        DownloadInfo downloadInfo = null;
+        for (int i = 0; i < downloadInfoList.size(); i++) {
+            DownloadInfo info = downloadInfoList.get(i);
+            if (info.getId() == downloadId) {
+                downloadInfo = info;
+                index = i;
+                break;
+            }
+        }
+        if (downloadInfo != null) {
+            int status = downloadInfo.getStatus();
+            if (status == DownloadInfo.STATUS_PAUSED || status == DownloadInfo.STATUS_FAIL) {
+                DownloadParams downloadParams = downloadInfo.getDownloadParams();
+                if (downloadListener != null) {
+                    listeners.put(downloadId, downloadListener);
+                }
+
+                RemoveHandler removeHandler = new RemoveHandlerImp();
+                AbsDownloadTask downloadTask = downloadTaskFactory.buildDownloadTask(downloadId, downloadParams, downloadDB, removeHandler, executor);
+                downloadInfoList.set(index, downloadTask.getDownloadInfo());
+
+                TaskHandle taskHandle = taskHelper.execute(downloadTask, new DownloadListenerProxy(downloadId, proxyDownloadListener));
+                tasks.put(downloadId, new DownloadData(taskHandle, downloadTask, removeHandler));
+            }
+        }
+        return downloadId;
     }
 
     @Override
@@ -70,9 +114,7 @@ public class LocalDownloadManager extends DownloadManager {
         downloadInfoList.add(downloadTask.getDownloadInfo());
 
         TaskHandle taskHandle = taskHelper.execute(downloadTask, new DownloadListenerProxy(downloadId, proxyDownloadListener));
-
         tasks.put(downloadId, new DownloadData(taskHandle, downloadTask, removeHandler));
-
         return downloadId;
     }
 
@@ -177,6 +219,17 @@ public class LocalDownloadManager extends DownloadManager {
             DownloadListener downloadListener = listeners.get(downloadId);
             if (downloadListener != null) {
                 downloadListener.onPending(downloadId);
+            }
+        }
+
+        @Override
+        public void onStart(long downloadId) {
+            for (DownloadListener downloadListener : downloadListeners) {
+                downloadListener.onStart(downloadId);
+            }
+            DownloadListener downloadListener = listeners.get(downloadId);
+            if (downloadListener != null) {
+                downloadListener.onStart(downloadId);
             }
         }
 

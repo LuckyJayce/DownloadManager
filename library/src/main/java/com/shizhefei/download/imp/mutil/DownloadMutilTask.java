@@ -10,11 +10,6 @@ import com.shizhefei.mvc.ResponseSender;
 public class DownloadMutilTask extends AbsDownloadTask {
 
     @Override
-    public DownloadParams getDownloadParams() {
-        return null;
-    }
-
-    @Override
     public DownloadInfo getDownloadInfo() {
         return null;
     }
