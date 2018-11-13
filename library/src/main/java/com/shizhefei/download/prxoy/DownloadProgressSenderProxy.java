@@ -14,6 +14,7 @@ public class DownloadProgressSenderProxy {
     public static final String PARAM_SAVEDIR = "saveDir";
     public static final String PARAM_SAVEFILENAME = "saveFileName";
     public static final String PARAM_TEMPFILENAME = "tempFileName";
+    public static final String PARAM_DOWNLOADFROMBEGINREASON = "downloadFrombeginReason";
     public static final String PROGRESS_STATUS = "status";
     private static Pools.SynchronizedPool<Bundle> bundleSynchronizedPool = new Pools.SynchronizedPool<>(10);
 
@@ -33,8 +34,11 @@ public class DownloadProgressSenderProxy {
         progressSender.sendProgress(current, total, bundle);
     }
 
-    public void sendDownloadFromBegin(long current, long total) {
-        progressSender.sendProgress(current, total, DownloadInfo.STATUS_DOWNLOAD_RESET_BEGIN);
+    public void sendDownloadFromBegin(long current, long total, int downloadFrombeginReason) {
+        Bundle bundle = new Bundle();
+        bundle.putInt(PROGRESS_STATUS, DownloadInfo.STATUS_DOWNLOAD_RESET_BEGIN);
+        bundle.putInt(PARAM_DOWNLOADFROMBEGINREASON, downloadFrombeginReason);
+        progressSender.sendProgress(current, total, bundle);
     }
 
     public void sendStart(long current, long total) {
@@ -50,7 +54,7 @@ public class DownloadProgressSenderProxy {
 //    }
 
     public void sendRemove(long current, long total) {
-        progressSender.sendProgress(current, total, DownloadInfo.STATUS_PAUSED);
+        progressSender.sendProgress(current, total, DownloadInfo.STATUS_REMOVE);
     }
 
     public static void release(Bundle bundle) {

@@ -16,6 +16,7 @@ public class DownloadInfo {
     public static final int STATUS_PAUSED = 5;//连接上服务器
     public static final int STATUS_FINISHED = 6;
     public static final int STATUS_FAIL = 7;
+    public static final int STATUS_REMOVE = 8;//连接上服务器
     private long id;
     private String url;
     private String dir;

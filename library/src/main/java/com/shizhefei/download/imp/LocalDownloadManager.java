@@ -19,6 +19,7 @@ import com.shizhefei.mvc.RequestHandle;
 import com.shizhefei.task.TaskHandle;
 import com.shizhefei.task.TaskHelper;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -133,10 +134,12 @@ public class LocalDownloadManager extends DownloadManager {
 
     @Override
     public void remove(long downloadId) {
+        DownloadInfo downloadInfo = null;
         Iterator<DownloadInfo> iterator = downloadInfoList.iterator();
         while (iterator.hasNext()) {
-            DownloadInfo downloadInfo = iterator.next();
-            if (downloadInfo.getId() == downloadId) {
+            DownloadInfo info = iterator.next();
+            if (info.getId() == downloadId) {
+                downloadInfo = info;
                 iterator.remove();
                 break;
             }
@@ -147,6 +150,13 @@ public class LocalDownloadManager extends DownloadManager {
             tasks.remove(downloadId);
         } else {//没有在执行，直接删除数据库中的
             proxyDownloadListener.onRemove(downloadId);
+            if (downloadInfo != null) {
+                File file = new File(downloadInfo.getDir(), downloadInfo.getTempFileName());
+                if (file.exists()) {
+                    file.delete();
+                }
+                //下载好的 downloadInfo.getFilename() 没做删除处理
+            }
             downloadDB.delete(downloadId);
         }
     }
@@ -240,11 +250,22 @@ public class LocalDownloadManager extends DownloadManager {
         @Override
         public void onDownloadIng(long downloadId, long current, long total) {
             for (DownloadListener downloadListener : downloadListeners) {
-                downloadListener.onDownloadIng(downloadId, downloadId, total);
+                downloadListener.onDownloadIng(downloadId, current, total);
             }
             DownloadListener downloadListener = listeners.get(downloadId);
             if (downloadListener != null) {
-                downloadListener.onDownloadIng(downloadId, downloadId, total);
+                downloadListener.onDownloadIng(downloadId, current, total);
+            }
+        }
+
+        @Override
+        public void onDownloadResetBegin(long downloadId, int reason) {
+            for (DownloadListener downloadListener : downloadListeners) {
+                downloadListener.onDownloadResetBegin(downloadId, reason);
+            }
+            DownloadListener downloadListener = listeners.get(downloadId);
+            if (downloadListener != null) {
+                downloadListener.onDownloadResetBegin(downloadId, reason);
             }
         }
 

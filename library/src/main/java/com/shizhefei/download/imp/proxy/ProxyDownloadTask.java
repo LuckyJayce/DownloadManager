@@ -1,7 +1,5 @@
 package com.shizhefei.download.imp.proxy;
 
-import android.text.TextUtils;
-
 import com.shizhefei.download.base.AbsDownloadTask;
 import com.shizhefei.download.base.RemoveHandler;
 import com.shizhefei.download.entity.DownloadInfo;
@@ -16,7 +14,6 @@ import com.shizhefei.mvc.RequestHandle;
 import com.shizhefei.mvc.ResponseSender;
 import com.shizhefei.task.tasks.Tasks;
 
-import java.io.File;
 import java.util.concurrent.Executor;
 
 public class ProxyDownloadTask extends AbsDownloadTask {
@@ -45,40 +42,6 @@ public class ProxyDownloadTask extends AbsDownloadTask {
 
     @Override
     public RequestHandle execute(ResponseSender<Void> sender) throws Exception {
-        DownloadInfo downloadInfo = downloadInfoAgency.getInfo();
-        switch (downloadInfo.getStatus()) {
-            case DownloadInfo.STATUS_START:
-            case DownloadInfo.STATUS_DOWNLOAD_ING:
-            case DownloadInfo.STATUS_CONNECTED:
-            case DownloadInfo.STATUS_DOWNLOAD_RESET_BEGIN:
-                downloadInfoAgency.setStatus(DownloadInfo.STATUS_PENDING);
-                break;
-            case DownloadInfo.STATUS_FAIL:
-            case DownloadInfo.STATUS_FINISHED:
-                if (!TextUtils.isEmpty(downloadInfo.getTempFileName())) {
-                    File file = new File(downloadInfo.getDir(), downloadInfo.getTempFileName());
-                    if (file.exists()) {
-                        file.delete();
-                    }
-                }
-                if (!TextUtils.isEmpty(downloadInfo.getFilename())) {
-                    File file = new File(downloadInfo.getDir(), downloadInfo.getFilename());
-                    if (file.exists()) {
-                        file.delete();
-                    }
-                }
-                break;
-            case DownloadInfo.STATUS_PAUSED:
-                if (!TextUtils.isEmpty(downloadInfo.getTempFileName())) {
-                    File file = new File(downloadInfo.getDir(), downloadInfo.getTempFileName());
-                    if (!file.exists()) {
-                        downloadInfoAgency.setStatus(DownloadInfo.STATUS_START);
-                        downloadInfoAgency.setCurrent(0);
-                    }
-                }
-                break;
-        }
-
         DownloadTask downloadTask = new DownloadTask(downloadId, downloadParams, downloadInfoAgency.getInfo());
         removeHandler.addRemoveListener(downloadTask);
         DownloadListenerProxy callback = new DownloadListenerProxy(downloadId, downloadListener);
@@ -93,7 +56,7 @@ public class ProxyDownloadTask extends AbsDownloadTask {
     private DownloadListener downloadListener = new DownloadListener() {
 
         @Override
-        public void onDownloadResetBegin(long downloadId) {
+        public void onDownloadResetBegin(long downloadId, int reason) {
             downloadInfoAgency.setStatus(DownloadInfo.STATUS_DOWNLOAD_RESET_BEGIN);
             downloadInfoAgency.setCurrent(0);
             downloadDB.update(downloadInfoAgency.getInfo());
@@ -154,7 +117,7 @@ public class ProxyDownloadTask extends AbsDownloadTask {
 
         @Override
         public void onRemove(long downloadId) {
-            downloadInfoAgency.setStatus(DownloadInfo.STATUS_PAUSED);
+            downloadInfoAgency.setStatus(DownloadInfo.STATUS_REMOVE);
             downloadDB.delete(downloadId);
         }
     };

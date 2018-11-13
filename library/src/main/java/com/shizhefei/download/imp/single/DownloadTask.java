@@ -9,6 +9,8 @@ import com.shizhefei.download.base.DownloadParams;
 import com.shizhefei.download.entity.HttpInfo;
 import com.shizhefei.download.exception.DownloadException;
 import com.shizhefei.download.entity.ErrorInfo;
+import com.shizhefei.download.exception.RemoveException;
+import com.shizhefei.download.imp.DownloadManager;
 import com.shizhefei.download.prxoy.DownloadProgressSenderProxy;
 import com.shizhefei.download.utils.DownloadLogUtils;
 import com.shizhefei.download.utils.FileNameUtils;
@@ -75,11 +77,20 @@ public class DownloadTask implements ITask<Void>, RemoveHandler.OnRemoveListener
                 }
             }
 
+            String tempFileName = downloadInfo.getTempFileName();
+            if (!TextUtils.isEmpty(tempFileName)) {
+                File temp = new File(saveDir, tempFileName);
+                if (current > 0 && !temp.exists()) {
+                    senderProxy.sendDownloadFromBegin(current, total, DownloadManager.DOWNLOAD_FROMBEGIN_REASON_FILE_REMOVE);
+                    current = 0;
+                }
+            }
+
             if (current > 0) {
                 if (downloadInfo.getHttpInfo().isAcceptRange()) {
                     FileDownloadUtils.addRangeHeader(httpURLConnection, current, FileDownloadUtils.RANGE_INFINITE);
                 } else {
-                    senderProxy.sendDownloadFromBegin(current, total);
+                    senderProxy.sendDownloadFromBegin(current, total, DownloadManager.DOWNLOAD_FROMBEGIN_UNSUPPORT_RANGE);
                     current = 0;
                 }
             }
@@ -89,9 +100,11 @@ public class DownloadTask implements ITask<Void>, RemoveHandler.OnRemoveListener
 
             final String oldETag = downloadInfo.getHttpInfo().getETag();
             String newETag = FileDownloadUtils.findEtag(downloadInfo.getId(), httpURLConnection);
-            if (oldETag != null && !oldETag.equals(newETag)) {
-                senderProxy.sendDownloadFromBegin(current, total);
-                current = 0;
+            if (current > 0) {
+                if (oldETag != null && !oldETag.equals(newETag)) {
+                    senderProxy.sendDownloadFromBegin(current, total, DownloadManager.DOWNLOAD_FROMBEGIN_ETAG_CHANGE);
+                    current = 0;
+                }
             }
 
             int httpCode = httpURLConnection.getResponseCode();
@@ -111,7 +124,10 @@ public class DownloadTask implements ITask<Void>, RemoveHandler.OnRemoveListener
                 String errorMessage = FileDownloadUtils.formatString("there isn't any content need to download on %d-%d with the content-length is 0", downloadId);
                 throw new DownloadException(downloadId, ErrorInfo.ERROR_EMPTY_SIZE, errorMessage);
             }
-            total = contentLength;
+            if (current <= 0) {
+                current = 0;
+                total = contentLength;
+            }
 
             String contentType = httpURLConnection.getContentType();
             if (downloadParams.isOverride() && !TextUtils.isEmpty(saveFileName)) {
@@ -120,7 +136,6 @@ public class DownloadTask implements ITask<Void>, RemoveHandler.OnRemoveListener
                 String disposition = httpURLConnection.getHeaderField("Content-Disposition");
                 saveFileName = FileNameUtils.getFileName(saveDir, saveFileName, url, contentType, disposition, downloadId);
             }
-            String tempFileName = downloadInfo.getTempFileName();
             if (TextUtils.isEmpty(tempFileName)) {
                 tempFileName = FileNameUtils.toValidFileName(saveDir, saveFileName + ".temp");
             }
@@ -196,13 +211,20 @@ public class DownloadTask implements ITask<Void>, RemoveHandler.OnRemoveListener
             }
         }
         if (remove) {
-            if (saveFileTemp != null) {
+            if (saveFileTemp != null && saveFileTemp.exists()) {
                 saveFileTemp.delete();
+                DownloadLogUtils.d("saveFileTemp delete saveFileTemp %s" + saveFileTemp);
             }
-            if (saveFile != null) {
+            if (saveFile != null && saveFile.exists()) {
                 saveFile.delete();
+                DownloadLogUtils.d("saveFile delete saveFile %s" + saveFile);
             }
             senderProxy.sendRemove(current, total);
+            throw new RemoveException(downloadId);
+        }
+        if (!cancel && !remove) {
+            boolean success = saveFileTemp.renameTo(saveFile);
+            DownloadLogUtils.d("success " + success);
         }
         return null;
     }
@@ -220,14 +242,12 @@ public class DownloadTask implements ITask<Void>, RemoveHandler.OnRemoveListener
     @Override
     public void cancel() {
         cancel = true;
-        if (httpURLConnection != null) {
-            httpURLConnection.disconnect();
-        }
     }
 
     @Override
     public void onRemove() {
+        DownloadLogUtils.d("onRemove %d", downloadId);
         remove = true;
-        cancel();
+        cancel = true;
     }
 }

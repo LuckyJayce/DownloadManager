@@ -19,6 +19,10 @@ import com.shizhefei.download.utils.FileDownloadUtils;
 import java.io.File;
 
 public abstract class DownloadManager {
+    public static final int DOWNLOAD_FROMBEGIN_REASON_FILE_REMOVE = 0;//文件被移除
+    public static final int DOWNLOAD_FROMBEGIN_UNSUPPORT_RANGE = 1;//url的服务器不接受range要重新下载
+    public static final int DOWNLOAD_FROMBEGIN_ETAG_CHANGE = 2;//etag改变，表示内容变化
+
     private static Context context;
     //    private static DownloadTaskFactory staticDownloadTaskFactory;
 //    private static IdGenerator staticIdGenerator;

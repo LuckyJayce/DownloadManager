@@ -38,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
         addButton = findViewById(R.id.button);
         editText = findViewById(R.id.editText);
 
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setLayoutManager(new FixLinearLayoutManager(this));
         recyclerView.setAdapter(dataAdapter = new DataAdapter(downloadManager));
 
         addButton.setOnClickListener(onClickListener);
@@ -157,6 +157,13 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onPaused(long downloadId) {
             super.onPaused(downloadId);
+            int position = downloadManager.getDownloadCursor().getPosition(downloadId);
+            dataAdapter.notifyItemChanged(position);
+        }
+
+        @Override
+        public void onDownloadResetBegin(long downloadId, int reason) {
+            super.onDownloadResetBegin(downloadId, reason);
             int position = downloadManager.getDownloadCursor().getPosition(downloadId);
             dataAdapter.notifyItemChanged(position);
         }

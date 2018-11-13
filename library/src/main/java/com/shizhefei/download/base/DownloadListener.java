@@ -11,7 +11,7 @@ public abstract class DownloadListener {
 
     }
 
-    public void onDownloadResetBegin(long downloadId) {
+    public void onDownloadResetBegin(long downloadId, int reason) {
 
     }
 

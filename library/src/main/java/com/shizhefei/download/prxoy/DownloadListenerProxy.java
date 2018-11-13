@@ -8,6 +8,7 @@ import com.shizhefei.download.entity.DownloadInfo;
 import com.shizhefei.download.entity.ErrorInfo;
 import com.shizhefei.download.entity.HttpInfo;
 import com.shizhefei.download.exception.DownloadException;
+import com.shizhefei.download.exception.RemoveException;
 import com.shizhefei.task.Code;
 import com.shizhefei.task.ICallback;
 
@@ -46,7 +47,13 @@ public class DownloadListenerProxy implements ICallback<Void> {
                 downloadListener.onStart(downloadId);
                 break;
             case DownloadInfo.STATUS_DOWNLOAD_RESET_BEGIN:
-                downloadListener.onDownloadResetBegin(downloadId);
+                if(bundle!=null){
+                    int reason = bundle.getInt(DownloadProgressSenderProxy.PARAM_DOWNLOADFROMBEGINREASON);
+                    downloadListener.onDownloadResetBegin(downloadId, reason);
+                }
+                break;
+            case DownloadInfo.STATUS_REMOVE:
+                downloadListener.onRemove(downloadId);
                 break;
             case DownloadInfo.STATUS_CONNECTED:
                 if (bundle != null) {
@@ -64,7 +71,9 @@ public class DownloadListenerProxy implements ICallback<Void> {
     public void onPostExecute(Object task, Code code, Exception exception, Void aVoid) {
         switch (code) {
             case EXCEPTION:
-                if (exception instanceof DownloadException) {
+                if (exception instanceof RemoveException) {
+                    //不处理
+                } else if (exception instanceof DownloadException) {
                     DownloadException downloadException = (DownloadException) exception;
                     downloadListener.onError(downloadId, downloadException.getErrorCode(), downloadException.getErrorMessage());
                 } else {
