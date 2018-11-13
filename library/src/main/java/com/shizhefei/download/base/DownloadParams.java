@@ -3,7 +3,10 @@ package com.shizhefei.download.base;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.text.TextUtils;
 
+import com.shizhefei.download.imp.DownloadConfig;
+import com.shizhefei.download.imp.DownloadManager;
 import com.shizhefei.download.utils.DownloadJsonUtils;
 
 import org.json.JSONException;
@@ -200,6 +203,10 @@ public class DownloadParams implements Parcelable {
             params = new HashMap<>();
             headers = new HashMap<>();
             extData = new HashMap<>();
+            DownloadConfig downloadConfig = DownloadManager.getDownloadConfig();
+            dir = downloadConfig.getDir();
+            isWifiRequired = downloadConfig.isWifiRequired();
+            blockSize = downloadConfig.getBlockSize();
         }
 
         public Builder(String json) {
@@ -283,6 +290,9 @@ public class DownloadParams implements Parcelable {
         }
 
         public DownloadParams build() {
+            if (TextUtils.isEmpty(dir)) {
+                throw new RuntimeException("download dir null");
+            }
             DownloadParams downloadParams = new DownloadParams();
             downloadParams.setUrl(url);
             downloadParams.setDir(dir);

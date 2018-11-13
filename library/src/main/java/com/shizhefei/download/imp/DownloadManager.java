@@ -2,6 +2,8 @@ package com.shizhefei.download.imp;
 
 import android.content.Context;
 import android.os.AsyncTask;
+import android.os.Environment;
+import android.text.TextUtils;
 
 import com.shizhefei.download.entity.DownloadInfo;
 import com.shizhefei.download.base.DownloadListener;
@@ -10,6 +12,8 @@ import com.shizhefei.download.base.DownloadTaskFactory;
 import com.shizhefei.download.db.DownloadDB;
 import com.shizhefei.download.base.IdGenerator;
 
+import java.io.File;
+
 public abstract class DownloadManager {
     private static Context context;
     //    private static DownloadTaskFactory staticDownloadTaskFactory;
@@ -17,9 +21,26 @@ public abstract class DownloadManager {
 //    private static DownloadDB downloadDB;
     private static volatile LocalDownloadManager localDownloadManager;
     private static volatile RemoteDownloadManager remoteDownloadManager;
+    private static DownloadConfig downloadConfig;
 
-    public static void init(Context context) {
+    public static void init(Context context, DownloadConfig config) {
+        DownloadConfig.Builder builder = new DownloadConfig.Builder(config);
+        if (TextUtils.isEmpty(builder.getDir())) {
+            String dir = Environment.getExternalStorageDirectory() + File.separator + context.getPackageName() + File.separator + "download";
+            builder.setDir(dir);
+        }
+        if (builder.getDownloadTaskFactory() == null) {
+            builder.setDownloadTaskFactory(new DefaultDownloadTaskFactory());
+        }
+        if (builder.getExecutor() == null) {
+            builder.setExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        }
+        downloadConfig = builder.build();
         DownloadManager.context = context.getApplicationContext();
+    }
+
+    public static DownloadConfig getDownloadConfig() {
+        return downloadConfig;
     }
 
     public static Context getApplicationContext() {
@@ -30,7 +51,7 @@ public abstract class DownloadManager {
         if (localDownloadManager == null) {
             synchronized (DownloadManager.class) {
                 if (localDownloadManager == null) {
-                    localDownloadManager = new LocalDownloadManager(context, null, AsyncTask.THREAD_POOL_EXECUTOR);
+                    localDownloadManager = new LocalDownloadManager(context, downloadConfig.getDownloadTaskFactory(), downloadConfig.getExecutor());
                 }
             }
         }
