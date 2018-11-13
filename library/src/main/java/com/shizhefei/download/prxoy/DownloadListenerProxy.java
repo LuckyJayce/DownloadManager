@@ -1,6 +1,7 @@
 package com.shizhefei.download.prxoy;
 
 import android.os.Bundle;
+import android.text.TextUtils;
 
 import com.shizhefei.download.base.DownloadListener;
 import com.shizhefei.download.entity.DownloadInfo;
@@ -64,7 +65,11 @@ public class DownloadListenerProxy implements ICallback<Void> {
                     DownloadException downloadException = (DownloadException) exception;
                     downloadListener.onError(downloadId, downloadException.getErrorCode(), downloadException.getErrorMessage());
                 } else {
-                    downloadListener.onError(downloadId, ErrorInfo.ERROR_UNKNOW, exception.getMessage());
+                    String message = exception.getMessage();
+                    if (TextUtils.isEmpty(message)) {
+                        message = exception.getClass().getName();
+                    }
+                    downloadListener.onError(downloadId, ErrorInfo.ERROR_UNKNOW, message);
                 }
                 break;
             case SUCCESS:

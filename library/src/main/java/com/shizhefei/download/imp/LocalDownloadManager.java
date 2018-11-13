@@ -20,6 +20,7 @@ import com.shizhefei.task.TaskHelper;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executor;
@@ -86,27 +87,39 @@ public class LocalDownloadManager extends DownloadManager {
 
     @Override
     public void remove(long downloadId) {
+        Iterator<DownloadInfo> iterator = downloadInfoList.iterator();
+        while (iterator.hasNext()) {
+            DownloadInfo downloadInfo = iterator.next();
+            if (downloadInfo.getId() == downloadId) {
+                iterator.remove();
+                break;
+            }
+        }
         DownloadData data = tasks.get(downloadId);
         if (data != null) {
             data.removeHandler.remove();
             tasks.remove(downloadId);
+        } else {//没有在执行，直接删除数据库中的
+            downloadDB.delete(downloadId);
         }
     }
 
     @Override
     public DownloadInfo getDownloadEntity(long downloadId) {
-        DownloadData data = tasks.get(downloadId);
-        if (data != null) {
-            return data.task.getDownloadInfo();
+        for (DownloadInfo downloadInfo : downloadInfoList) {
+            if (downloadInfo.getId() == downloadId) {
+                return downloadInfo;
+            }
         }
         return null;
     }
 
     @Override
-    public DownloadParams getDownloadParams(long id) {
-        DownloadData data = tasks.get(id);
-        if (data != null) {
-            return data.task.getDownloadParams();
+    public DownloadParams getDownloadParams(long downloadId) {
+        for (DownloadInfo downloadInfo : downloadInfoList) {
+            if (downloadInfo.getId() == downloadId) {
+                return downloadInfo.getDownloadParams();
+            }
         }
         return null;
     }
@@ -197,6 +210,7 @@ public class LocalDownloadManager extends DownloadManager {
             if (downloadListener != null) {
                 downloadListener.onPaused(downloadId);
             }
+            tasks.remove(downloadId);
         }
 
         @Override
@@ -209,6 +223,7 @@ public class LocalDownloadManager extends DownloadManager {
                 downloadListener.onComplete(downloadId);
                 listeners.remove(downloadId);
             }
+            tasks.remove(downloadId);
         }
 
         @Override
@@ -221,6 +236,7 @@ public class LocalDownloadManager extends DownloadManager {
                 downloadListener.onError(downloadId, errorCode, errorMessage);
                 listeners.remove(downloadId);
             }
+            tasks.remove(downloadId);
         }
 
         @Override
@@ -233,6 +249,7 @@ public class LocalDownloadManager extends DownloadManager {
                 downloadListener.onRemove(downloadId);
                 listeners.remove(downloadId);
             }
+            tasks.remove(downloadId);
         }
     };
 

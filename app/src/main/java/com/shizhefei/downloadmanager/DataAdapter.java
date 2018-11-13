@@ -70,7 +70,10 @@ public class DataAdapter extends RecyclerView.Adapter {
         public void setData(DownloadInfo downloadInfo) {
             this.downloadInfo = downloadInfo;
             String tempPath = downloadInfo.getDir() + File.separator + downloadInfo.getTempFileName();
-            fileNameTextView.setText(tempPath + " / " + downloadInfo.getFilename() + "\n" + downloadInfo.getUrl());
+            StringBuilder name = new StringBuilder();
+            name.append("downloadId:").append(downloadInfo.getId()).append("  ");
+            name.append(tempPath).append(" / ").append(downloadInfo.getFilename()).append("\n").append(downloadInfo.getUrl());
+            fileNameTextView.setText(name);
             int p;
             if (downloadInfo.getTotal() <= 0) {
                 p = 0;
