@@ -1,6 +1,7 @@
 package com.shizhefei.download.imp;
 
 import android.content.Context;
+import android.os.AsyncTask;
 
 import com.shizhefei.download.entity.DownloadInfo;
 import com.shizhefei.download.base.DownloadListener;
@@ -11,7 +12,7 @@ import com.shizhefei.download.base.IdGenerator;
 
 public abstract class DownloadManager {
     private static Context context;
-//    private static DownloadTaskFactory staticDownloadTaskFactory;
+    //    private static DownloadTaskFactory staticDownloadTaskFactory;
 //    private static IdGenerator staticIdGenerator;
 //    private static DownloadDB downloadDB;
     private static volatile LocalDownloadManager localDownloadManager;
@@ -29,7 +30,7 @@ public abstract class DownloadManager {
         if (localDownloadManager == null) {
             synchronized (DownloadManager.class) {
                 if (localDownloadManager == null) {
-                    localDownloadManager = new LocalDownloadManager(context, null);
+                    localDownloadManager = new LocalDownloadManager(context, null, AsyncTask.THREAD_POOL_EXECUTOR);
                 }
             }
         }

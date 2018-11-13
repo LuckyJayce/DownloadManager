@@ -7,9 +7,11 @@ import com.shizhefei.download.base.RemoveHandler;
 import com.shizhefei.download.db.DownloadDB;
 import com.shizhefei.download.imp.proxy.ProxyDownloadTask;
 
+import java.util.concurrent.Executor;
+
 public class DefaultDownloadTaskFactory implements DownloadTaskFactory {
     @Override
-    public AbsDownloadTask buildDownloadTask(long downloadId, DownloadParams downloadParams, DownloadDB downloadDB, RemoveHandler removeHandler) {
-        return new ProxyDownloadTask(downloadId, downloadParams, downloadDB, removeHandler);
+    public AbsDownloadTask buildDownloadTask(long downloadId, DownloadParams downloadParams, DownloadDB downloadDB, RemoveHandler removeHandler, Executor executor) {
+        return new ProxyDownloadTask(downloadId, downloadParams, downloadDB, removeHandler, executor);
     }
 }

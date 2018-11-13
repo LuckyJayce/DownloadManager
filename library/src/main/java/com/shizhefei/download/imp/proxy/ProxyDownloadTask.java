@@ -18,8 +18,10 @@ import com.shizhefei.mvc.ResponseSender;
 import com.shizhefei.task.tasks.Tasks;
 
 import java.io.File;
+import java.util.concurrent.Executor;
 
 public class ProxyDownloadTask extends AbsDownloadTask {
+    private final Executor executor;
     private long downloadId;
     private DownloadDB downloadDB;
     private ErrorInfo.Agency errorInfoAgency;
@@ -28,10 +30,11 @@ public class ProxyDownloadTask extends AbsDownloadTask {
     private DownloadInfo.Agency downloadInfoAgency;
     private DownloadParams downloadParams;
 
-    public ProxyDownloadTask(long downloadId, DownloadParams downloadParams, DownloadDB downloadDB, RemoveHandler removeHandler) {
+    public ProxyDownloadTask(long downloadId, DownloadParams downloadParams, DownloadDB downloadDB, RemoveHandler removeHandler, Executor executor) {
         this.downloadId = downloadId;
         this.downloadParams = downloadParams;
         this.downloadDB = downloadDB;
+        this.executor = executor;
         Pair<DownloadInfo.Agency, DownloadParams> paramsPair = downloadDB.find(downloadId);
         if (paramsPair != null) {
             downloadInfoAgency = paramsPair.first;
@@ -81,7 +84,7 @@ public class ProxyDownloadTask extends AbsDownloadTask {
         DownloadTask downloadTask = new DownloadTask(downloadId, downloadParams, downloadInfoAgency.getInfo());
         removeHandler.addRemoveListener(downloadTask);
         DownloadListenerProxy callback = new DownloadListenerProxy(downloadId, downloadListener);
-        return Tasks.async(downloadTask).doOnCallback(callback).execute(sender);
+        return Tasks.async(downloadTask, executor).doOnCallback(callback).execute(sender);
     }
 
     @Override

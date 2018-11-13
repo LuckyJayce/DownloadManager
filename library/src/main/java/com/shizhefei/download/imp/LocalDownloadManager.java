@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Executor;
 
 public class LocalDownloadManager extends DownloadManager {
     private final DownloadDB downloadDB;
@@ -32,14 +33,16 @@ public class LocalDownloadManager extends DownloadManager {
     private LongSparseArray<DownloadListener> listeners = new LongSparseArray<>();
     private Set<DownloadListener> downloadListeners = new HashSet<>();
     private List<AbsDownloadTask> downloadEntities = new ArrayList<>();
+    private Executor executor;
 
-    public LocalDownloadManager(Context context, DownloadTaskFactory downloadTaskFactory) {
+    public LocalDownloadManager(Context context, DownloadTaskFactory downloadTaskFactory, Executor executor) {
         this.downloadDB = new DownloadDB(context, AsyncTask.SERIAL_EXECUTOR);
         if (downloadTaskFactory == null) {
             this.downloadTaskFactory = new DefaultDownloadTaskFactory();
         } else {
             this.downloadTaskFactory = downloadTaskFactory;
         }
+        this.executor = executor;
         this.idGenerator = new IdGenerator() {
             @Override
             public long generateId(DownloadParams downloadParams) {
@@ -62,7 +65,7 @@ public class LocalDownloadManager extends DownloadManager {
         }
 
         RemoveHandler removeHandler = new RemoveHandlerImp();
-        AbsDownloadTask downloadTask = downloadTaskFactory.buildDownloadTask(downloadId, downloadParams, downloadDB, removeHandler);
+        AbsDownloadTask downloadTask = downloadTaskFactory.buildDownloadTask(downloadId, downloadParams, downloadDB, removeHandler, executor);
         downloadEntities.add(downloadTask);
 
         TaskHandle taskHandle = taskHelper.execute(downloadTask, new DownloadListenerProxy(downloadId, proxyDownloadListener));
