@@ -100,6 +100,7 @@ public class LocalDownloadManager extends DownloadManager {
             data.removeHandler.remove();
             tasks.remove(downloadId);
         } else {//没有在执行，直接删除数据库中的
+            proxyDownloadListener.onRemove(downloadId);
             downloadDB.delete(downloadId);
         }
     }
