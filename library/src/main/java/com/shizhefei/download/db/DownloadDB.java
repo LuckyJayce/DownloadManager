@@ -22,6 +22,7 @@ public class DownloadDB {
     private static final int DOWNLOAD_ID_INVALID = -1;//非法的id
     private static final int DOWNLOAD_ID_MIN = 1;//最小的id
     private static final String SQL_SELECT = "select * from " + DBHelper.TABLE_NAME + " where " + DBHelper.FIELD_KEY + "=?";
+    private static final String SQL_SELECT_ALL = "select * from " + DBHelper.TABLE_NAME;
     private final DBHelper dbHelper;
     private TaskHelper taskHelper;
     private AtomicLong downloadMaxId;
@@ -48,46 +49,94 @@ public class DownloadDB {
         DownloadLogUtils.d("find downloadMaxId={}", downloadMaxId);
     }
 
+//    @Nullable
+//    public DownloadInfo.Agency findAll() {
+//        DownloadInfo.Agency downloadInfoAgency = null;
+//        try {
+//            SQLiteDatabase database = dbHelper.getReadableDatabase();
+//            Cursor cursor = database.rawQuery(SQL_SELECT_ALL, new String[]{});
+//            while (cursor.moveToNext()) {
+//                String downloadParams = cursor.getString(cursor.getColumnIndex(DBHelper.FIELD_DOWNLOAD_PARAMS));
+//                String dir = cursor.getString(cursor.getColumnIndex(DBHelper.FIELD_DIR));
+//                String fileName = cursor.getString(cursor.getColumnIndex(DBHelper.FIELD_FILENAME));
+//                String tempFileName = cursor.getString(cursor.getColumnIndex(DBHelper.FIELD_TEMP_FILENAME));
+//                String httpInfo = cursor.getString(cursor.getColumnIndex(DBHelper.FIELD_HTTP_INFO));
+//                String errorInfo = cursor.getString(cursor.getColumnIndex(DBHelper.FIELD_ERROR_INFO));
+//                String extInfo = cursor.getString(cursor.getColumnIndex(DBHelper.FIELD_EXT_INFO));
+//                String url = cursor.getString(cursor.getColumnIndex(DBHelper.FIELD_URL));
+//                int status = cursor.getInt(cursor.getColumnIndex(DBHelper.FIELD_STATUS));
+//                long startTime = cursor.getLong(cursor.getColumnIndex(DBHelper.FIELD_START_TIME));
+//                long current = cursor.getLong(cursor.getColumnIndex(DBHelper.FIELD_CURRENT));
+//                long total = cursor.getLong(cursor.getColumnIndex(DBHelper.FIELD_TOTAL));
+//                long downloadId = cursor.getLong(cursor.getColumnIndex(DBHelper.FIELD_DIR));
+//
+//                DownloadInfo.Agency agency = new DownloadInfo.Agency(new DownloadParams.Builder(downloadParams).build());
+//                agency.setCurrent(current);
+//                agency.setStatus(status);
+//                agency.setTempFileName(tempFileName);
+//                agency.setFilename(fileName);
+//                agency.setTotal(total);
+//                agency.setDir(dir);
+//                agency.setUrl(url);
+//                agency.setId(downloadId);
+//                agency.setStartTime(startTime);
+//                agency.getHttpInfoAgency().setByJson(httpInfo);
+//                agency.getErrorInfoAgency().setByJson(errorInfo);
+//                agency.setExtInfo(extInfo);
+//                downloadInfoAgency = agency;
+//            }
+//            cursor.close();
+//        } catch (Exception e) {
+//            DownloadLogUtils.e(e, "find error downloadId={}", downloadId);
+//        }
+//        return paramsPair;
+//    }
+
     @Nullable
-    public Pair<DownloadInfo.Agency, DownloadParams> find(long downloadId) {
-        Pair<DownloadInfo.Agency, DownloadParams> paramsPair = null;
+    public DownloadInfo.Agency find(long downloadId) {
+        DownloadInfo.Agency downloadInfoAgency = null;
         try {
             SQLiteDatabase database = dbHelper.getReadableDatabase();
             Cursor cursor = database.rawQuery(SQL_SELECT, new String[]{String.valueOf(downloadId)});
             if (cursor.moveToNext()) {
-                String downloadParams = cursor.getString(cursor.getColumnIndex(DBHelper.FIELD_DOWNLOAD_PARAMS));
-                String dir = cursor.getString(cursor.getColumnIndex(DBHelper.FIELD_DIR));
-                String fileName = cursor.getString(cursor.getColumnIndex(DBHelper.FIELD_FILENAME));
-                String tempFileName = cursor.getString(cursor.getColumnIndex(DBHelper.FIELD_TEMP_FILENAME));
-                String httpInfo = cursor.getString(cursor.getColumnIndex(DBHelper.FIELD_HTTP_INFO));
-                String errorInfo = cursor.getString(cursor.getColumnIndex(DBHelper.FIELD_ERROR_INFO));
-                String extInfo = cursor.getString(cursor.getColumnIndex(DBHelper.FIELD_EXT_INFO));
-                String url = cursor.getString(cursor.getColumnIndex(DBHelper.FIELD_URL));
-                int status = cursor.getInt(cursor.getColumnIndex(DBHelper.FIELD_STATUS));
-                long startTime = cursor.getLong(cursor.getColumnIndex(DBHelper.FIELD_START_TIME));
-                long current = cursor.getLong(cursor.getColumnIndex(DBHelper.FIELD_CURRENT));
-                long total = cursor.getLong(cursor.getColumnIndex(DBHelper.FIELD_TOTAL));
-
-                DownloadInfo.Agency agency = new DownloadInfo.Agency();
-                agency.setCurrent(current);
-                agency.setStatus(status);
-                agency.setTempFileName(tempFileName);
-                agency.setFilename(fileName);
-                agency.setTotal(total);
-                agency.setDir(dir);
-                agency.setUrl(url);
-                agency.setId(downloadId);
-                agency.setStartTime(startTime);
-                agency.getHttpInfoAgency().setByJson(httpInfo);
-                agency.getErrorInfoAgency().setByJson(errorInfo);
-                agency.setExtInfo(extInfo);
-                paramsPair = new Pair<>(agency, new DownloadParams.Builder(downloadParams).build());
+                downloadInfoAgency = get(cursor);
             }
             cursor.close();
         } catch (Exception e) {
             DownloadLogUtils.e(e, "find error downloadId={}", downloadId);
         }
-        return paramsPair;
+        return downloadInfoAgency;
+    }
+
+    private DownloadInfo.Agency get(Cursor cursor) {
+        String downloadParams = cursor.getString(cursor.getColumnIndex(DBHelper.FIELD_DOWNLOAD_PARAMS));
+        String dir = cursor.getString(cursor.getColumnIndex(DBHelper.FIELD_DIR));
+        String fileName = cursor.getString(cursor.getColumnIndex(DBHelper.FIELD_FILENAME));
+        String tempFileName = cursor.getString(cursor.getColumnIndex(DBHelper.FIELD_TEMP_FILENAME));
+        String httpInfo = cursor.getString(cursor.getColumnIndex(DBHelper.FIELD_HTTP_INFO));
+        String errorInfo = cursor.getString(cursor.getColumnIndex(DBHelper.FIELD_ERROR_INFO));
+        String extInfo = cursor.getString(cursor.getColumnIndex(DBHelper.FIELD_EXT_INFO));
+        String url = cursor.getString(cursor.getColumnIndex(DBHelper.FIELD_URL));
+        int status = cursor.getInt(cursor.getColumnIndex(DBHelper.FIELD_STATUS));
+        long startTime = cursor.getLong(cursor.getColumnIndex(DBHelper.FIELD_START_TIME));
+        long current = cursor.getLong(cursor.getColumnIndex(DBHelper.FIELD_CURRENT));
+        long total = cursor.getLong(cursor.getColumnIndex(DBHelper.FIELD_TOTAL));
+        long downloadId = cursor.getLong(cursor.getColumnIndex(DBHelper.FIELD_KEY));
+
+        DownloadInfo.Agency agency = new DownloadInfo.Agency(new DownloadParams.Builder(downloadParams).build());
+        agency.setId(downloadId);
+        agency.setCurrent(current);
+        agency.setStatus(status);
+        agency.setTempFileName(tempFileName);
+        agency.setFilename(fileName);
+        agency.setTotal(total);
+        agency.setDir(dir);
+        agency.setUrl(url);
+        agency.setStartTime(startTime);
+        agency.getHttpInfoAgency().setByJson(httpInfo);
+        agency.getErrorInfoAgency().setByJson(errorInfo);
+        agency.setExtInfo(extInfo);
+        return agency;
     }
 
     public void update(DownloadInfo downloadInfo) {

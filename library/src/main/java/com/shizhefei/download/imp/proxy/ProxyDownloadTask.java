@@ -1,7 +1,6 @@
 package com.shizhefei.download.imp.proxy;
 
 import android.text.TextUtils;
-import android.util.Pair;
 
 import com.shizhefei.download.base.AbsDownloadTask;
 import com.shizhefei.download.base.RemoveHandler;
@@ -35,10 +34,8 @@ public class ProxyDownloadTask extends AbsDownloadTask {
         this.downloadParams = downloadParams;
         this.downloadDB = downloadDB;
         this.executor = executor;
-        Pair<DownloadInfo.Agency, DownloadParams> paramsPair = downloadDB.find(downloadId);
-        if (paramsPair != null) {
-            downloadInfoAgency = paramsPair.first;
-        } else {
+        downloadInfoAgency = downloadDB.find(downloadId);
+        if (downloadInfoAgency == null) {
             downloadInfoAgency = build(downloadParams);
         }
         errorInfoAgency = downloadInfoAgency.getErrorInfoAgency();
@@ -161,7 +158,7 @@ public class ProxyDownloadTask extends AbsDownloadTask {
     };
 
     private DownloadInfo.Agency build(DownloadParams downloadParams) {
-        DownloadInfo.Agency downloadInfoAgency = new DownloadInfo.Agency();
+        DownloadInfo.Agency downloadInfoAgency = new DownloadInfo.Agency(downloadParams);
         downloadInfoAgency.setId(downloadId);
         downloadInfoAgency.setUrl(downloadParams.getUrl());
         downloadInfoAgency.setCurrent(0);

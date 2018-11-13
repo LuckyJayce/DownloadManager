@@ -3,6 +3,8 @@ package com.shizhefei.download.entity;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.shizhefei.download.base.DownloadParams;
+
 import java.util.List;
 
 public class DownloadInfo {
@@ -22,15 +24,21 @@ public class DownloadInfo {
     private int status = STATUS_PENDING;
     private long total;
     private long current;
+    private final DownloadParams downloadParams;
     private final HttpInfo httpInfo;
     private final ErrorInfo errorInfo;
     private String extInfo;
     //当线程下载为null，多线程下载 DownloadEntity对应多个DownloadItem
     private List<DownloadItem> downloadItems;
 
-    private DownloadInfo(@NonNull HttpInfo httpInfo, @NonNull ErrorInfo errorInfo) {
+    private DownloadInfo(@NonNull DownloadParams downloadParams, @NonNull HttpInfo httpInfo, @NonNull ErrorInfo errorInfo) {
+        this.downloadParams = downloadParams;
         this.httpInfo = httpInfo;
         this.errorInfo = errorInfo;
+    }
+
+    public DownloadParams getDownloadParams() {
+        return downloadParams;
     }
 
     public String getExtInfo() {
@@ -138,10 +146,10 @@ public class DownloadInfo {
         private final ErrorInfo.Agency errorInfoAgency;
         private DownloadInfo downloadInfo;
 
-        public Agency() {
+        public Agency(DownloadParams downloadParams) {
             httpInfoAgency = new HttpInfo.Agency();
             errorInfoAgency = new ErrorInfo.Agency();
-            this.downloadInfo = new DownloadInfo(httpInfoAgency.getInfo(), errorInfoAgency.getInfo());
+            this.downloadInfo = new DownloadInfo(downloadParams, httpInfoAgency.getInfo(), errorInfoAgency.getInfo());
         }
 
         public DownloadInfo getInfo() {

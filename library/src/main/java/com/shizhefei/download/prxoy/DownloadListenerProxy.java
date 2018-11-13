@@ -4,6 +4,7 @@ import android.os.Bundle;
 
 import com.shizhefei.download.base.DownloadListener;
 import com.shizhefei.download.entity.DownloadInfo;
+import com.shizhefei.download.entity.ErrorInfo;
 import com.shizhefei.download.entity.HttpInfo;
 import com.shizhefei.download.exception.DownloadException;
 import com.shizhefei.task.Code;
@@ -59,8 +60,12 @@ public class DownloadListenerProxy implements ICallback<Void> {
     public void onPostExecute(Object task, Code code, Exception exception, Void aVoid) {
         switch (code) {
             case EXCEPTION:
-                DownloadException downloadException = (DownloadException) exception;
-                downloadListener.onError(downloadId, downloadException.getErrorCode(), downloadException.getErrorMessage());
+                if (exception instanceof DownloadException) {
+                    DownloadException downloadException = (DownloadException) exception;
+                    downloadListener.onError(downloadId, downloadException.getErrorCode(), downloadException.getErrorMessage());
+                } else {
+                    downloadListener.onError(downloadId, ErrorInfo.ERROR_UNKNOW, exception.getMessage());
+                }
                 break;
             case SUCCESS:
                 downloadListener.onComplete(downloadId);
