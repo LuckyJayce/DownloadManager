@@ -1,9 +1,13 @@
 package com.shizhefei.download.base;
 
 
+import com.shizhefei.download.utils.DownloadJsonUtils;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -17,7 +21,10 @@ public class DownloadParams {
     private int blockSize;
     private boolean isWifiRequired;
     //额外的一些自定义数据，方便使用者自定义，存储数据库时序列化成json，这里只存基本参数
-    private JSONObject exInfo = new JSONObject();
+    private Map<String, String> extData;
+
+    private DownloadParams() {
+    }
 
     public boolean isWifiRequired() {
         return isWifiRequired;
@@ -91,22 +98,135 @@ public class DownloadParams {
         this.blockSize = blockSize;
     }
 
-    public void putExInfo(String key, int value) {
+    public String toJson() {
+        JSONObject jsonObject = new JSONObject();
         try {
-            exInfo.put(key, value);
+            jsonObject.put("url", url);
+            jsonObject.put("dir", dir);
+            jsonObject.put("fileName", fileName);
+            jsonObject.put("override", override);
+            jsonObject.put("isWifiRequired", isWifiRequired);
+            jsonObject.put("blockSize", blockSize);
+            jsonObject.put("params", DownloadJsonUtils.toJsonObject(params));
+            jsonObject.put("headers", DownloadJsonUtils.toJsonObject(headers));
+            jsonObject.put("extData", DownloadJsonUtils.toJsonObject2(extData));
         } catch (JSONException e) {
             e.printStackTrace();
         }
+        return jsonObject.toString();
     }
 
-    public void putExInfo(String key, long value) {
 
-    }
+    public static final class Builder {
+        private String url;
+        private String dir;
+        private String fileName;
+        private boolean override;
+        private Map<String, List<String>> params;
+        private Map<String, List<String>> headers;
+        private int blockSize;
+        private boolean isWifiRequired;
+        //额外的一些自定义数据，方便使用者自定义，存储数据库时序列化成json，这里只存基本参数
+        private Map<String, String> extData;
 
-    public String toJson(){
-        return null;
-    }
+        public Builder() {
+            params = new HashMap<>();
+            headers = new HashMap<>();
+            extData = new HashMap<>();
+        }
 
-    public void setByJson(String json) {
+        public Builder(String json) {
+            try {
+                JSONObject jsonObject = new JSONObject(json);
+                this.url = jsonObject.optString("url");
+                this.dir = jsonObject.optString("dir");
+                this.fileName = jsonObject.optString("fileName");
+                this.override = jsonObject.optBoolean("override");
+                this.isWifiRequired = jsonObject.optBoolean("isWifiRequired");
+                this.blockSize = jsonObject.optInt("blockSize");
+                this.params = DownloadJsonUtils.parse(jsonObject.optJSONObject("params"));
+                this.headers = DownloadJsonUtils.parse(jsonObject.optJSONObject("headers"));
+                this.extData = DownloadJsonUtils.parse2(jsonObject.optJSONObject("extData"));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            if (this.params == null) {
+                this.params = new HashMap<>();
+            }
+            if (this.headers == null) {
+                this.headers = new HashMap<>();
+            }
+            if (this.extData == null) {
+                this.extData = new HashMap<>();
+            }
+        }
+
+        public Builder setUrl(String url) {
+            this.url = url;
+            return this;
+        }
+
+        public Builder setDir(String dir) {
+            this.dir = dir;
+            return this;
+        }
+
+        public Builder setFileName(String fileName) {
+            this.fileName = fileName;
+            return this;
+        }
+
+        public Builder setOverride(boolean override) {
+            this.override = override;
+            return this;
+        }
+
+        public Builder addParam(String name, String value) {
+            List<String> values = params.get(name);
+            if (values == null) {
+                values = new ArrayList<>(1);
+                params.put(name, values);
+            }
+            values.add(value);
+            return this;
+        }
+
+        public Builder addHeader(String name, String value) {
+            List<String> values = headers.get(name);
+            if (values == null) {
+                values = new ArrayList<>(1);
+                headers.put(name, values);
+            }
+            values.add(value);
+            return this;
+        }
+
+        public Builder setBlockSize(int blockSize) {
+            this.blockSize = blockSize;
+            return this;
+        }
+
+        public Builder setIsWifiRequired(boolean isWifiRequired) {
+            this.isWifiRequired = isWifiRequired;
+            return this;
+        }
+
+        public void addExtData(String key, String value) {
+            extData.put(key, value);
+        }
+
+        public DownloadParams build() {
+            DownloadParams downloadParams = new DownloadParams();
+            downloadParams.setUrl(url);
+            downloadParams.setDir(dir);
+            downloadParams.setParams(params);
+            downloadParams.setHeaders(headers);
+            downloadParams.setBlockSize(blockSize);
+            downloadParams.fileName = this.fileName;
+            downloadParams.extData = this.extData;
+            downloadParams.override = this.override;
+            downloadParams.isWifiRequired = this.isWifiRequired;
+            return downloadParams;
+        }
     }
 }

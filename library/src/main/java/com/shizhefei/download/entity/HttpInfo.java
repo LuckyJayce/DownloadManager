@@ -1,5 +1,8 @@
 package com.shizhefei.download.entity;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 public class HttpInfo {
     private int httpCode;
     private String contentType;
@@ -42,10 +45,16 @@ public class HttpInfo {
     }
 
     public String toJson() {
-        return null;
-    }
-
-    public void setByJson(String json) {
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put("httpCode", httpCode);
+            jsonObject.put("contentType", contentType);
+            jsonObject.put("contentLength", contentLength);
+            jsonObject.put("eTag", eTag);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return jsonObject.toString();
     }
 
     public static class Agency {
@@ -53,6 +62,18 @@ public class HttpInfo {
 
         public Agency() {
             this.httpInfo = new HttpInfo();
+        }
+
+        public void setByJson(String json) {
+            try {
+                JSONObject jsonObject = new JSONObject(json);
+                httpInfo.setHttpCode(jsonObject.optInt("httpCode"));
+                httpInfo.setContentType(jsonObject.optString("contentType"));
+                httpInfo.setContentLength(jsonObject.optLong("contentLength"));
+                httpInfo.setETag(jsonObject.optString("eTag"));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
         }
 
         public HttpInfo getInfo() {

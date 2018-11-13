@@ -1,5 +1,8 @@
 package com.shizhefei.download.entity;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 /**
  * Created by luckyjayce on 18-3-14.
  */
@@ -78,10 +81,16 @@ public class ErrorInfo {
     }
 
     public String toJson() {
-        return null;
-    }
-
-    public void setByJson(String json) {
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put("errorCode", errorCode);
+            jsonObject.put("errorMessage", errorMessage);
+            jsonObject.put("httpCode", httpCode);
+            jsonObject.put("httpMessage", httpMessage);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return jsonObject.toString();
     }
 
     public static class Agency {
@@ -94,6 +103,18 @@ public class ErrorInfo {
         public void set(int errorCode, String errorMessage) {
             errorInfo.setErrorCode(errorCode);
             errorInfo.setErrorMessage(errorMessage);
+        }
+
+        public void setByJson(String json) {
+            try {
+                JSONObject jsonObject = new JSONObject(json);
+                errorInfo.setErrorCode(jsonObject.optInt("errorCode"));
+                errorInfo.setErrorMessage(jsonObject.optString("errorMessage"));
+                errorInfo.setHttpCode(jsonObject.optInt("httpCode"));
+                errorInfo.setHttpMessage(jsonObject.optString("httpMessage"));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
         }
 
         public int getErrorCode() {

@@ -45,7 +45,7 @@ public class DownloadDB {
             downloadMaxId = DOWNLOAD_ID_MIN;
         }
         this.downloadMaxId = new AtomicLong(downloadMaxId);
-        DownloadLogUtils.d( "find downloadMaxId={}", downloadMaxId);
+        DownloadLogUtils.d("find downloadMaxId={}", downloadMaxId);
     }
 
     @Nullable
@@ -78,12 +78,10 @@ public class DownloadDB {
                 agency.setUrl(url);
                 agency.setId(downloadId);
                 agency.setStartTime(startTime);
-                agency.getHttpInfo().setByJson(httpInfo);
-                agency.getErrorInfo().setByJson(errorInfo);
+                agency.getHttpInfoAgency().setByJson(httpInfo);
+                agency.getErrorInfoAgency().setByJson(errorInfo);
                 agency.setExtInfo(extInfo);
-                DownloadParams downloadParams1 = new DownloadParams();
-                downloadParams1.setByJson(downloadParams);
-                paramsPair = new Pair<>(agency, downloadParams1);
+                paramsPair = new Pair<>(agency, new DownloadParams.Builder(downloadParams).build());
             }
             cursor.close();
         } catch (Exception e) {
