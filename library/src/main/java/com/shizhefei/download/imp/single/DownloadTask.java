@@ -75,14 +75,6 @@ public class DownloadTask implements ITask<Void>, RemoveHandler.OnRemoveListener
                 }
             }
 
-
-            final String oldEtag = downloadInfo.getHttpInfo().getETag();
-            String newEtag = FileDownloadUtils.findEtag(downloadInfo.getId(), httpURLConnection);
-            if (oldEtag != null && !oldEtag.equals(newEtag)) {
-                senderProxy.sendDownloadFromBegin(current, total);
-                current = 0;
-            }
-
             if (current > 0) {
                 if (downloadInfo.getHttpInfo().isAcceptRange()) {
                     FileDownloadUtils.addRangeHeader(httpURLConnection, current, FileDownloadUtils.RANGE_INFINITE);
@@ -94,6 +86,13 @@ public class DownloadTask implements ITask<Void>, RemoveHandler.OnRemoveListener
 
             httpURLConnection.setInstanceFollowRedirects(true);
             httpURLConnection.connect();
+
+            final String oldETag = downloadInfo.getHttpInfo().getETag();
+            String newETag = FileDownloadUtils.findEtag(downloadInfo.getId(), httpURLConnection);
+            if (oldETag != null && !oldETag.equals(newETag)) {
+                senderProxy.sendDownloadFromBegin(current, total);
+                current = 0;
+            }
 
             int httpCode = httpURLConnection.getResponseCode();
             boolean isAcceptRange = FileDownloadUtils.isAcceptRange(httpCode, httpURLConnection);
@@ -109,20 +108,8 @@ public class DownloadTask implements ITask<Void>, RemoveHandler.OnRemoveListener
 
             long contentLength = httpURLConnection.getContentLength();
             if (contentLength == 0) {
-                throw new DownloadException(downloadId, ErrorInfo.ERROR_EMPTY_SIZE, FileDownloadUtils.
-                        formatString(
-                                "there isn't any content need to download on %d-%d with the "
-                                        + "content-length is 0",
-                                downloadId));
-            }
-            if (total > 0 && contentLength != total) {
-                final String range = FileDownloadUtils.formatString("range[%d-)", current);
-                throw new DownloadException(downloadId, ErrorInfo.ERROR_SIZE_CHANGE, FileDownloadUtils.
-                        formatString("require %s with contentLength(%d), but the "
-                                        + "backend response contentLength is %d on "
-                                        + "downloadId[%d]-connectionIndex[%d], please ask your backend "
-                                        + "dev to fix such problem.",
-                                range, total, contentLength, downloadId));
+                String errorMessage = FileDownloadUtils.formatString("there isn't any content need to download on %d-%d with the content-length is 0", downloadId);
+                throw new DownloadException(downloadId, ErrorInfo.ERROR_EMPTY_SIZE, errorMessage);
             }
             total = contentLength;
 
@@ -140,7 +127,7 @@ public class DownloadTask implements ITask<Void>, RemoveHandler.OnRemoveListener
 
             HttpInfo.Agency agency = new HttpInfo.Agency();
             agency.setContentLength(total);
-            agency.setETag(newEtag);
+            agency.setETag(newETag);
             agency.setContentType(contentType);
             agency.setHttpCode(httpCode);
             agency.setAcceptRange(isAcceptRange);
@@ -155,11 +142,8 @@ public class DownloadTask implements ITask<Void>, RemoveHandler.OnRemoveListener
             if (saveFile.exists()) {
                 saveFile.delete();
             }
-            if (!saveFileTemp.exists()) {
-                saveFileTemp.createNewFile();
-            }
 
-            randomAccessFile = new RandomAccessFile(saveFileTemp, "r");
+            randomAccessFile = new RandomAccessFile(saveFileTemp, "rw");
             inputStream = httpURLConnection.getInputStream();
             if (current > 0) {
                 randomAccessFile.seek(current);
@@ -175,7 +159,7 @@ public class DownloadTask implements ITask<Void>, RemoveHandler.OnRemoveListener
             while ((length = inputStream.read(buffer)) != -1 && !cancel) {
                 randomAccessFile.write(buffer, 0, length);
                 current += length;
-                senderProxy.sendProgress(current, total);
+                senderProxy.sendDownloading(current, total);
                 checkupWifiConnect();
             }
         } catch (FileNotFoundException e) {

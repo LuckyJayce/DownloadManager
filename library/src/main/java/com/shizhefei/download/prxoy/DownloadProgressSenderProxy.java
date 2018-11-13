@@ -34,15 +34,15 @@ public class DownloadProgressSenderProxy {
     }
 
     public void sendDownloadFromBegin(long current, long total) {
-        progressSender.sendProgress(current, total, DownloadInfo.STATUS_START);
+        progressSender.sendProgress(current, total, DownloadInfo.STATUS_DOWNLOAD_RESET_BEGIN);
     }
 
     public void sendStart(long current, long total) {
         progressSender.sendProgress(current, total, DownloadInfo.STATUS_START);
     }
 
-    public void sendProgress(long current, long total) {
-        progressSender.sendProgress(current, total, DownloadInfo.STATUS_START);
+    public void sendDownloading(long current, long total) {
+        progressSender.sendProgress(current, total, DownloadInfo.STATUS_DOWNLOAD_ING);
     }
 
 //    public void sendBlockComplete() {

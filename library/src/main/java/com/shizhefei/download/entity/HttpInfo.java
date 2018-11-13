@@ -128,6 +128,14 @@ public class HttpInfo implements Parcelable {
             }
         }
 
+        public void setByInfo(HttpInfo info) {
+            httpInfo.setContentLength(info.getContentLength());
+            httpInfo.setContentType(info.getContentType());
+            httpInfo.setETag(info.getETag());
+            httpInfo.setHttpCode(info.getHttpCode());
+            httpInfo.setAcceptRange(info.isAcceptRange());
+        }
+
         public HttpInfo getInfo() {
             return httpInfo;
         }

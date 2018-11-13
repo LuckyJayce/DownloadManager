@@ -129,10 +129,7 @@ public class ProxyDownloadTask extends AbsDownloadTask {
             downloadInfoAgency.setFilename(saveFileName);
             downloadInfoAgency.setTempFileName(tempFileName);
 
-            httpInfoAgency.setContentLength(httpInfo.getContentLength());
-            httpInfoAgency.setContentType(httpInfo.getContentType());
-            httpInfoAgency.setETag(httpInfo.getETag());
-            httpInfoAgency.setHttpCode(httpInfo.getHttpCode());
+            httpInfoAgency.setByInfo(httpInfo);
             downloadDB.update(downloadInfoAgency.getInfo());
         }
 
