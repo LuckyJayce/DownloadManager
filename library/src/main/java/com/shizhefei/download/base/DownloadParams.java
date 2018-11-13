@@ -203,15 +203,17 @@ public class DownloadParams implements Parcelable {
             params = new HashMap<>();
             headers = new HashMap<>();
             extData = new HashMap<>();
+
             DownloadConfig downloadConfig = DownloadManager.getDownloadConfig();
             dir = downloadConfig.getDir();
             isWifiRequired = downloadConfig.isWifiRequired();
             blockSize = downloadConfig.getBlockSize();
+            addHeader("User-Agent", downloadConfig.getUserAgent());
         }
 
-        public Builder(String json) {
+        public Builder(String databaseParamsJson) {
             try {
-                JSONObject jsonObject = new JSONObject(json);
+                JSONObject jsonObject = new JSONObject(databaseParamsJson);
                 this.url = jsonObject.optString("url");
                 this.dir = jsonObject.optString("dir");
                 this.fileName = jsonObject.optString("fileName");

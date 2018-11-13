@@ -10,6 +10,11 @@ public class DownloadConfig {
     private boolean isWifiRequired;
     private DownloadTaskFactory downloadTaskFactory;
     private Executor executor;
+    private String userAgent;
+
+    public String getUserAgent() {
+        return userAgent;
+    }
 
     public int getBlockSize() {
         return blockSize;
@@ -37,6 +42,7 @@ public class DownloadConfig {
         private boolean isWifiRequired;
         private DownloadTaskFactory downloadTaskFactory;
         private Executor executor;
+        private String userAgent;
 
         public Builder() {
         }
@@ -47,6 +53,7 @@ public class DownloadConfig {
             executor = config.getExecutor();
             blockSize = config.getBlockSize();
             isWifiRequired = config.isWifiRequired();
+            userAgent = config.getUserAgent();
         }
 
         public Builder setBlockSize(int blockSize) {
@@ -62,6 +69,15 @@ public class DownloadConfig {
         public Builder setDir(String dir) {
             this.dir = dir;
             return this;
+        }
+
+        public Builder setUserAgent(String userAgent) {
+            this.userAgent = userAgent;
+            return this;
+        }
+
+        public String getUserAgent() {
+            return this.userAgent;
         }
 
         public Builder setDownloadTaskFactory(DownloadTaskFactory downloadTaskFactory) {
@@ -93,6 +109,7 @@ public class DownloadConfig {
             downloadConfig.executor = this.executor;
             downloadConfig.blockSize = this.blockSize;
             downloadConfig.isWifiRequired = this.isWifiRequired;
+            downloadConfig.userAgent = this.userAgent;
             return downloadConfig;
         }
     }

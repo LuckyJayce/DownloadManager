@@ -5,12 +5,16 @@ import android.os.AsyncTask;
 import android.os.Environment;
 import android.text.TextUtils;
 
+import com.shizhefei.download.BuildConfig;
 import com.shizhefei.download.entity.DownloadInfo;
 import com.shizhefei.download.base.DownloadListener;
 import com.shizhefei.download.base.DownloadParams;
 import com.shizhefei.download.base.DownloadTaskFactory;
 import com.shizhefei.download.db.DownloadDB;
 import com.shizhefei.download.base.IdGenerator;
+import com.shizhefei.download.utils.DownloadJsonUtils;
+import com.shizhefei.download.utils.DownloadLogUtils;
+import com.shizhefei.download.utils.FileDownloadUtils;
 
 import java.io.File;
 
@@ -35,8 +39,15 @@ public abstract class DownloadManager {
         if (builder.getExecutor() == null) {
             builder.setExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         }
+        if (TextUtils.isEmpty(builder.getUserAgent())) {
+            builder.setUserAgent(defaultUserAgent());
+        }
         downloadConfig = builder.build();
         DownloadManager.context = context.getApplicationContext();
+    }
+
+    public static String defaultUserAgent() {
+        return FileDownloadUtils.formatString("DownloadManager/%s", BuildConfig.VERSION_NAME);
     }
 
     public static DownloadConfig getDownloadConfig() {
