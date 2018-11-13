@@ -1,15 +1,18 @@
 package com.shizhefei.download.imp;
 
+import android.content.Context;
+import android.os.AsyncTask;
 import android.util.LongSparseArray;
-import android.util.Pair;
 
-import com.shizhefei.download.ErrorInfo;
 import com.shizhefei.download.base.AbsDownloadTask;
-import com.shizhefei.download.base.DownloadEntity;
+import com.shizhefei.download.base.RemoveHandler;
+import com.shizhefei.download.db.DownloadDB;
+import com.shizhefei.download.entity.DownloadInfo;
 import com.shizhefei.download.base.DownloadListener;
 import com.shizhefei.download.base.DownloadParams;
 import com.shizhefei.download.base.DownloadTaskFactory;
 import com.shizhefei.download.base.IdGenerator;
+import com.shizhefei.download.entity.HttpInfo;
 import com.shizhefei.mvc.RequestHandle;
 import com.shizhefei.task.IAsyncTask;
 import com.shizhefei.task.TaskHandle;
@@ -22,17 +25,29 @@ import java.util.List;
 import java.util.Set;
 
 public class LocalDownloadManager extends DownloadManager {
+    private final DownloadDB downloadDB;
     private DownloadTaskFactory downloadTaskFactory;
     private IdGenerator idGenerator;
     private TaskHelper taskHelper = new TaskHelper();
-    private LongSparseArray<Pair<RequestHandle, AbsDownloadTask>> tasks = new LongSparseArray<>();
+    private LongSparseArray<DownloadData> tasks = new LongSparseArray<>();
     private LongSparseArray<DownloadListener> listeners = new LongSparseArray<>();
     private Set<DownloadListener> downloadListeners = new HashSet<>();
     private List<AbsDownloadTask> downloadEntities = new ArrayList<>();
 
-    public LocalDownloadManager(DownloadTaskFactory downloadTaskFactory, IdGenerator idGenerator) {
-        this.downloadTaskFactory = downloadTaskFactory;
-        this.idGenerator = idGenerator;
+    public LocalDownloadManager(Context context, DownloadTaskFactory downloadTaskFactory) {
+        this.downloadDB = new DownloadDB(context, AsyncTask.SERIAL_EXECUTOR);
+        if (downloadTaskFactory == null) {
+            this.downloadTaskFactory = new DefaultDownloadTaskFactory();
+        } else {
+            this.downloadTaskFactory = downloadTaskFactory;
+        }
+        this.idGenerator = new IdGenerator() {
+            @Override
+            public long generateId(DownloadParams downloadParams) {
+                return downloadDB.addAndGetDownloadId();
+            }
+        };
+        //TODO 把数据库中的task查找出来赋值给tasks
     }
 
     @Override
@@ -47,55 +62,60 @@ public class LocalDownloadManager extends DownloadManager {
             listeners.put(downloadId, downloadListener);
         }
 
-        AbsDownloadTask downloadTask = downloadTaskFactory.buildDownloadTask(downloadId, downloadParams);
+        RemoveHandler removeHandler = new RemoveHandlerImp();
+        AbsDownloadTask downloadTask = downloadTaskFactory.buildDownloadTask(downloadId, downloadParams, downloadDB, removeHandler);
         downloadEntities.add(downloadTask);
 
-        IAsyncTask<Void> finalTask = Tasks.donOnCallback(Tasks.async(downloadTask), downloadListener);
+        IAsyncTask<Void> finalTask = Tasks.donOnCallback(downloadTask, downloadListener);
 
         TaskHandle taskHandle = taskHelper.execute(finalTask, proxyDownloadListener);
 
-        tasks.put(downloadId, new Pair<RequestHandle, AbsDownloadTask>(taskHandle, downloadTask));
+        tasks.put(downloadId, new DownloadData(taskHandle, downloadTask, removeHandler));
 
         return downloadId;
     }
 
     @Override
     public void pause(long downloadId) {
-        Pair<RequestHandle, AbsDownloadTask> pair = tasks.get(downloadId);
-        if (pair != null) {
-            pair.first.cancle();
+        DownloadData data = tasks.get(downloadId);
+        if (data != null) {
+            data.requestHandle.cancle();
             tasks.remove(downloadId);
         }
     }
 
     @Override
     public void cancel(long downloadId) {
-        pause(downloadId);
+        DownloadData data = tasks.get(downloadId);
+        if (data != null) {
+            data.removeHandler.remove();
+            tasks.remove(downloadId);
+        }
     }
 
     @Override
-    public DownloadEntity getDownloadEntity(long id) {
-        Pair<RequestHandle, AbsDownloadTask> data = tasks.get(id);
+    public DownloadInfo getDownloadEntity(long downloadId) {
+        DownloadData data = tasks.get(downloadId);
         if (data != null) {
-            return data.second.getDownloadEntity();
+            return data.task.getDownloadInfo();
         }
         return null;
     }
 
     @Override
     public DownloadParams getDownloadParams(long id) {
-        Pair<RequestHandle, AbsDownloadTask> data = tasks.get(id);
+        DownloadData data = tasks.get(id);
         if (data != null) {
-            return data.second.getDownloadParams();
+            return data.task.getDownloadParams();
         }
         return null;
     }
 
     @Override
-    public DownloadEntity get(int position) {
+    public DownloadInfo get(int position) {
         AbsDownloadTask downloadTask = downloadEntities.get(position);
         if (downloadTask != null) {
-            return downloadTask.getDownloadEntity();
+            return downloadTask.getDownloadInfo();
         }
         return null;
     }
@@ -115,15 +135,43 @@ public class LocalDownloadManager extends DownloadManager {
         downloadListeners.remove(downloadListener);
     }
 
+    private static class DownloadData {
+        private RequestHandle requestHandle;
+        private AbsDownloadTask task;
+        private RemoveHandler removeHandler;
+
+        public DownloadData(RequestHandle requestHandle, AbsDownloadTask task, RemoveHandler removeHandler) {
+            this.requestHandle = requestHandle;
+            this.task = task;
+            this.removeHandler = removeHandler;
+        }
+    }
+
+    private static class RemoveHandlerImp implements RemoveHandler {
+        private List<OnRemoveListener> list = new ArrayList<>();
+
+        @Override
+        public void addRemoveListener(OnRemoveListener onRemoveListener) {
+            list.add(onRemoveListener);
+        }
+
+        @Override
+        public void remove() {
+            for (OnRemoveListener onRemoveListener : list) {
+                onRemoveListener.onRemove();
+            }
+        }
+    }
+
     private DownloadListener proxyDownloadListener = new DownloadListener() {
         @Override
-        public void onPreExecute(long downloadId) {
+        public void onPending(long downloadId) {
             for (DownloadListener downloadListener : downloadListeners) {
-                downloadListener.onPreExecute(downloadId);
+                downloadListener.onPending(downloadId);
             }
             DownloadListener downloadListener = listeners.get(downloadId);
             if (downloadListener != null) {
-                downloadListener.onPreExecute(downloadId);
+                downloadListener.onPending(downloadId);
             }
         }
 
@@ -139,13 +187,13 @@ public class LocalDownloadManager extends DownloadManager {
         }
 
         @Override
-        public void onConnected(long downloadId) {
+        public void onConnected(long downloadId, HttpInfo httpInfo, String saveDir, String saveFileName, String tempFileName) {
             for (DownloadListener downloadListener : downloadListeners) {
-                downloadListener.onConnected(downloadId);
+                downloadListener.onConnected(downloadId, httpInfo, saveDir, saveFileName, tempFileName);
             }
             DownloadListener downloadListener = listeners.get(downloadId);
             if (downloadListener != null) {
-                downloadListener.onConnected(downloadId);
+                downloadListener.onConnected(downloadId, httpInfo, saveDir, saveFileName, tempFileName);
             }
         }
 
@@ -157,17 +205,6 @@ public class LocalDownloadManager extends DownloadManager {
             DownloadListener downloadListener = listeners.get(downloadId);
             if (downloadListener != null) {
                 downloadListener.onPaused(downloadId);
-            }
-        }
-
-        @Override
-        public void onBlockComplete(long downloadId) {
-            for (DownloadListener downloadListener : downloadListeners) {
-                downloadListener.onBlockComplete(downloadId);
-            }
-            DownloadListener downloadListener = listeners.get(downloadId);
-            if (downloadListener != null) {
-                downloadListener.onBlockComplete(downloadId);
             }
         }
 
@@ -184,25 +221,25 @@ public class LocalDownloadManager extends DownloadManager {
         }
 
         @Override
-        public void onError(long downloadId, ErrorInfo errorInfo) {
+        public void onError(long downloadId, int errorCode, String errorMessage) {
             for (DownloadListener downloadListener : downloadListeners) {
-                downloadListener.onError(downloadId, errorInfo);
+                downloadListener.onError(downloadId, errorCode, errorMessage);
             }
             DownloadListener downloadListener = listeners.get(downloadId);
             if (downloadListener != null) {
-                downloadListener.onError(downloadId, errorInfo);
+                downloadListener.onError(downloadId, errorCode, errorMessage);
                 listeners.remove(downloadId);
             }
         }
 
         @Override
-        public void onCancel(long downloadId) {
+        public void onRemove(long downloadId) {
             for (DownloadListener downloadListener : downloadListeners) {
-                downloadListener.onCancel(downloadId);
+                downloadListener.onRemove(downloadId);
             }
             DownloadListener downloadListener = listeners.get(downloadId);
             if (downloadListener != null) {
-                downloadListener.onCancel(downloadId);
+                downloadListener.onRemove(downloadId);
                 listeners.remove(downloadId);
             }
         }

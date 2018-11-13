@@ -2,18 +2,18 @@ package com.shizhefei.download.imp;
 
 import android.content.Context;
 
-import com.shizhefei.download.base.DownloadEntity;
+import com.shizhefei.download.entity.DownloadInfo;
 import com.shizhefei.download.base.DownloadListener;
 import com.shizhefei.download.base.DownloadParams;
 import com.shizhefei.download.base.DownloadTaskFactory;
-import com.shizhefei.download.base.IDownloadDB;
+import com.shizhefei.download.db.DownloadDB;
 import com.shizhefei.download.base.IdGenerator;
 
 public abstract class DownloadManager {
     private static Context context;
     private static DownloadTaskFactory staticDownloadTaskFactory;
     private static IdGenerator staticIdGenerator;
-    private static IDownloadDB downloadDB;
+    private static DownloadDB downloadDB;
 
     public static void init(Context context, DownloadTaskFactory downloadTaskFactory, IdGenerator idGenerator) {
         DownloadManager.context = context.getApplicationContext();
@@ -56,11 +56,11 @@ public abstract class DownloadManager {
      */
     public abstract void cancel(long downloadId);
 
-    public abstract DownloadEntity getDownloadEntity(long id);
+    public abstract DownloadInfo getDownloadEntity(long id);
 
     public abstract DownloadParams getDownloadParams(long id);
 
-    public abstract DownloadEntity get(int position);
+    public abstract DownloadInfo get(int position);
 
     public abstract int getTaskCount();
 

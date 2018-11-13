@@ -1,4 +1,4 @@
-package com.shizhefei.download.base;
+package com.shizhefei.download.entity;
 
 public class DownloadItem {
     private long downloadId;

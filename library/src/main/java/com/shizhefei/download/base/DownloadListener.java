@@ -1,6 +1,6 @@
 package com.shizhefei.download.base;
 
-import com.shizhefei.download.ErrorInfo;
+import com.shizhefei.download.entity.HttpInfo;
 import com.shizhefei.task.Code;
 import com.shizhefei.task.ICallback;
 
@@ -21,7 +21,11 @@ public abstract class DownloadListener implements ICallback<Void> {
 
     }
 
-    public void onPreExecute(long downloadId) {
+    public void onStart(long downloadId) {
+
+    }
+
+    public void onPending(long downloadId) {
 
     }
 
@@ -29,25 +33,25 @@ public abstract class DownloadListener implements ICallback<Void> {
 
     }
 
-    public void onConnected(long downloadId) {
+    public void onConnected(long downloadId, HttpInfo httpInfo, String saveDir, String saveFileName, String tempFileName) {
 
     }
 
     public void onPaused(long downloadId) {
 
     }
-
-    public void onBlockComplete(long downloadId) {
-
-    }
+//
+//    public void onBlockComplete(long downloadId) {
+//
+//    }
 
     public abstract void onComplete(long downloadId);
 
-    public void onError(long downloadId, ErrorInfo errorInfo) {
+    public void onError(long downloadId, int errorCode, String errorMessage) {
 
     }
 
-    public void onCancel(long downloadId) {
+    public void onRemove(long downloadId) {
 
     }
 }

@@ -6,4 +6,7 @@ public class DownloadLogUtils {
 
     }
 
+    public static void e(Exception e, String s, long downloadId) {
+
+    }
 }

@@ -3,67 +3,53 @@ package com.shizhefei.download.imp.single;
 import android.Manifest;
 import android.text.TextUtils;
 
-import com.shizhefei.download.DownloadProgressSender;
-import com.shizhefei.download.base.AbsDownloadTask;
-import com.shizhefei.download.base.DownloadEntity;
+import com.shizhefei.download.base.RemoveHandler;
+import com.shizhefei.download.entity.DownloadInfo;
 import com.shizhefei.download.base.DownloadParams;
-import com.shizhefei.download.base.IDownloadDB;
+import com.shizhefei.download.entity.HttpInfo;
 import com.shizhefei.download.exception.DownloadException;
-import com.shizhefei.download.exception.ErrorEntity;
+import com.shizhefei.download.entity.ErrorInfo;
+import com.shizhefei.download.base.DownloadProgressSenderProxy;
 import com.shizhefei.download.utils.DownloadLogUtils;
 import com.shizhefei.download.utils.FileNameUtils;
 import com.shizhefei.download.utils.FileDownloadUtils;
+import com.shizhefei.mvc.ProgressSender;
+import com.shizhefei.task.ITask;
 
 import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
 
-public class DownloadTask extends AbsDownloadTask {
-    static final int BUFFER_SIZE = 1024 * 4;
+public class DownloadTask implements ITask<Void>, RemoveHandler.OnRemoveListener {
+    private static final int BUFFER_SIZE = 1024 * 4;
     private final long downloadId;
-    private final IDownloadDB downloadDB;
+    private final DownloadInfo downloadInfo;
     private DownloadParams downloadParams;
-    private DownloadEntity downloadEntity;
     private HttpURLConnection httpURLConnection;
     private volatile boolean cancel;
+    private volatile boolean remove;
 
-    public DownloadTask(long downloadId, DownloadParams downloadParams, IDownloadDB downloadDB) {
+    public DownloadTask(long downloadId, DownloadParams downloadParams, DownloadInfo downloadInfo) {
         this.downloadId = downloadId;
         this.downloadParams = downloadParams;
-        this.downloadDB = downloadDB;
-        downloadEntity = downloadDB.find(downloadId);
-        if (downloadEntity == null) {
-            downloadEntity = buildEntity(downloadId, downloadParams);
-            downloadDB.save(downloadParams, downloadEntity);
-        }
+        this.downloadInfo = downloadInfo;
     }
 
     @Override
-    public DownloadParams getDownloadParams() {
-        return downloadParams;
-    }
+    public Void execute(ProgressSender sender) throws Exception {
+        DownloadProgressSenderProxy senderProxy = new DownloadProgressSenderProxy(downloadId, sender);
 
-    @Override
-    public DownloadEntity getDownloadEntity() {
-        return downloadEntity;
-    }
-
-    @Override
-    public void execute(DownloadProgressSender sender) throws Exception {
         InputStream inputStream = null;
         RandomAccessFile randomAccessFile = null;
+        File saveFileTemp = null;
+        File saveFile = null;
         try {
-            if (downloadEntity.getStatus() != DownloadEntity.STATUS_NEW) {
-
-            }
             File saveDir = new File(downloadParams.getDir());
             String saveFileName = downloadParams.getFileName();
             String url = downloadParams.getUrl();
@@ -82,9 +68,9 @@ public class DownloadTask extends AbsDownloadTask {
                 }
             }
 
-            long currentOffset = downloadEntity.getCurrent();
+            long currentOffset = downloadInfo.getCurrent();
             long endOffset = FileDownloadUtils.RANGE_INFINITE;
-            if (downloadEntity.getCurrent() >= 0) {
+            if (downloadInfo.getCurrent() >= 0) {
                 FileDownloadUtils.addRangeHeader(httpURLConnection, currentOffset, endOffset);
             }
 
@@ -93,52 +79,41 @@ public class DownloadTask extends AbsDownloadTask {
 
             int httpCode = httpURLConnection.getResponseCode();
             boolean acceptPartial = FileDownloadUtils.isAcceptRange(httpCode, httpURLConnection);
-            if (FileDownloadUtils.isPreconditionFailed(httpURLConnection, httpCode, downloadEntity, acceptPartial)) {
-                downloadEntity.setCurrent(0);
-                ErrorEntity errorEntity = new ErrorEntity(ErrorEntity.ERROR_PRECONDITION_FAILED, "PreconditionFailed");
-                downloadEntity.setErrorInfo(errorEntity);
-                downloadDB.update(downloadEntity);
-                throw new DownloadException(errorEntity);
+            if (FileDownloadUtils.isPreconditionFailed(httpURLConnection, httpCode, downloadInfo, acceptPartial)) {
+                throw new DownloadException(ErrorInfo.ERROR_PRECONDITION_FAILED, "PreconditionFailed");
             }
 
             if (cancel) {
-                downloadEntity.setStatus(DownloadEntity.STATUS_PAUSED);
-                return;
+                return null;
             }
 
             if (httpCode != HttpURLConnection.HTTP_PARTIAL && httpCode != HttpURLConnection.HTTP_OK) {
                 String httpMessage = httpURLConnection.getResponseMessage();
-                ErrorEntity errorEntity = new ErrorEntity(ErrorEntity.ERROR_HTTP, httpMessage, httpCode, httpMessage);
-                downloadEntity.setErrorInfo(errorEntity);
-                throw new DownloadException(errorEntity);
+                throw new DownloadException(ErrorInfo.ERROR_HTTP, httpMessage);
             }
 
             long contentLength = httpURLConnection.getContentLength();
             if (contentLength == 0) {
-                ErrorEntity errorEntity = new ErrorEntity(ErrorEntity.ERROR_EMPTY_SIZE, FileDownloadUtils.
+                throw new DownloadException(ErrorInfo.ERROR_EMPTY_SIZE, FileDownloadUtils.
                         formatString(
                                 "there isn't any content need to download on %d-%d with the "
                                         + "content-length is 0",
                                 downloadId));
-                downloadEntity.setErrorInfo(errorEntity);
-                throw new DownloadException(errorEntity);
             }
-            if (downloadEntity.getTotal() > 0 && contentLength != downloadEntity.getTotal()) {
+            if (downloadInfo.getTotal() > 0 && contentLength != downloadInfo.getTotal()) {
                 final String range;
                 if (endOffset == FileDownloadUtils.RANGE_INFINITE) {
                     range = FileDownloadUtils.formatString("range[%d-)", currentOffset);
                 } else {
                     range = FileDownloadUtils.formatString("range[%d-%d)", currentOffset, endOffset);
                 }
-                ErrorEntity errorEntity = new ErrorEntity(ErrorEntity.ERROR_SIZE_CHANGE, FileDownloadUtils.
+                throw new DownloadException(ErrorInfo.ERROR_SIZE_CHANGE, FileDownloadUtils.
                         formatString("require %s with contentLength(%d), but the "
                                         + "backend response contentLength is %d on "
                                         + "downloadId[%d]-connectionIndex[%d], please ask your backend "
                                         + "dev to fix such problem.",
-                                range, downloadEntity.getTotal(), contentLength, downloadId));
-                throw new DownloadException(errorEntity);
+                                range, downloadInfo.getTotal(), contentLength, downloadId));
             }
-
 
             String contentType = httpURLConnection.getContentType();
             if (downloadParams.isOverride() && !TextUtils.isEmpty(saveFileName)) {
@@ -147,16 +122,21 @@ public class DownloadTask extends AbsDownloadTask {
                 String disposition = httpURLConnection.getHeaderField("Content-Disposition");
                 saveFileName = FileNameUtils.getFileName(saveDir, saveFileName, url, contentType, disposition, downloadId);
             }
-            String tempFileName = FileNameUtils.toValidFileName(saveDir, saveFileName + ".temp");
+            String tempFileName = downloadInfo.getTempFileName();
+            if (TextUtils.isEmpty(tempFileName)) {
+                tempFileName = FileNameUtils.toValidFileName(saveDir, saveFileName + ".temp");
+            }
 
-            downloadEntity.setTotal(contentLength);
-            downloadEntity.setFilename(saveFileName);
-            downloadEntity.setTempFileName(tempFileName);
-            sender.onHttpConnect(httpCode, saveFileName, tempFileName, contentType, 0L, contentLength);
+            String newEtag = FileDownloadUtils.findEtag(downloadId, httpURLConnection);
+            HttpInfo.Agency agency = new HttpInfo.Agency();
+            agency.setHttpCode(httpCode);
+            agency.setETag(newEtag);
+            agency.setContentType(contentType);
+            agency.setContentLength(contentLength);
+            senderProxy.sendConnected(httpCode, agency.getInfo(), saveDir.getPath(), saveFileName, tempFileName);
 
-
-            File saveFileTemp = new File(saveDir, tempFileName);
-            File saveFile = new File(saveDir, saveFileName);
+            saveFileTemp = new File(saveDir, tempFileName);
+            saveFile = new File(saveDir, saveFileName);
             if (!saveDir.exists()) {
                 saveDir.mkdirs();
             }
@@ -166,14 +146,13 @@ public class DownloadTask extends AbsDownloadTask {
 
             randomAccessFile = new RandomAccessFile(saveFileTemp, "r");
             inputStream = httpURLConnection.getInputStream();
-            randomAccessFile.seek(downloadEntity.getCurrent());
+            randomAccessFile.seek(downloadInfo.getCurrent());
             if (contentLength != FileDownloadUtils.TOTAL_VALUE_IN_CHUNKED_RESOURCE) {
                 randomAccessFile.setLength(contentLength);
             }
 
             if (cancel) {
-                downloadEntity.setStatus(DownloadEntity.STATUS_PAUSED);
-                return;
+                return null;
             }
 
             inputStream = new BufferedInputStream(inputStream);
@@ -183,9 +162,10 @@ public class DownloadTask extends AbsDownloadTask {
             while ((length = inputStream.read(buffer)) != -1 && !cancel) {
                 randomAccessFile.write(buffer, 0, length);
                 currentSize += length;
-                sender.onProgress(currentSize, contentLength);
+                senderProxy.sendProgress(currentSize, contentLength);
                 checkupWifiConnect();
             }
+            //TODO 如果强制取消删除文件和临时文件
         } finally {
             if (inputStream != null) {
                 inputStream.close();
@@ -198,15 +178,25 @@ public class DownloadTask extends AbsDownloadTask {
                 }
             }
         }
+        if (remove) {
+            if (saveFileTemp != null) {
+                saveFileTemp.delete();
+            }
+            if (saveFile != null) {
+                saveFile.delete();
+            }
+            senderProxy.sendRemove();
+        }
+        return null;
     }
 
     private void checkupWifiConnect() throws Exception {
         if (downloadParams.isWifiRequired()
                 && !FileDownloadUtils.checkPermission(Manifest.permission.ACCESS_NETWORK_STATE)) {
-            throw new DownloadException(new ErrorEntity(ErrorEntity.ERROR_PERMISSION, Manifest.permission.ACCESS_NETWORK_STATE));
+            throw new DownloadException(ErrorInfo.ERROR_PERMISSION, Manifest.permission.ACCESS_NETWORK_STATE);
         }
         if (downloadParams.isWifiRequired() && FileDownloadUtils.isNetworkNotOnWifiType()) {
-            throw new DownloadException(new ErrorEntity(ErrorEntity.ERROR_WIFIREQUIRED, "Only allows downloading this task on the wifi network type"));
+            throw new DownloadException(ErrorInfo.ERROR_WIFIREQUIRED, "Only allows downloading this task on the wifi network type");
         }
     }
 
@@ -218,15 +208,9 @@ public class DownloadTask extends AbsDownloadTask {
         }
     }
 
-    private DownloadEntity buildEntity(long downloadId, DownloadParams downloadParams) {
-        DownloadEntity downloadEntity = new DownloadEntity();
-        downloadEntity.setId(downloadId);
-        downloadEntity.setUrl(downloadParams.getUrl());
-        downloadEntity.setCurrent(0);
-        downloadEntity.setTotal(0);
-        downloadEntity.setFilename(downloadParams.getFileName());
-        downloadEntity.setDir(downloadParams.getDir());
-        downloadEntity.setStartTime(System.currentTimeMillis());
-        return downloadEntity;
+    @Override
+    public void onRemove() {
+        remove = true;
+        cancel();
     }
 }

@@ -1,27 +1,26 @@
 package com.shizhefei.download.exception;
 
+import com.shizhefei.download.entity.ErrorInfo;
+
 /**
  * Created by luckyjayce on 18-3-14.
  */
 
 public class DownloadException extends Exception {
-    private ErrorEntity errorEntity;
+    private final int errorCode;
+    private final String errorMessage;
 
-    public DownloadException(ErrorEntity errorEntity) {
-        super(errorEntity.getErrorMessage());
-        this.errorEntity = errorEntity;
+    public DownloadException(int errorCode, String errorMessage) {
+        super(errorMessage);
+        this.errorCode = errorCode;
+        this.errorMessage = errorMessage;
     }
 
-    public DownloadException(ErrorEntity errorEntity, Throwable throwable) {
-        super(errorEntity.getErrorMessage(), throwable);
-        this.errorEntity = errorEntity;
+    public int getErrorCode() {
+        return errorCode;
     }
 
-    public ErrorEntity getErrorEntity() {
-        return errorEntity;
-    }
-
-    public void setErrorEntity(ErrorEntity errorEntity) {
-        this.errorEntity = errorEntity;
+    public String getErrorMessage() {
+        return errorMessage;
     }
 }

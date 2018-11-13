@@ -1,6 +1,6 @@
 package com.shizhefei.download.imp;
 
-import com.shizhefei.download.base.DownloadEntity;
+import com.shizhefei.download.entity.DownloadInfo;
 import com.shizhefei.download.base.DownloadListener;
 import com.shizhefei.download.base.DownloadParams;
 
@@ -26,7 +26,7 @@ public class RemoteDownloadManager extends DownloadManager {
     }
 
     @Override
-    public DownloadEntity getDownloadEntity(long id) {
+    public DownloadInfo getDownloadEntity(long id) {
         return null;
     }
 
@@ -36,7 +36,7 @@ public class RemoteDownloadManager extends DownloadManager {
     }
 
     @Override
-    public DownloadEntity get(int position) {
+    public DownloadInfo get(int position) {
         return null;
     }
 

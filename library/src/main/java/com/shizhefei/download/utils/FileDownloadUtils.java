@@ -7,7 +7,8 @@ import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.StatFs;
 
-import com.shizhefei.download.base.DownloadEntity;
+import com.shizhefei.download.entity.DownloadInfo;
+import com.shizhefei.download.entity.HttpInfo;
 import com.shizhefei.download.imp.DownloadManager;
 
 import java.net.HttpURLConnection;
@@ -51,14 +52,12 @@ public class FileDownloadUtils {
     }
 
 
-    public static boolean isPreconditionFailed(HttpURLConnection connection, int httpCode, DownloadEntity entity, boolean acceptPartial) throws Exception {
+    public static boolean isPreconditionFailed(HttpURLConnection connection, int httpCode, DownloadInfo entity, boolean acceptPartial) throws Exception {
         final boolean onlyFromBeginning = (httpCode == HttpURLConnection.HTTP_OK
                 || httpCode == HttpURLConnection.HTTP_CREATED);
 
         final String oldEtag = entity.getHttpInfo().getETag();
         String newEtag = FileDownloadUtils.findEtag(entity.getId(), connection);
-
-        entity.getHttpInfo().setETag(newEtag);
 
         // handle whether need retry because of etag is overdue
         boolean isPreconditionFailed = false;

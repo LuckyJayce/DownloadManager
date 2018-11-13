@@ -102,4 +102,11 @@ public class DownloadParams {
     public void putExInfo(String key, long value) {
 
     }
+
+    public String toJson(){
+        return null;
+    }
+
+    public void setByJson(String json) {
+    }
 }

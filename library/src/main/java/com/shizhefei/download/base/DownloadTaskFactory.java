@@ -1,7 +1,7 @@
 package com.shizhefei.download.base;
 
-public interface DownloadTaskFactory {
-    AbsDownloadTask buildDownloadTask(long downloadId, DownloadParams downloadParams);
+import com.shizhefei.download.db.DownloadDB;
 
-    AbsDownloadTask buildDownloadTask(long downloadId);
+public interface DownloadTaskFactory {
+    AbsDownloadTask buildDownloadTask(long downloadId, DownloadParams downloadParams, DownloadDB downloadDB, RemoveHandler removeHandler);
 }

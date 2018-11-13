@@ -3,7 +3,7 @@ package com.shizhefei.downloadmanager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
-import com.shizhefei.download.base.DownloadEntity;
+import com.shizhefei.download.entity.DownloadInfo;
 import com.shizhefei.download.base.DownloadListener;
 import com.shizhefei.download.base.DownloadParams;
 import com.shizhefei.download.imp.DownloadManager;
@@ -18,7 +18,7 @@ public class MainActivity extends AppCompatActivity {
         long start = DownloadManager.getLocal().start(downloadParams, new DownloadListener() {
             @Override
             public void onComplete(long downloadId) {
-                DownloadEntity entity = DownloadManager.getLocal().getDownloadEntity(downloadId);
+                DownloadInfo entity = DownloadManager.getLocal().getDownloadEntity(downloadId);
                 DownloadParams params = DownloadManager.getLocal().getDownloadParams(downloadId);
             }
         });
