@@ -14,7 +14,7 @@ import java.net.HttpURLConnection;
 import java.net.ProtocolException;
 import java.util.Locale;
 
-public class FileDownloadUtils {
+public class DownloadUtils {
     public static final int RANGE_INFINITE = -1;
     public static final int TOTAL_VALUE_IN_CHUNKED_RESOURCE = -1;
 
@@ -52,7 +52,7 @@ public class FileDownloadUtils {
                 || httpCode == HttpURLConnection.HTTP_CREATED);
 
         final String oldEtag = entity.getHttpInfo().getETag();
-        String newEtag = FileDownloadUtils.findEtag(entity.getId(), connection);
+        String newEtag = DownloadUtils.findEtag(entity.getId(), connection);
 
         // handle whether need retry because of etag is overdue
         boolean isPreconditionFailed = false;
@@ -79,9 +79,9 @@ public class FileDownloadUtils {
     public static void addRangeHeader(HttpURLConnection connection, long startOffset, long endOffset) throws ProtocolException {
         final String range;
         if (endOffset == RANGE_INFINITE) {
-            range = FileDownloadUtils.formatString("bytes=%d-", startOffset);
+            range = DownloadUtils.formatString("bytes=%d-", startOffset);
         } else {
-            range = FileDownloadUtils
+            range = DownloadUtils
                     .formatString("bytes=%d-%d", startOffset, endOffset);
         }
         connection.addRequestProperty("Range", range);

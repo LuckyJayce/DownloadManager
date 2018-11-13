@@ -13,7 +13,7 @@ import com.shizhefei.download.manager.DownloadManager;
 import com.shizhefei.download.prxoy.DownloadProgressSenderProxy;
 import com.shizhefei.download.utils.DownloadLogUtils;
 import com.shizhefei.download.utils.FileNameUtils;
-import com.shizhefei.download.utils.FileDownloadUtils;
+import com.shizhefei.download.utils.DownloadUtils;
 import com.shizhefei.mvc.ProgressSender;
 import com.shizhefei.task.ITask;
 
@@ -87,7 +87,7 @@ public class DownloadTask implements ITask<Void>, RemoveHandler.OnRemoveListener
 
             if (current > 0) {
                 if (downloadInfo.getHttpInfo().isAcceptRange()) {
-                    FileDownloadUtils.addRangeHeader(httpURLConnection, current, FileDownloadUtils.RANGE_INFINITE);
+                    DownloadUtils.addRangeHeader(httpURLConnection, current, DownloadUtils.RANGE_INFINITE);
                 } else {
                     senderProxy.sendDownloadFromBegin(current, total, DownloadManager.DOWNLOAD_FROM_BEGIN_UNSUPPORT_RANGE);
                     current = 0;
@@ -98,7 +98,7 @@ public class DownloadTask implements ITask<Void>, RemoveHandler.OnRemoveListener
             httpURLConnection.connect();
 
             final String oldETag = downloadInfo.getHttpInfo().getETag();
-            String newETag = FileDownloadUtils.findEtag(downloadInfo.getId(), httpURLConnection);
+            String newETag = DownloadUtils.findEtag(downloadInfo.getId(), httpURLConnection);
             if (current > 0) {
                 if (oldETag != null && !oldETag.equals(newETag)) {
                     senderProxy.sendDownloadFromBegin(current, total, DownloadManager.DOWNLOAD_FROM_BEGIN_ETAG_CHANGE);
@@ -107,7 +107,7 @@ public class DownloadTask implements ITask<Void>, RemoveHandler.OnRemoveListener
             }
 
             int httpCode = httpURLConnection.getResponseCode();
-            boolean isAcceptRange = FileDownloadUtils.isAcceptRange(httpCode, httpURLConnection);
+            boolean isAcceptRange = DownloadUtils.isAcceptRange(httpCode, httpURLConnection);
 
             if (cancel) {
                 return null;
@@ -120,7 +120,7 @@ public class DownloadTask implements ITask<Void>, RemoveHandler.OnRemoveListener
 
             long contentLength = httpURLConnection.getContentLength();
             if (contentLength == 0) {
-                String errorMessage = FileDownloadUtils.formatString("there isn't any content need to download on %d-%d with the content-length is 0", downloadId);
+                String errorMessage = DownloadUtils.formatString("there isn't any content need to download on %d-%d with the content-length is 0", downloadId);
                 throw new DownloadException(downloadId, DownloadManager.ERROR_EMPTY_SIZE, errorMessage);
             }
             if (current <= 0) {
@@ -177,21 +177,21 @@ public class DownloadTask implements ITask<Void>, RemoveHandler.OnRemoveListener
                 checkupWifiConnect();
             }
         } catch (FileNotFoundException e) {
-            String errorMessage = FileDownloadUtils.formatStringE(e, "FileNotFoundException dir=%s saveFileTemp=%s saveFile=%s", downloadParams.getDir(), saveFileTemp, saveFile);
+            String errorMessage = DownloadUtils.formatStringE(e, "FileNotFoundException dir=%s saveFileTemp=%s saveFile=%s", downloadParams.getDir(), saveFileTemp, saveFile);
             throw new DownloadException(downloadId, DownloadManager.ERROR_FILENOTFOUNDEXCEPTION, errorMessage, e.getCause());
         } catch (MalformedURLException e) {
-            String errorMessage = FileDownloadUtils.formatStringE(e, "MalformedURLException url=%s", downloadParams.getUrl());
+            String errorMessage = DownloadUtils.formatStringE(e, "MalformedURLException url=%s", downloadParams.getUrl());
             throw new DownloadException(downloadId, DownloadManager.ERROR_MALFORMEDURLEXCEPTION, errorMessage, e.getCause());
         } catch (ProtocolException e) {
-            String errorMessage = FileDownloadUtils.formatStringE(e, "ProtocolException url=%s", downloadParams.getUrl());
+            String errorMessage = DownloadUtils.formatStringE(e, "ProtocolException url=%s", downloadParams.getUrl());
             throw new DownloadException(downloadId, DownloadManager.ERROR_PROTOCOLEXCEPTION, errorMessage, e.getCause());
         } catch (IOException e) {
-            String errorMessage = FileDownloadUtils.formatStringE(e, "IOException dir=%s saveFileTemp=%s saveFile=%s", downloadParams.getDir(), saveFileTemp, saveFile);
+            String errorMessage = DownloadUtils.formatStringE(e, "IOException dir=%s saveFileTemp=%s saveFile=%s", downloadParams.getDir(), saveFileTemp, saveFile);
             throw new DownloadException(downloadId, DownloadManager.ERROR_IOEXCEPTION, errorMessage, e.getCause());
         } catch (DownloadException e) {
             throw e;
         } catch (Exception e) {
-            String errorMessage = FileDownloadUtils.formatStringE(e, "UNKNOWN");
+            String errorMessage = DownloadUtils.formatStringE(e, "UNKNOWN");
             throw new DownloadException(downloadId, DownloadManager.ERROR_UNKNOW, errorMessage, e.getCause());
         } finally {
             if (inputStream != null) {
@@ -230,10 +230,10 @@ public class DownloadTask implements ITask<Void>, RemoveHandler.OnRemoveListener
 
     private void checkupWifiConnect() throws Exception {
         if (downloadParams.isWifiRequired()
-                && !FileDownloadUtils.checkPermission(Manifest.permission.ACCESS_NETWORK_STATE)) {
+                && !DownloadUtils.checkPermission(Manifest.permission.ACCESS_NETWORK_STATE)) {
             throw new DownloadException(downloadId, DownloadManager.ERROR_PERMISSION, Manifest.permission.ACCESS_NETWORK_STATE);
         }
-        if (downloadParams.isWifiRequired() && FileDownloadUtils.isNetworkNotOnWifiType()) {
+        if (downloadParams.isWifiRequired() && DownloadUtils.isNetworkNotOnWifiType()) {
             throw new DownloadException(downloadId, DownloadManager.ERROR_WIFIREQUIRED, "Only allows downloading this task on the wifi network type");
         }
     }

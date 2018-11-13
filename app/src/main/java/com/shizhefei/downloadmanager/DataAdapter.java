@@ -74,7 +74,7 @@ public class DataAdapter extends RecyclerView.Adapter {
             this.downloadInfo = downloadInfo;
             String tempPath = downloadInfo.getDir() + File.separator + downloadInfo.getTempFileName();
             StringBuilder name = new StringBuilder();
-            name.append("downloadId:").append(downloadInfo.getId()).append("  status:").append(DownloadInfo.getStatusText(downloadInfo.getStatus())).append("\n");
+            name.append("downloadId:").append(downloadInfo.getId()).append("  status:").append(DownloadManager.getStatusText(downloadInfo.getStatus())).append("\n");
             name.append("file:").append(tempPath).append(" / ").append(downloadInfo.getFilename()).append("\n").append(downloadInfo.getUrl());
             fileNameTextView.setText(name);
             int p;

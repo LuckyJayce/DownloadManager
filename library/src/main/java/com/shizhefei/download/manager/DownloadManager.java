@@ -12,7 +12,7 @@ import com.shizhefei.download.entity.DownloadParams;
 import com.shizhefei.download.taskfactory.DefaultDownloadTaskFactory;
 import com.shizhefei.download.entity.DownloadConfig;
 import com.shizhefei.download.base.DownloadCursor;
-import com.shizhefei.download.utils.FileDownloadUtils;
+import com.shizhefei.download.utils.DownloadUtils;
 
 import java.io.File;
 
@@ -46,17 +46,16 @@ public abstract class DownloadManager {
      * http错误
      */
     public static final int ERROR_WIFIREQUIRED = 5;
-    public static final int ERROR_PRECONDITION_FAILED = 6;
-    public static final int ERROR_EMPTY_SIZE = 7;
-    public static final int ERROR_SIZE_CHANGE = 8;
+    public static final int ERROR_EMPTY_SIZE = 6;
     /**
      * MalformedURLException
      */
-    public static final int ERROR_MALFORMEDURLEXCEPTION = 9;
+    public static final int ERROR_MALFORMEDURLEXCEPTION = 7;
     /**
      * ProtocolException
      */
-    public static final int ERROR_PROTOCOLEXCEPTION = 10;
+    public static final int ERROR_PROTOCOLEXCEPTION = 8;
+    public static final int ERROR_SIZE_CHANGE = 9;
     //---------------------     error code---------------------------------------------------------//
 
 
@@ -100,7 +99,7 @@ public abstract class DownloadManager {
     }
 
     public static String defaultUserAgent() {
-        return FileDownloadUtils.formatString("DownloadManager/%s", BuildConfig.VERSION_NAME);
+        return DownloadUtils.formatString("DownloadManager/%s", BuildConfig.VERSION_NAME);
     }
 
     public static DownloadConfig getDownloadConfig() {
@@ -175,4 +174,26 @@ public abstract class DownloadManager {
     public abstract void registerDownloadListener(DownloadListener downloadListener);
 
     public abstract void unregisterDownloadListener(DownloadListener downloadListener);
+
+    public static String getStatusText(int status) {
+        switch (status) {
+            case STATUS_PENDING:
+                return "STATUS_PENDING";
+            case STATUS_START:
+                return "STATUS_START";
+            case STATUS_CONNECTED:
+                return "STATUS_CONNECTED";
+            case STATUS_DOWNLOAD_RESET_BEGIN:
+                return "STATUS_DOWNLOAD_RESET_BEGIN";
+            case STATUS_DOWNLOAD_ING:
+                return "STATUS_DOWNLOAD_ING";
+            case STATUS_PAUSED:
+                return "STATUS_PAUSED";
+            case STATUS_FINISHED:
+                return "STATUS_FINISHED";
+            case STATUS_FAIL:
+                return "STATUS_FAIL";
+        }
+        return "UNKNOWN";
+    }
 }

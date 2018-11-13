@@ -24,28 +24,6 @@ public class DownloadInfo {
     //当线程下载为null，多线程下载 DownloadEntity对应多个DownloadItem
     private List<DownloadItem> downloadItems;
 
-    public static String getStatusText(int status) {
-        switch (status) {
-            case DownloadManager.STATUS_PENDING:
-                return "STATUS_PENDING";
-            case DownloadManager.STATUS_START:
-                return "STATUS_START";
-            case DownloadManager.STATUS_CONNECTED:
-                return "STATUS_CONNECTED";
-            case DownloadManager.STATUS_DOWNLOAD_RESET_BEGIN:
-                return "STATUS_DOWNLOAD_RESET_BEGIN";
-            case DownloadManager.STATUS_DOWNLOAD_ING:
-                return "STATUS_DOWNLOAD_ING";
-            case DownloadManager.STATUS_PAUSED:
-                return "STATUS_PAUSED";
-            case DownloadManager.STATUS_FINISHED:
-                return "STATUS_FINISHED";
-            case DownloadManager.STATUS_FAIL:
-                return "STATUS_FAIL";
-        }
-        return "UNKNOWN";
-    }
-
     private DownloadInfo(@NonNull DownloadParams downloadParams, @NonNull HttpInfo httpInfo, @NonNull ErrorInfo errorInfo) {
         this.downloadParams = downloadParams;
         this.httpInfo = httpInfo;
