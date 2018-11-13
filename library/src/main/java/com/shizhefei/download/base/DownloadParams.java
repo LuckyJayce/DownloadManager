@@ -1,6 +1,9 @@
 package com.shizhefei.download.base;
 
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import com.shizhefei.download.utils.DownloadJsonUtils;
 
 import org.json.JSONException;
@@ -11,7 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class DownloadParams {
+public class DownloadParams implements Parcelable {
     private String url;
     private String dir;
     private String fileName;
@@ -24,6 +27,39 @@ public class DownloadParams {
     private Map<String, String> extData;
 
     private DownloadParams() {
+    }
+
+    protected DownloadParams(Parcel in) {
+        url = in.readString();
+        dir = in.readString();
+        fileName = in.readString();
+        override = in.readByte() != 0;
+        blockSize = in.readInt();
+        isWifiRequired = in.readByte() != 0;
+        try {
+            params = DownloadJsonUtils.parse(new JSONObject(in.readString()));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        try {
+            headers = DownloadJsonUtils.parse(new JSONObject(in.readString()));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        try {
+            extData = DownloadJsonUtils.parse2(new JSONObject(in.readString()));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        if (params == null) {
+            params = new HashMap<>();
+        }
+        if (headers == null) {
+            headers = new HashMap<>();
+        }
+        if (extData == null) {
+            extData = new HashMap<>();
+        }
     }
 
     public boolean isWifiRequired() {
@@ -114,6 +150,37 @@ public class DownloadParams {
             e.printStackTrace();
         }
         return jsonObject.toString();
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+
+    public static final Creator<DownloadParams> CREATOR = new Creator<DownloadParams>() {
+        @Override
+        public DownloadParams createFromParcel(Parcel in) {
+            return new DownloadParams(in);
+        }
+
+        @Override
+        public DownloadParams[] newArray(int size) {
+            return new DownloadParams[size];
+        }
+    };
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(url);
+        dest.writeString(dir);
+        dest.writeString(fileName);
+        dest.writeByte((byte) (override ? 1 : 0));
+        dest.writeInt(blockSize);
+        dest.writeByte((byte) (isWifiRequired ? 1 : 0));
+        dest.writeString(DownloadJsonUtils.toJsonObject(params).toString());
+        dest.writeString(DownloadJsonUtils.toJsonObject(headers).toString());
+        dest.writeString(DownloadJsonUtils.toJsonObject2(extData).toString());
     }
 
 

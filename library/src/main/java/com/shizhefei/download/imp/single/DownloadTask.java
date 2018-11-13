@@ -9,7 +9,7 @@ import com.shizhefei.download.base.DownloadParams;
 import com.shizhefei.download.entity.HttpInfo;
 import com.shizhefei.download.exception.DownloadException;
 import com.shizhefei.download.entity.ErrorInfo;
-import com.shizhefei.download.base.DownloadProgressSenderProxy;
+import com.shizhefei.download.prxoy.DownloadProgressSenderProxy;
 import com.shizhefei.download.utils.DownloadLogUtils;
 import com.shizhefei.download.utils.FileNameUtils;
 import com.shizhefei.download.utils.FileDownloadUtils;
@@ -44,6 +44,7 @@ public class DownloadTask implements ITask<Void>, RemoveHandler.OnRemoveListener
     @Override
     public Void execute(ProgressSender sender) throws Exception {
         DownloadProgressSenderProxy senderProxy = new DownloadProgressSenderProxy(downloadId, sender);
+        senderProxy.sendStart(downloadInfo.getCurrent(), downloadInfo.getTotal());
 
         InputStream inputStream = null;
         RandomAccessFile randomAccessFile = null;
@@ -80,7 +81,7 @@ public class DownloadTask implements ITask<Void>, RemoveHandler.OnRemoveListener
             int httpCode = httpURLConnection.getResponseCode();
             boolean acceptPartial = FileDownloadUtils.isAcceptRange(httpCode, httpURLConnection);
             if (FileDownloadUtils.isPreconditionFailed(httpURLConnection, httpCode, downloadInfo, acceptPartial)) {
-                throw new DownloadException(ErrorInfo.ERROR_PRECONDITION_FAILED, "PreconditionFailed");
+                throw new DownloadException(downloadId, ErrorInfo.ERROR_PRECONDITION_FAILED, "PreconditionFailed");
             }
 
             if (cancel) {
@@ -89,12 +90,12 @@ public class DownloadTask implements ITask<Void>, RemoveHandler.OnRemoveListener
 
             if (httpCode != HttpURLConnection.HTTP_PARTIAL && httpCode != HttpURLConnection.HTTP_OK) {
                 String httpMessage = httpURLConnection.getResponseMessage();
-                throw new DownloadException(ErrorInfo.ERROR_HTTP, httpMessage);
+                throw new DownloadException(downloadId, ErrorInfo.ERROR_HTTP, httpMessage);
             }
 
             long contentLength = httpURLConnection.getContentLength();
             if (contentLength == 0) {
-                throw new DownloadException(ErrorInfo.ERROR_EMPTY_SIZE, FileDownloadUtils.
+                throw new DownloadException(downloadId, ErrorInfo.ERROR_EMPTY_SIZE, FileDownloadUtils.
                         formatString(
                                 "there isn't any content need to download on %d-%d with the "
                                         + "content-length is 0",
@@ -107,7 +108,7 @@ public class DownloadTask implements ITask<Void>, RemoveHandler.OnRemoveListener
                 } else {
                     range = FileDownloadUtils.formatString("range[%d-%d)", currentOffset, endOffset);
                 }
-                throw new DownloadException(ErrorInfo.ERROR_SIZE_CHANGE, FileDownloadUtils.
+                throw new DownloadException(downloadId, ErrorInfo.ERROR_SIZE_CHANGE, FileDownloadUtils.
                         formatString("require %s with contentLength(%d), but the "
                                         + "backend response contentLength is %d on "
                                         + "downloadId[%d]-connectionIndex[%d], please ask your backend "
@@ -128,12 +129,7 @@ public class DownloadTask implements ITask<Void>, RemoveHandler.OnRemoveListener
             }
 
             String newEtag = FileDownloadUtils.findEtag(downloadId, httpURLConnection);
-            HttpInfo.Agency agency = new HttpInfo.Agency();
-            agency.setHttpCode(httpCode);
-            agency.setETag(newEtag);
-            agency.setContentType(contentType);
-            agency.setContentLength(contentLength);
-            senderProxy.sendConnected(httpCode, agency.getInfo(), saveDir.getPath(), saveFileName, tempFileName);
+            senderProxy.sendConnected(httpCode, saveDir.getPath(), saveFileName, tempFileName, contentType, newEtag, downloadInfo.getCurrent(), contentLength);
 
             saveFileTemp = new File(saveDir, tempFileName);
             saveFile = new File(saveDir, saveFileName);
@@ -185,7 +181,7 @@ public class DownloadTask implements ITask<Void>, RemoveHandler.OnRemoveListener
             if (saveFile != null) {
                 saveFile.delete();
             }
-            senderProxy.sendRemove();
+            senderProxy.sendRemove(downloadInfo.getCurrent(), downloadInfo.getTotal());
         }
         return null;
     }
@@ -193,10 +189,10 @@ public class DownloadTask implements ITask<Void>, RemoveHandler.OnRemoveListener
     private void checkupWifiConnect() throws Exception {
         if (downloadParams.isWifiRequired()
                 && !FileDownloadUtils.checkPermission(Manifest.permission.ACCESS_NETWORK_STATE)) {
-            throw new DownloadException(ErrorInfo.ERROR_PERMISSION, Manifest.permission.ACCESS_NETWORK_STATE);
+            throw new DownloadException(downloadId, ErrorInfo.ERROR_PERMISSION, Manifest.permission.ACCESS_NETWORK_STATE);
         }
         if (downloadParams.isWifiRequired() && FileDownloadUtils.isNetworkNotOnWifiType()) {
-            throw new DownloadException(ErrorInfo.ERROR_WIFIREQUIRED, "Only allows downloading this task on the wifi network type");
+            throw new DownloadException(downloadId, ErrorInfo.ERROR_WIFIREQUIRED, "Only allows downloading this task on the wifi network type");
         }
     }
 

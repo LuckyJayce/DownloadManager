@@ -13,11 +13,10 @@ import com.shizhefei.download.base.DownloadParams;
 import com.shizhefei.download.base.DownloadTaskFactory;
 import com.shizhefei.download.base.IdGenerator;
 import com.shizhefei.download.entity.HttpInfo;
+import com.shizhefei.download.prxoy.DownloadListenerProxy;
 import com.shizhefei.mvc.RequestHandle;
-import com.shizhefei.task.IAsyncTask;
 import com.shizhefei.task.TaskHandle;
 import com.shizhefei.task.TaskHelper;
-import com.shizhefei.task.tasks.Tasks;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -66,9 +65,7 @@ public class LocalDownloadManager extends DownloadManager {
         AbsDownloadTask downloadTask = downloadTaskFactory.buildDownloadTask(downloadId, downloadParams, downloadDB, removeHandler);
         downloadEntities.add(downloadTask);
 
-        IAsyncTask<Void> finalTask = Tasks.donOnCallback(downloadTask, downloadListener);
-
-        TaskHandle taskHandle = taskHelper.execute(finalTask, proxyDownloadListener);
+        TaskHandle taskHandle = taskHelper.execute(downloadTask, new DownloadListenerProxy(downloadId, proxyDownloadListener));
 
         tasks.put(downloadId, new DownloadData(taskHandle, downloadTask, removeHandler));
 
@@ -176,13 +173,13 @@ public class LocalDownloadManager extends DownloadManager {
         }
 
         @Override
-        public void onProgress(long downloadId, int percent, long current, long total) {
+        public void onDownloadIng(long downloadId, long current, long total) {
             for (DownloadListener downloadListener : downloadListeners) {
-                downloadListener.onProgress(downloadId, percent, downloadId, total);
+                downloadListener.onDownloadIng(downloadId, downloadId, total);
             }
             DownloadListener downloadListener = listeners.get(downloadId);
             if (downloadListener != null) {
-                downloadListener.onProgress(downloadId, percent, downloadId, total);
+                downloadListener.onDownloadIng(downloadId, downloadId, total);
             }
         }
 

@@ -1,5 +1,8 @@
 package com.shizhefei.download.entity;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -7,7 +10,7 @@ import org.json.JSONObject;
  * Created by luckyjayce on 18-3-14.
  */
 
-public class ErrorInfo {
+public class ErrorInfo implements Parcelable {
     /**
      * 未知错误
      */
@@ -46,6 +49,13 @@ public class ErrorInfo {
     private String httpMessage;
 
     private ErrorInfo() {
+    }
+
+    protected ErrorInfo(Parcel in) {
+        errorCode = in.readInt();
+        errorMessage = in.readString();
+        httpCode = in.readInt();
+        httpMessage = in.readString();
     }
 
     public int getErrorCode() {
@@ -91,6 +101,31 @@ public class ErrorInfo {
             e.printStackTrace();
         }
         return jsonObject.toString();
+    }
+
+    public static final Creator<ErrorInfo> CREATOR = new Creator<ErrorInfo>() {
+        @Override
+        public ErrorInfo createFromParcel(Parcel in) {
+            return new ErrorInfo(in);
+        }
+
+        @Override
+        public ErrorInfo[] newArray(int size) {
+            return new ErrorInfo[size];
+        }
+    };
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeInt(errorCode);
+        dest.writeString(errorMessage);
+        dest.writeInt(httpCode);
+        dest.writeString(httpMessage);
     }
 
     public static class Agency {

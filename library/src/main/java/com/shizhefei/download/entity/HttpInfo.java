@@ -1,13 +1,26 @@
 package com.shizhefei.download.entity;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class HttpInfo {
+public class HttpInfo implements Parcelable {
     private int httpCode;
     private String contentType;
     private long contentLength;
     private String eTag;
+
+    private HttpInfo() {
+    }
+
+    protected HttpInfo(Parcel in) {
+        httpCode = in.readInt();
+        contentType = in.readString();
+        contentLength = in.readLong();
+        eTag = in.readString();
+    }
 
     public String getETag() {
         return eTag;
@@ -17,8 +30,6 @@ public class HttpInfo {
         this.eTag = eTag;
     }
 
-    private HttpInfo() {
-    }
 
     public int getHttpCode() {
         return httpCode;
@@ -55,6 +66,31 @@ public class HttpInfo {
             e.printStackTrace();
         }
         return jsonObject.toString();
+    }
+
+    public static final Creator<HttpInfo> CREATOR = new Creator<HttpInfo>() {
+        @Override
+        public HttpInfo createFromParcel(Parcel in) {
+            return new HttpInfo(in);
+        }
+
+        @Override
+        public HttpInfo[] newArray(int size) {
+            return new HttpInfo[size];
+        }
+    };
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeInt(httpCode);
+        dest.writeString(contentType);
+        dest.writeLong(contentLength);
+        dest.writeString(eTag);
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
     }
 
     public static class Agency {

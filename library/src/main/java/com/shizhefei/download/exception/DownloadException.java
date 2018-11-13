@@ -9,11 +9,17 @@ import com.shizhefei.download.entity.ErrorInfo;
 public class DownloadException extends Exception {
     private final int errorCode;
     private final String errorMessage;
+    private final long downloadId;
 
-    public DownloadException(int errorCode, String errorMessage) {
+    public DownloadException(long downloadId, int errorCode, String errorMessage) {
         super(errorMessage);
+        this.downloadId = downloadId;
         this.errorCode = errorCode;
         this.errorMessage = errorMessage;
+    }
+
+    public long getDownloadId() {
+        return downloadId;
     }
 
     public int getErrorCode() {

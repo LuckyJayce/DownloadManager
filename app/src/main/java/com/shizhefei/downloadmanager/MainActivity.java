@@ -14,8 +14,11 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        DownloadParams downloadParams = new DownloadParams();
+        DownloadParams downloadParams = new DownloadParams.Builder()
+                .setUrl("http://gyxz.ukdj3d.cn/a3/yx_sms1/hcrssyx2pj.apk")
+                .build();
         long start = DownloadManager.getLocal().start(downloadParams, new DownloadListener() {
+
             @Override
             public void onComplete(long downloadId) {
                 DownloadInfo entity = DownloadManager.getLocal().getDownloadEntity(downloadId);

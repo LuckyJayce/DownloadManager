@@ -12,6 +12,7 @@ import com.shizhefei.download.db.DownloadDB;
 import com.shizhefei.download.entity.ErrorInfo;
 import com.shizhefei.download.entity.HttpInfo;
 import com.shizhefei.download.imp.single.DownloadTask;
+import com.shizhefei.download.prxoy.DownloadListenerProxy;
 import com.shizhefei.mvc.RequestHandle;
 import com.shizhefei.mvc.ResponseSender;
 import com.shizhefei.task.tasks.Tasks;
@@ -46,11 +47,10 @@ public class ProxyDownloadTask extends AbsDownloadTask {
     public RequestHandle execute(ResponseSender<Void> sender) throws Exception {
         DownloadInfo downloadInfo = downloadInfoAgency.getInfo();
         switch (downloadInfo.getStatus()) {
-            case DownloadInfo.STATUS_CONNECT_ING:
             case DownloadInfo.STATUS_START:
             case DownloadInfo.STATUS_DOWNLOAD_ING:
             case DownloadInfo.STATUS_CONNECTED:
-
+                downloadInfoAgency.setStatus(DownloadInfo.STATUS_PENDING);
                 break;
             case DownloadInfo.STATUS_FAIL:
             case DownloadInfo.STATUS_FINISHED:
@@ -80,7 +80,8 @@ public class ProxyDownloadTask extends AbsDownloadTask {
 
         DownloadTask downloadTask = new DownloadTask(downloadId, downloadParams, downloadInfoAgency.getInfo());
         removeHandler.addRemoveListener(downloadTask);
-        return Tasks.async(downloadTask).doOnCallback(downloadListener).execute(sender);
+        DownloadListenerProxy callback = new DownloadListenerProxy(downloadId, downloadListener);
+        return Tasks.async(downloadTask).doOnCallback(callback).execute(sender);
     }
 
     @Override
@@ -109,8 +110,8 @@ public class ProxyDownloadTask extends AbsDownloadTask {
         }
 
         @Override
-        public void onProgress(long downloadId, int percent, long current, long total) {
-            super.onProgress(downloadId, percent, current, total);
+        public void onDownloadIng(long downloadId, long current, long total) {
+            super.onDownloadIng(downloadId, current, total);
             downloadInfoAgency.setStatus(DownloadInfo.STATUS_DOWNLOAD_ING);
             downloadInfoAgency.setCurrent(current);
             downloadInfoAgency.setTotal(total);
