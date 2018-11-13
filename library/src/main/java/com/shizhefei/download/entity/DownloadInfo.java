@@ -3,27 +3,18 @@ package com.shizhefei.download.entity;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import com.shizhefei.download.base.DownloadParams;
+import com.shizhefei.download.manager.DownloadManager;
 
 import java.util.List;
 
 public class DownloadInfo {
-    public static final int STATUS_PENDING = 0;//在队列中，还没开始
-    public static final int STATUS_START = 1;//开始
-    public static final int STATUS_CONNECTED = 2;//连接上服务器
-    public static final int STATUS_DOWNLOAD_RESET_BEGIN = 3;//连接上服务器
-    public static final int STATUS_DOWNLOAD_ING = 4;
-    public static final int STATUS_PAUSED = 5;//连接上服务器
-    public static final int STATUS_FINISHED = 6;
-    public static final int STATUS_FAIL = 7;
-    public static final int STATUS_REMOVE = 8;//连接上服务器
     private long id;
     private String url;
     private String dir;
     private String filename;
     private String tempFileName;
     private long startTime;//单位 毫秒
-    private int status = STATUS_PENDING;
+    private int status = DownloadManager.STATUS_PENDING;
     private long total;
     private long current;
     private final DownloadParams downloadParams;
@@ -35,21 +26,21 @@ public class DownloadInfo {
 
     public static String getStatusText(int status) {
         switch (status) {
-            case STATUS_PENDING:
+            case DownloadManager.STATUS_PENDING:
                 return "STATUS_PENDING";
-            case STATUS_START:
+            case DownloadManager.STATUS_START:
                 return "STATUS_START";
-            case STATUS_CONNECTED:
+            case DownloadManager.STATUS_CONNECTED:
                 return "STATUS_CONNECTED";
-            case STATUS_DOWNLOAD_RESET_BEGIN:
+            case DownloadManager.STATUS_DOWNLOAD_RESET_BEGIN:
                 return "STATUS_DOWNLOAD_RESET_BEGIN";
-            case STATUS_DOWNLOAD_ING:
+            case DownloadManager.STATUS_DOWNLOAD_ING:
                 return "STATUS_DOWNLOAD_ING";
-            case STATUS_PAUSED:
+            case DownloadManager.STATUS_PAUSED:
                 return "STATUS_PAUSED";
-            case STATUS_FINISHED:
+            case DownloadManager.STATUS_FINISHED:
                 return "STATUS_FINISHED";
-            case STATUS_FAIL:
+            case DownloadManager.STATUS_FAIL:
                 return "STATUS_FAIL";
         }
         return "UNKNOWN";

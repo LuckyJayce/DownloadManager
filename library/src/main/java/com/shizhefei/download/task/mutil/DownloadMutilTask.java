@@ -1,8 +1,7 @@
-package com.shizhefei.download.imp.mutil;
+package com.shizhefei.download.task.mutil;
 
 
 import com.shizhefei.download.base.AbsDownloadTask;
-import com.shizhefei.download.base.DownloadParams;
 import com.shizhefei.download.entity.DownloadInfo;
 import com.shizhefei.mvc.RequestHandle;
 import com.shizhefei.mvc.ResponseSender;

@@ -1,11 +1,11 @@
-package com.shizhefei.download.imp;
+package com.shizhefei.download.taskfactory;
 
 import com.shizhefei.download.base.AbsDownloadTask;
-import com.shizhefei.download.base.DownloadParams;
+import com.shizhefei.download.entity.DownloadParams;
 import com.shizhefei.download.base.DownloadTaskFactory;
 import com.shizhefei.download.base.RemoveHandler;
 import com.shizhefei.download.db.DownloadDB;
-import com.shizhefei.download.imp.proxy.ProxyDownloadTask;
+import com.shizhefei.download.task.ProxyDownloadTask;
 
 import java.util.concurrent.Executor;
 

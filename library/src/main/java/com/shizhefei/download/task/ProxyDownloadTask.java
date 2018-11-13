@@ -1,14 +1,15 @@
-package com.shizhefei.download.imp.proxy;
+package com.shizhefei.download.task;
 
 import com.shizhefei.download.base.AbsDownloadTask;
 import com.shizhefei.download.base.RemoveHandler;
 import com.shizhefei.download.entity.DownloadInfo;
 import com.shizhefei.download.base.DownloadListener;
-import com.shizhefei.download.base.DownloadParams;
+import com.shizhefei.download.entity.DownloadParams;
 import com.shizhefei.download.db.DownloadDB;
 import com.shizhefei.download.entity.ErrorInfo;
 import com.shizhefei.download.entity.HttpInfo;
-import com.shizhefei.download.imp.single.DownloadTask;
+import com.shizhefei.download.manager.DownloadManager;
+import com.shizhefei.download.task.DownloadTask;
 import com.shizhefei.download.prxoy.DownloadListenerProxy;
 import com.shizhefei.mvc.RequestHandle;
 import com.shizhefei.mvc.ResponseSender;
@@ -57,7 +58,7 @@ public class ProxyDownloadTask extends AbsDownloadTask {
 
         @Override
         public void onDownloadResetBegin(long downloadId, int reason) {
-            downloadInfoAgency.setStatus(DownloadInfo.STATUS_DOWNLOAD_RESET_BEGIN);
+            downloadInfoAgency.setStatus(DownloadManager.STATUS_DOWNLOAD_RESET_BEGIN);
             downloadInfoAgency.setCurrent(0);
             downloadDB.update(downloadInfoAgency.getInfo());
         }
@@ -65,7 +66,7 @@ public class ProxyDownloadTask extends AbsDownloadTask {
         @Override
         public void onPending(long downloadId) {
             super.onPending(downloadId);
-            downloadInfoAgency.setStatus(DownloadInfo.STATUS_PENDING);
+            downloadInfoAgency.setStatus(DownloadManager.STATUS_PENDING);
             downloadInfoAgency.setStartTime(System.currentTimeMillis());
             downloadDB.replace(downloadParams, downloadInfoAgency.getInfo());
         }
@@ -73,13 +74,13 @@ public class ProxyDownloadTask extends AbsDownloadTask {
         @Override
         public void onStart(long downloadId) {
             super.onStart(downloadId);
-            downloadInfoAgency.setStatus(DownloadInfo.STATUS_START);
+            downloadInfoAgency.setStatus(DownloadManager.STATUS_START);
         }
 
         @Override
         public void onDownloadIng(long downloadId, long current, long total) {
             super.onDownloadIng(downloadId, current, total);
-            downloadInfoAgency.setStatus(DownloadInfo.STATUS_DOWNLOAD_ING);
+            downloadInfoAgency.setStatus(DownloadManager.STATUS_DOWNLOAD_ING);
             downloadInfoAgency.setCurrent(current);
             downloadInfoAgency.setTotal(total);
             downloadDB.update(downloadId, current, total);
@@ -88,7 +89,7 @@ public class ProxyDownloadTask extends AbsDownloadTask {
         @Override
         public void onConnected(long downloadId, HttpInfo httpInfo, String saveDir, String saveFileName, String tempFileName) {
             super.onConnected(downloadId, httpInfo, saveDir, saveFileName, tempFileName);
-            downloadInfoAgency.setStatus(DownloadInfo.STATUS_CONNECTED);
+            downloadInfoAgency.setStatus(DownloadManager.STATUS_CONNECTED);
             downloadInfoAgency.setFilename(saveFileName);
             downloadInfoAgency.setTempFileName(tempFileName);
 
@@ -99,25 +100,25 @@ public class ProxyDownloadTask extends AbsDownloadTask {
         @Override
         public void onPaused(long downloadId) {
             super.onPaused(downloadId);
-            downloadInfoAgency.setStatus(DownloadInfo.STATUS_PAUSED);
+            downloadInfoAgency.setStatus(DownloadManager.STATUS_PAUSED);
         }
 
         @Override
         public void onComplete(long downloadId) {
-            downloadInfoAgency.setStatus(DownloadInfo.STATUS_FINISHED);
+            downloadInfoAgency.setStatus(DownloadManager.STATUS_FINISHED);
             downloadDB.update(downloadInfoAgency.getInfo());
         }
 
         @Override
         public void onError(long downloadId, int errorCode, String errorMessage) {
             errorInfoAgency.set(errorCode, errorMessage);
-            downloadInfoAgency.setStatus(DownloadInfo.STATUS_FAIL);
+            downloadInfoAgency.setStatus(DownloadManager.STATUS_FAIL);
             downloadDB.update(downloadInfoAgency.getInfo());
         }
 
         @Override
         public void onRemove(long downloadId) {
-            downloadInfoAgency.setStatus(DownloadInfo.STATUS_REMOVE);
+            downloadInfoAgency.setStatus(DownloadManager.STATUS_REMOVE);
             downloadDB.delete(downloadId);
         }
     };
@@ -128,7 +129,7 @@ public class ProxyDownloadTask extends AbsDownloadTask {
         downloadInfoAgency.setUrl(downloadParams.getUrl());
         downloadInfoAgency.setCurrent(0);
         downloadInfoAgency.setTotal(0);
-        downloadInfoAgency.setStatus(DownloadInfo.STATUS_PENDING);
+        downloadInfoAgency.setStatus(DownloadManager.STATUS_PENDING);
         downloadInfoAgency.setFilename(downloadParams.getFileName());
         downloadInfoAgency.setDir(downloadParams.getDir());
         return downloadInfoAgency;

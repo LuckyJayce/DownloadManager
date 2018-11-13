@@ -1,8 +1,7 @@
-package com.shizhefei.download.imp;
+package com.shizhefei.download.manager;
 
 import android.content.Context;
 import android.os.AsyncTask;
-import android.util.Log;
 import android.util.LongSparseArray;
 
 import com.shizhefei.download.base.AbsDownloadTask;
@@ -10,10 +9,12 @@ import com.shizhefei.download.base.RemoveHandler;
 import com.shizhefei.download.db.DownloadDB;
 import com.shizhefei.download.entity.DownloadInfo;
 import com.shizhefei.download.base.DownloadListener;
-import com.shizhefei.download.base.DownloadParams;
+import com.shizhefei.download.entity.DownloadParams;
 import com.shizhefei.download.base.DownloadTaskFactory;
 import com.shizhefei.download.base.IdGenerator;
 import com.shizhefei.download.entity.HttpInfo;
+import com.shizhefei.download.taskfactory.DefaultDownloadTaskFactory;
+import com.shizhefei.download.base.DownloadCursor;
 import com.shizhefei.download.prxoy.DownloadListenerProxy;
 import com.shizhefei.mvc.RequestHandle;
 import com.shizhefei.task.TaskHandle;
@@ -56,12 +57,12 @@ public class LocalDownloadManager extends DownloadManager {
         downloadInfoList = new ArrayList<>(infoList.size());
         for (DownloadInfo.Agency info : infoList) {
             switch (info.getStatus()) {
-                case DownloadInfo.STATUS_CONNECTED:
-                case DownloadInfo.STATUS_DOWNLOAD_ING:
-                case DownloadInfo.STATUS_PENDING:
-                case DownloadInfo.STATUS_START:
-                case DownloadInfo.STATUS_DOWNLOAD_RESET_BEGIN:
-                    info.setStatus(DownloadInfo.STATUS_PAUSED);
+                case DownloadManager.STATUS_CONNECTED:
+                case DownloadManager.STATUS_DOWNLOAD_ING:
+                case DownloadManager.STATUS_PENDING:
+                case DownloadManager.STATUS_START:
+                case DownloadManager.STATUS_DOWNLOAD_RESET_BEGIN:
+                    info.setStatus(DownloadManager.STATUS_PAUSED);
                     break;
             }
             if (!info.getHttpInfo().isAcceptRange()) {
@@ -90,7 +91,7 @@ public class LocalDownloadManager extends DownloadManager {
         }
         if (downloadInfo != null) {
             int status = downloadInfo.getStatus();
-            if (status == DownloadInfo.STATUS_PAUSED || status == DownloadInfo.STATUS_FAIL) {
+            if (status == DownloadManager.STATUS_PAUSED || status == DownloadManager.STATUS_FAIL) {
                 DownloadParams downloadParams = downloadInfo.getDownloadParams();
                 if (downloadListener != null) {
                     listeners.put(downloadId, downloadListener);

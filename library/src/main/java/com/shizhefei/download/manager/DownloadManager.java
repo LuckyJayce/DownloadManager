@@ -1,4 +1,4 @@
-package com.shizhefei.download.imp;
+package com.shizhefei.download.manager;
 
 import android.content.Context;
 import android.os.AsyncTask;
@@ -8,20 +8,69 @@ import android.text.TextUtils;
 import com.shizhefei.download.BuildConfig;
 import com.shizhefei.download.entity.DownloadInfo;
 import com.shizhefei.download.base.DownloadListener;
-import com.shizhefei.download.base.DownloadParams;
-import com.shizhefei.download.base.DownloadTaskFactory;
-import com.shizhefei.download.db.DownloadDB;
-import com.shizhefei.download.base.IdGenerator;
-import com.shizhefei.download.utils.DownloadJsonUtils;
-import com.shizhefei.download.utils.DownloadLogUtils;
+import com.shizhefei.download.entity.DownloadParams;
+import com.shizhefei.download.taskfactory.DefaultDownloadTaskFactory;
+import com.shizhefei.download.entity.DownloadConfig;
+import com.shizhefei.download.base.DownloadCursor;
 import com.shizhefei.download.utils.FileDownloadUtils;
 
 import java.io.File;
 
 public abstract class DownloadManager {
-    public static final int DOWNLOAD_FROMBEGIN_REASON_FILE_REMOVE = 0;//文件被移除
-    public static final int DOWNLOAD_FROMBEGIN_UNSUPPORT_RANGE = 1;//url的服务器不接受range要重新下载
-    public static final int DOWNLOAD_FROMBEGIN_ETAG_CHANGE = 2;//etag改变，表示内容变化
+    public static final int DOWNLOAD_FROM_BEGIN_REASON_FILE_REMOVE = 0;//文件被移除
+    public static final int DOWNLOAD_FROM_BEGIN_UNSUPPORT_RANGE = 1;//url的服务器不接受range要重新下载
+    public static final int DOWNLOAD_FROM_BEGIN_ETAG_CHANGE = 2;//etag改变，表示内容变化
+
+    //---------------------     error code  -------------------------------------------------------------//
+    /**
+     * 未知错误
+     */
+    public static final int ERROR_UNKNOW = -1;
+    /**
+     * 权限不足错误码
+     */
+    public static final int ERROR_PERMISSION = 1;
+    /**
+     * FileNotFoundException 文件找不到错误码（一般没有存储权限）
+     */
+    public static final int ERROR_FILENOTFOUNDEXCEPTION = 2;
+    /**
+     * IOException
+     */
+    public static final int ERROR_IOEXCEPTION = 3;
+    /**
+     * http错误
+     */
+    public static final int ERROR_HTTP = 4;
+    /**
+     * http错误
+     */
+    public static final int ERROR_WIFIREQUIRED = 5;
+    public static final int ERROR_PRECONDITION_FAILED = 6;
+    public static final int ERROR_EMPTY_SIZE = 7;
+    public static final int ERROR_SIZE_CHANGE = 8;
+    /**
+     * MalformedURLException
+     */
+    public static final int ERROR_MALFORMEDURLEXCEPTION = 9;
+    /**
+     * ProtocolException
+     */
+    public static final int ERROR_PROTOCOLEXCEPTION = 10;
+    //---------------------     error code---------------------------------------------------------//
+
+
+    //----------------------   status ------------------------------------------------------------//
+    public static final int STATUS_PENDING = 0;//在队列中，还没开始
+    public static final int STATUS_START = 1;//开始
+    public static final int STATUS_CONNECTED = 2;//连接上服务器
+    public static final int STATUS_DOWNLOAD_RESET_BEGIN = 3;//连接上服务器
+    public static final int STATUS_DOWNLOAD_ING = 4;
+    public static final int STATUS_PAUSED = 5;//连接上服务器
+    public static final int STATUS_FINISHED = 6;
+    public static final int STATUS_FAIL = 7;
+    public static final int STATUS_REMOVE = 8;//连接上服务器
+    //----------------------   status ------------------------------------------------------------//
 
     private static Context context;
     //    private static DownloadTaskFactory staticDownloadTaskFactory;

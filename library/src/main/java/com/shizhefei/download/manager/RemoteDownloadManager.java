@@ -1,8 +1,9 @@
-package com.shizhefei.download.imp;
+package com.shizhefei.download.manager;
 
 import com.shizhefei.download.entity.DownloadInfo;
 import com.shizhefei.download.base.DownloadListener;
-import com.shizhefei.download.base.DownloadParams;
+import com.shizhefei.download.entity.DownloadParams;
+import com.shizhefei.download.base.DownloadCursor;
 
 public class RemoteDownloadManager extends DownloadManager {
     public RemoteDownloadManager(LocalDownloadManager localDownloadManager) {

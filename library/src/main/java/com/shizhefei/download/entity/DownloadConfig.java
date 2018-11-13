@@ -1,4 +1,4 @@
-package com.shizhefei.download.imp;
+package com.shizhefei.download.entity;
 
 import com.shizhefei.download.base.DownloadTaskFactory;
 

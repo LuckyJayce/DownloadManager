@@ -6,9 +6,8 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.util.Pair;
 
-import com.shizhefei.download.base.DownloadParams;
+import com.shizhefei.download.entity.DownloadParams;
 import com.shizhefei.download.entity.DownloadInfo;
 import com.shizhefei.download.utils.DownloadLogUtils;
 import com.shizhefei.mvc.ProgressSender;

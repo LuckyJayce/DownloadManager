@@ -1,6 +1,7 @@
 package com.shizhefei.download.base;
 
 import com.shizhefei.download.db.DownloadDB;
+import com.shizhefei.download.entity.DownloadParams;
 
 import java.util.concurrent.Executor;
 

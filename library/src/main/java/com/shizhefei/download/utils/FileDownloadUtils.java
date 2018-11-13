@@ -8,10 +8,8 @@ import android.os.Build;
 import android.os.StatFs;
 
 import com.shizhefei.download.entity.DownloadInfo;
-import com.shizhefei.download.imp.DownloadManager;
+import com.shizhefei.download.manager.DownloadManager;
 
-import java.io.File;
-import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.ProtocolException;
 import java.util.Locale;

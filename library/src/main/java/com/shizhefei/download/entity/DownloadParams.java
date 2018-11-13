@@ -1,12 +1,11 @@
-package com.shizhefei.download.base;
+package com.shizhefei.download.entity;
 
 
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.text.TextUtils;
 
-import com.shizhefei.download.imp.DownloadConfig;
-import com.shizhefei.download.imp.DownloadManager;
+import com.shizhefei.download.manager.DownloadManager;
 import com.shizhefei.download.utils.DownloadJsonUtils;
 
 import org.json.JSONException;

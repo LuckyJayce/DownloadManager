@@ -4,11 +4,10 @@ import android.os.Bundle;
 import android.text.TextUtils;
 
 import com.shizhefei.download.base.DownloadListener;
-import com.shizhefei.download.entity.DownloadInfo;
-import com.shizhefei.download.entity.ErrorInfo;
 import com.shizhefei.download.entity.HttpInfo;
 import com.shizhefei.download.exception.DownloadException;
 import com.shizhefei.download.exception.RemoveException;
+import com.shizhefei.download.manager.DownloadManager;
 import com.shizhefei.task.Code;
 import com.shizhefei.task.ICallback;
 
@@ -37,25 +36,25 @@ public class DownloadListenerProxy implements ICallback<Void> {
             status = (int) extraData;
         }
         switch (status) {
-            case DownloadInfo.STATUS_PAUSED:
+            case DownloadManager.STATUS_PAUSED:
                 downloadListener.onPaused(downloadId);
                 break;
-            case DownloadInfo.STATUS_DOWNLOAD_ING:
+            case DownloadManager.STATUS_DOWNLOAD_ING:
                 downloadListener.onDownloadIng(downloadId, current, total);
                 break;
-            case DownloadInfo.STATUS_START:
+            case DownloadManager.STATUS_START:
                 downloadListener.onStart(downloadId);
                 break;
-            case DownloadInfo.STATUS_DOWNLOAD_RESET_BEGIN:
+            case DownloadManager.STATUS_DOWNLOAD_RESET_BEGIN:
                 if(bundle!=null){
                     int reason = bundle.getInt(DownloadProgressSenderProxy.PARAM_DOWNLOADFROMBEGINREASON);
                     downloadListener.onDownloadResetBegin(downloadId, reason);
                 }
                 break;
-            case DownloadInfo.STATUS_REMOVE:
+            case DownloadManager.STATUS_REMOVE:
                 downloadListener.onRemove(downloadId);
                 break;
-            case DownloadInfo.STATUS_CONNECTED:
+            case DownloadManager.STATUS_CONNECTED:
                 if (bundle != null) {
                     HttpInfo httpInfo = bundle.getParcelable(DownloadProgressSenderProxy.PARAM_HTTPINFO);
                     String saveDir = bundle.getString(DownloadProgressSenderProxy.PARAM_SAVEDIR);
@@ -81,7 +80,7 @@ public class DownloadListenerProxy implements ICallback<Void> {
                     if (TextUtils.isEmpty(message)) {
                         message = exception.getClass().getName();
                     }
-                    downloadListener.onError(downloadId, ErrorInfo.ERROR_UNKNOW, message);
+                    downloadListener.onError(downloadId, DownloadManager.ERROR_UNKNOW, message);
                 }
                 break;
             case SUCCESS:

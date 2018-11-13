@@ -1,4 +1,4 @@
-package com.shizhefei.download.imp;
+package com.shizhefei.download.base;
 
 import com.shizhefei.download.entity.DownloadInfo;
 

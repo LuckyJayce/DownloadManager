@@ -11,8 +11,8 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.shizhefei.download.entity.DownloadInfo;
-import com.shizhefei.download.imp.DownloadCursor;
-import com.shizhefei.download.imp.DownloadManager;
+import com.shizhefei.download.base.DownloadCursor;
+import com.shizhefei.download.manager.DownloadManager;
 
 import java.io.File;
 
