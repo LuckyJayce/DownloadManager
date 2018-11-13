@@ -11,6 +11,10 @@ public abstract class DownloadListener {
 
     }
 
+    public void onDownloadResetBegin(long downloadId) {
+
+    }
+
     public void onDownloadIng(long downloadId, long current, long total) {
 
     }

@@ -22,22 +22,19 @@ public class DownloadProgressSenderProxy {
         this.progressSender = progressSender;
     }
 
-    public void sendConnected(int httpCode, String saveDir, String saveFileName, String tempFileName, String contentType, String newEtag, long current, long total) {
-        HttpInfo.Agency agency = new HttpInfo.Agency();
-        agency.setContentLength(total);
-        agency.setETag(newEtag);
-        agency.setContentType(contentType);
-        agency.setHttpCode(httpCode);
-        HttpInfo info = agency.getInfo();
-
+    public void sendConnected(HttpInfo httpInfo, String saveDir, String saveFileName, String tempFileName, long current, long total) {
         Bundle bundle = new Bundle();
         bundle.putInt(PROGRESS_STATUS, DownloadInfo.STATUS_CONNECTED);
 
         bundle.putString(PARAM_SAVEDIR, saveDir);
         bundle.putString(PARAM_SAVEFILENAME, saveFileName);
         bundle.putString(PARAM_TEMPFILENAME, tempFileName);
-        bundle.putParcelable(PARAM_HTTPINFO, info);
+        bundle.putParcelable(PARAM_HTTPINFO, httpInfo);
         progressSender.sendProgress(current, total, bundle);
+    }
+
+    public void sendDownloadFromBegin(long current, long total) {
+        progressSender.sendProgress(current, total, DownloadInfo.STATUS_START);
     }
 
     public void sendStart(long current, long total) {

@@ -11,9 +11,10 @@ public class DownloadInfo {
     public static final int STATUS_PENDING = 0;//在队列中，还没开始
     public static final int STATUS_START = 1;//开始
     public static final int STATUS_CONNECTED = 2;//连接上服务器
-    public static final int STATUS_DOWNLOAD_ING = 3;
-    public static final int STATUS_PAUSED = 4;//连接上服务器
-    public static final int STATUS_FINISHED = 5;
+    public static final int STATUS_DOWNLOAD_RESET_BEGIN = 3;//连接上服务器
+    public static final int STATUS_DOWNLOAD_ING = 4;
+    public static final int STATUS_PAUSED = 5;//连接上服务器
+    public static final int STATUS_FINISHED = 6;
     public static final int STATUS_FAIL = 7;
     private long id;
     private String url;
@@ -39,6 +40,8 @@ public class DownloadInfo {
                 return "STATUS_START";
             case STATUS_CONNECTED:
                 return "STATUS_CONNECTED";
+            case STATUS_DOWNLOAD_RESET_BEGIN:
+                return "STATUS_DOWNLOAD_RESET_BEGIN";
             case STATUS_DOWNLOAD_ING:
                 return "STATUS_DOWNLOAD_ING";
             case STATUS_PAUSED:

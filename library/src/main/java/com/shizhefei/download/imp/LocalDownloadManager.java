@@ -59,8 +59,12 @@ public class LocalDownloadManager extends DownloadManager {
                 case DownloadInfo.STATUS_DOWNLOAD_ING:
                 case DownloadInfo.STATUS_PENDING:
                 case DownloadInfo.STATUS_START:
+                case DownloadInfo.STATUS_DOWNLOAD_RESET_BEGIN:
                     info.setStatus(DownloadInfo.STATUS_PAUSED);
                     break;
+            }
+            if (!info.getHttpInfo().isAcceptRange()) {
+                info.setCurrent(0);
             }
             downloadInfoList.add(info.getInfo());
         }

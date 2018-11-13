@@ -11,15 +11,26 @@ public class HttpInfo implements Parcelable {
     private String contentType;
     private long contentLength;
     private String eTag;
+    private boolean acceptRange;
 
     private HttpInfo() {
     }
+
 
     protected HttpInfo(Parcel in) {
         httpCode = in.readInt();
         contentType = in.readString();
         contentLength = in.readLong();
         eTag = in.readString();
+        acceptRange = in.readByte() != 0;
+    }
+
+    public boolean isAcceptRange() {
+        return acceptRange;
+    }
+
+    private void setAcceptRange(boolean acceptRange) {
+        this.acceptRange = acceptRange;
     }
 
     public String getETag() {
@@ -62,6 +73,7 @@ public class HttpInfo implements Parcelable {
             jsonObject.put("contentType", contentType);
             jsonObject.put("contentLength", contentLength);
             jsonObject.put("eTag", eTag);
+            jsonObject.put("acceptRange", acceptRange);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -80,18 +92,21 @@ public class HttpInfo implements Parcelable {
         }
     };
 
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeInt(httpCode);
         dest.writeString(contentType);
         dest.writeLong(contentLength);
         dest.writeString(eTag);
+        dest.writeByte((byte) (acceptRange ? 1 : 0));
     }
 
-    @Override
-    public int describeContents() {
-        return 0;
-    }
 
     public static class Agency {
         private HttpInfo httpInfo;
@@ -107,6 +122,7 @@ public class HttpInfo implements Parcelable {
                 httpInfo.setContentType(jsonObject.optString("contentType"));
                 httpInfo.setContentLength(jsonObject.optLong("contentLength"));
                 httpInfo.setETag(jsonObject.optString("eTag"));
+                httpInfo.setAcceptRange(jsonObject.optBoolean("acceptRange", false));
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -134,6 +150,14 @@ public class HttpInfo implements Parcelable {
 
         public String getContentType() {
             return httpInfo.getContentType();
+        }
+
+        public void setAcceptRange(boolean acceptRange) {
+            httpInfo.setAcceptRange(acceptRange);
+        }
+
+        public boolean isAcceptRange() {
+            return httpInfo.isAcceptRange();
         }
 
         public void setContentType(String contentType) {

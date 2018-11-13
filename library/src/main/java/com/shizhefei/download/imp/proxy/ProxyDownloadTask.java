@@ -50,6 +50,7 @@ public class ProxyDownloadTask extends AbsDownloadTask {
             case DownloadInfo.STATUS_START:
             case DownloadInfo.STATUS_DOWNLOAD_ING:
             case DownloadInfo.STATUS_CONNECTED:
+            case DownloadInfo.STATUS_DOWNLOAD_RESET_BEGIN:
                 downloadInfoAgency.setStatus(DownloadInfo.STATUS_PENDING);
                 break;
             case DownloadInfo.STATUS_FAIL:
@@ -90,6 +91,14 @@ public class ProxyDownloadTask extends AbsDownloadTask {
     }
 
     private DownloadListener downloadListener = new DownloadListener() {
+
+        @Override
+        public void onDownloadResetBegin(long downloadId) {
+            downloadInfoAgency.setStatus(DownloadInfo.STATUS_DOWNLOAD_RESET_BEGIN);
+            downloadInfoAgency.setCurrent(0);
+            downloadDB.update(downloadInfoAgency.getInfo());
+        }
+
         @Override
         public void onPending(long downloadId) {
             super.onPending(downloadId);

@@ -45,6 +45,9 @@ public class DownloadListenerProxy implements ICallback<Void> {
             case DownloadInfo.STATUS_START:
                 downloadListener.onStart(downloadId);
                 break;
+            case DownloadInfo.STATUS_DOWNLOAD_RESET_BEGIN:
+                downloadListener.onDownloadResetBegin(downloadId);
+                break;
             case DownloadInfo.STATUS_CONNECTED:
                 if (bundle != null) {
                     HttpInfo httpInfo = bundle.getParcelable(DownloadProgressSenderProxy.PARAM_HTTPINFO);

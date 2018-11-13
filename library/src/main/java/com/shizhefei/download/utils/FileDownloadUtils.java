@@ -49,7 +49,7 @@ public class FileDownloadUtils {
     }
 
 
-    public static boolean isPreconditionFailed(HttpURLConnection connection, int httpCode, DownloadInfo entity, boolean acceptPartial) throws Exception {
+    public static boolean isPreconditionFailed(HttpURLConnection connection, int httpCode, DownloadInfo entity, boolean isAcceptRange) throws Exception {
         final boolean onlyFromBeginning = (httpCode == HttpURLConnection.HTTP_OK
                 || httpCode == HttpURLConnection.HTTP_CREATED);
 
@@ -64,7 +64,7 @@ public class FileDownloadUtils {
 
         if (oldEtag != null && !oldEtag.equals(newEtag)) {
             // etag changed.
-            if (onlyFromBeginning || acceptPartial) {
+            if (onlyFromBeginning || isAcceptRange) {
                 // 200 or 206
                 isPreconditionFailed = true;
             }

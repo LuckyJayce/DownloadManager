@@ -3,6 +3,7 @@
     package="com.shizhefei.downloadmanager">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 
     <!-- networkSecurityConfig 9.0禁止非https的请求所以要添加这个配置开启 -》 https://blog.csdn.net/gengkui9897/article/details/82863966 -->
     <application
