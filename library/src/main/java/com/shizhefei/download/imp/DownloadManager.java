@@ -11,26 +11,40 @@ import com.shizhefei.download.base.IdGenerator;
 
 public abstract class DownloadManager {
     private static Context context;
-    private static DownloadTaskFactory staticDownloadTaskFactory;
-    private static IdGenerator staticIdGenerator;
-    private static DownloadDB downloadDB;
+//    private static DownloadTaskFactory staticDownloadTaskFactory;
+//    private static IdGenerator staticIdGenerator;
+//    private static DownloadDB downloadDB;
+    private static volatile LocalDownloadManager localDownloadManager;
+    private static volatile RemoteDownloadManager remoteDownloadManager;
 
-    public static void init(Context context, DownloadTaskFactory downloadTaskFactory, IdGenerator idGenerator) {
+    public static void init(Context context) {
         DownloadManager.context = context.getApplicationContext();
-        staticDownloadTaskFactory = downloadTaskFactory;
-        staticIdGenerator = idGenerator;
     }
 
-    public static Context getContext(){
+    public static Context getContext() {
         return context;
     }
 
     public static LocalDownloadManager getLocal() {
-        return new LocalDownloadManager(staticDownloadTaskFactory, staticIdGenerator);
+        if (localDownloadManager == null) {
+            synchronized (DownloadManager.class) {
+                if (localDownloadManager == null) {
+                    localDownloadManager = new LocalDownloadManager(context, null);
+                }
+            }
+        }
+        return localDownloadManager;
     }
 
     public static RemoteDownloadManager getRemote() {
-        return new RemoteDownloadManager();
+        if (remoteDownloadManager == null) {
+            synchronized (DownloadManager.class) {
+                if (remoteDownloadManager == null) {
+                    remoteDownloadManager = new RemoteDownloadManager(localDownloadManager);
+                }
+            }
+        }
+        return remoteDownloadManager;
     }
 
     /**
@@ -38,7 +52,8 @@ public abstract class DownloadManager {
      * @param downloadListener
      * @return 返回下载的id
      */
-    public abstract long start(DownloadParams downloadParams, DownloadListener downloadListener);
+    public abstract long start(DownloadParams downloadParams, DownloadListener downloadListener)
+    ;
 
     public abstract long start(DownloadParams downloadParams);
 

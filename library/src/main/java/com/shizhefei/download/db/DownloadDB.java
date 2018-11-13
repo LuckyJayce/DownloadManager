@@ -15,23 +15,37 @@ import com.shizhefei.task.ITask;
 import com.shizhefei.task.TaskHelper;
 
 import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class DownloadDB {
     private static final int DB_VERSION = 1;
+    private static final int DOWNLOAD_ID_INVALID = -1;//非法的id
+    private static final int DOWNLOAD_ID_MIN = 1;//最小的id
     private static final String SQL_SELECT = "select * from " + DBHelper.TABLE_NAME + " where " + DBHelper.FIELD_KEY + "=?";
-    private final Executor executor;
-    private final Context context;
     private final DBHelper dbHelper;
     private TaskHelper taskHelper;
-    private static int downloadId;
+    private AtomicLong downloadMaxId;
 
     public DownloadDB(Context context, Executor executor) {
-        this.context = context;
-        this.executor = executor;
         dbHelper = new DBHelper(context, "DownloadDB", null, DB_VERSION);
         taskHelper = new TaskHelper();
         taskHelper.setThreadExecutor(executor);
-        //TODO 查找出当前最大的id
+        long downloadMaxId = DOWNLOAD_ID_INVALID;
+        SQLiteDatabase database = dbHelper.getReadableDatabase();
+        try {
+            Cursor cursor = database.rawQuery("select MAX(" + DBHelper.FIELD_KEY + ") as max_id from " + DBHelper.TABLE_NAME, new String[]{String.valueOf(downloadMaxId)});
+            if (cursor.moveToNext()) {
+                downloadMaxId = cursor.getLong(cursor.getColumnIndex("max_id"));
+            }
+            cursor.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        if (downloadMaxId == DOWNLOAD_ID_INVALID) {
+            downloadMaxId = DOWNLOAD_ID_MIN;
+        }
+        this.downloadMaxId = new AtomicLong(downloadMaxId);
+        DownloadLogUtils.d( "find downloadMaxId={}", downloadMaxId);
     }
 
     @Nullable
@@ -73,7 +87,7 @@ public class DownloadDB {
             }
             cursor.close();
         } catch (Exception e) {
-            DownloadLogUtils.e(e, "find downloadId={}", downloadId);
+            DownloadLogUtils.e(e, "find error downloadId={}", downloadId);
         }
         return paramsPair;
     }
@@ -87,8 +101,7 @@ public class DownloadDB {
     }
 
     public long addAndGetDownloadId() {
-        downloadId++;
-        return downloadId;
+        return downloadMaxId.addAndGet(1);
     }
 
     public void replace(DownloadParams downloadParams, DownloadInfo downloadInfo) {

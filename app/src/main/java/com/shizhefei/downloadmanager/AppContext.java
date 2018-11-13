@@ -12,21 +12,6 @@ public class AppContext extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        DownloadManager.init(this, new DownloadTaskFactory() {
-            @Override
-            public AbsDownloadTask buildDownloadTask(long downloadId, DownloadParams downloadParams) {
-                return null;
-            }
-
-            @Override
-            public AbsDownloadTask buildDownloadTask(long downloadId) {
-                return null;
-            }
-        }, new IdGenerator() {
-            @Override
-            public long generateId(DownloadParams downloadParams) {
-                return 0;
-            }
-        });
+        DownloadManager.init(this);
     }
 }

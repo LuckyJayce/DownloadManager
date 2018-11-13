@@ -5,6 +5,10 @@ import com.shizhefei.download.base.DownloadListener;
 import com.shizhefei.download.base.DownloadParams;
 
 public class RemoteDownloadManager extends DownloadManager {
+    public RemoteDownloadManager(LocalDownloadManager localDownloadManager) {
+
+    }
+
     @Override
     public long start(DownloadParams downloadParams, DownloadListener downloadListener) {
         return 0;
