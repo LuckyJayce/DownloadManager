@@ -10,6 +10,8 @@ import android.os.StatFs;
 import com.shizhefei.download.entity.DownloadInfo;
 import com.shizhefei.download.imp.DownloadManager;
 
+import java.io.File;
+import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.ProtocolException;
 import java.util.Locale;
@@ -32,10 +34,6 @@ public class FileDownloadUtils {
 
     public static boolean checkPermission(String accessNetworkState) {
         return false;
-    }
-
-    public static String formatString(final String msg, Object... args) {
-        return String.format(Locale.ENGLISH, msg, args);
     }
 
     public static String findEtag(long downloadId, HttpURLConnection httpURLConnection) {
@@ -101,5 +99,13 @@ public class FileDownloadUtils {
             freeSpaceBytes = statFs.getAvailableBlocks() * (long) statFs.getBlockSize();
         }
         return freeSpaceBytes;
+    }
+
+    public static String formatStringE(Throwable e, String text, Object... args) {
+        return String.format(Locale.getDefault(), text, args) + " throwable:" + e.getMessage();
+    }
+
+    public static String formatString(final String msg, Object... args) {
+        return String.format(Locale.getDefault(), msg, args);
     }
 }

@@ -37,7 +37,7 @@ public class DownloadDB {
         long downloadMaxId = DOWNLOAD_ID_INVALID;
         SQLiteDatabase database = dbHelper.getReadableDatabase();
         try {
-            Cursor cursor = database.rawQuery("select MAX(" + DBHelper.FIELD_KEY + ") as max_id from " + DBHelper.TABLE_NAME, new String[]{String.valueOf(downloadMaxId)});
+            Cursor cursor = database.rawQuery("select MAX(" + DBHelper.FIELD_KEY + ") as max_id from " + DBHelper.TABLE_NAME, new String[]{});
             if (cursor.moveToNext()) {
                 downloadMaxId = cursor.getLong(cursor.getColumnIndex("max_id"));
             }

@@ -6,7 +6,6 @@ import android.text.TextUtils;
 import com.shizhefei.download.base.RemoveHandler;
 import com.shizhefei.download.entity.DownloadInfo;
 import com.shizhefei.download.base.DownloadParams;
-import com.shizhefei.download.entity.HttpInfo;
 import com.shizhefei.download.exception.DownloadException;
 import com.shizhefei.download.entity.ErrorInfo;
 import com.shizhefei.download.prxoy.DownloadProgressSenderProxy;
@@ -18,10 +17,13 @@ import com.shizhefei.task.ITask;
 
 import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.ProtocolException;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
@@ -162,9 +164,30 @@ public class DownloadTask implements ITask<Void>, RemoveHandler.OnRemoveListener
                 checkupWifiConnect();
             }
             //TODO 如果强制取消删除文件和临时文件
+        } catch (FileNotFoundException e) {
+            String errorMessage = FileDownloadUtils.formatStringE(e, "FileNotFoundException dir=%s saveFileTemp=%s saveFile=%s", downloadParams.getDir(), saveFileTemp, saveFile);
+            throw new DownloadException(downloadId, ErrorInfo.ERROR_FILENOTFOUNDEXCEPTION, errorMessage, e.getCause());
+        } catch (MalformedURLException e) {
+            String errorMessage = FileDownloadUtils.formatStringE(e, "MalformedURLException url=%s", downloadParams.getUrl());
+            throw new DownloadException(downloadId, ErrorInfo.ERROR_MALFORMEDURLEXCEPTION, errorMessage, e.getCause());
+        } catch (ProtocolException e) {
+            String errorMessage = FileDownloadUtils.formatStringE(e, "ProtocolException url=%s", downloadParams.getUrl());
+            throw new DownloadException(downloadId, ErrorInfo.ERROR_PROTOCOLEXCEPTION, errorMessage, e.getCause());
+        } catch (IOException e) {
+            String errorMessage = FileDownloadUtils.formatStringE(e, "IOException dir=%s saveFileTemp=%s saveFile=%s", downloadParams.getDir(), saveFileTemp, saveFile);
+            throw new DownloadException(downloadId, ErrorInfo.ERROR_IOEXCEPTION, errorMessage, e.getCause());
+        } catch (DownloadException e) {
+            throw e;
+        } catch (Exception e) {
+            String errorMessage = FileDownloadUtils.formatStringE(e, "UNKNOWN");
+            throw new DownloadException(downloadId, ErrorInfo.ERROR_UNKNOW, errorMessage, e.getCause());
         } finally {
             if (inputStream != null) {
-                inputStream.close();
+                try {
+                    inputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
             if (randomAccessFile != null) {
                 try {

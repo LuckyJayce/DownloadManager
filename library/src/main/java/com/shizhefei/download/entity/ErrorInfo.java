@@ -6,6 +6,10 @@ import android.os.Parcelable;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.ProtocolException;
+
 /**
  * Created by luckyjayce on 18-3-14.
  */
@@ -20,11 +24,11 @@ public class ErrorInfo implements Parcelable {
      */
     public static final int ERROR_PERMISSION = 1;
     /**
-     * 文件找不到错误码（一般没有存储权限）
+     * FileNotFoundException 文件找不到错误码（一般没有存储权限）
      */
     public static final int ERROR_FILENOTFOUNDEXCEPTION = 2;
     /**
-     * io异常错误码
+     * IOException
      */
     public static final int ERROR_IOEXCEPTION = 3;
     /**
@@ -42,6 +46,14 @@ public class ErrorInfo implements Parcelable {
     public static final int ERROR_EMPTY_SIZE = 7;
 
     public static final int ERROR_SIZE_CHANGE = 8;
+    /**
+     * MalformedURLException
+     */
+    public static final int ERROR_MALFORMEDURLEXCEPTION = 9;
+    /**
+     * ProtocolException
+     */
+    public static final int ERROR_PROTOCOLEXCEPTION = 10;
 
     private int errorCode;
     private String errorMessage;
