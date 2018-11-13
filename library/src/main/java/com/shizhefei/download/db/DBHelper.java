@@ -5,7 +5,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 class DBHelper extends SQLiteOpenHelper {
-    static final String TABLE_NAME = "Cache";
+    static final String TABLE_NAME = "download";
 
     static final String FIELD_KEY = "id";
 
@@ -34,16 +34,16 @@ class DBHelper extends SQLiteOpenHelper {
                 TABLE_NAME + "(" +
                 FIELD_KEY + " BIGINT primary key," +
                 FIELD_DIR + " VARCHAR," +
-                FIELD_START_TIME + " BIGINT" +
-                FIELD_STATUS + " INTEGER" +
-                FIELD_URL + " VARCHAR" +
-                FIELD_FILENAME + " VARCHAR" +
-                FIELD_TEMP_FILENAME + " VARCHAR" +
-                FIELD_HTTP_INFO + " VARCHAR" +
-                FIELD_ERROR_INFO + " VARCHAR" +
-                FIELD_DOWNLOAD_PARAMS + " VARCHAR" +
-                FIELD_EXT_INFO + " VARCHAR" +
-                FIELD_CURRENT + " BIGINT" +
+                FIELD_START_TIME + " BIGINT," +
+                FIELD_STATUS + " INTEGER," +
+                FIELD_URL + " VARCHAR," +
+                FIELD_FILENAME + " VARCHAR," +
+                FIELD_TEMP_FILENAME + " VARCHAR," +
+                FIELD_HTTP_INFO + " VARCHAR," +
+                FIELD_ERROR_INFO + " VARCHAR," +
+                FIELD_DOWNLOAD_PARAMS + " VARCHAR," +
+                FIELD_EXT_INFO + " VARCHAR," +
+                FIELD_CURRENT + " BIGINT," +
                 FIELD_TOTAL + " BIGINT" +
                 ")"
         );

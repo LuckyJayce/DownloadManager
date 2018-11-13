@@ -85,7 +85,7 @@ public class LocalDownloadManager extends DownloadManager {
     }
 
     @Override
-    public void cancel(long downloadId) {
+    public void remove(long downloadId) {
         DownloadData data = tasks.get(downloadId);
         if (data != null) {
             data.removeHandler.remove();
@@ -112,17 +112,8 @@ public class LocalDownloadManager extends DownloadManager {
     }
 
     @Override
-    public DownloadInfo get(int position) {
-        AbsDownloadTask downloadTask = downloadEntities.get(position);
-        if (downloadTask != null) {
-            return downloadTask.getDownloadInfo();
-        }
-        return null;
-    }
-
-    @Override
-    public int getTaskCount() {
-        return downloadEntities.size();
+    public DownloadCursor getDownloadCursor() {
+        return downloadCursor;
     }
 
     @Override
@@ -242,6 +233,33 @@ public class LocalDownloadManager extends DownloadManager {
                 downloadListener.onRemove(downloadId);
                 listeners.remove(downloadId);
             }
+        }
+    };
+
+    private DownloadCursor downloadCursor = new DownloadCursor() {
+        @Override
+        public int getCount() {
+            return downloadEntities.size();
+        }
+
+        @Override
+        public DownloadInfo getDownloadInfo(int position) {
+            AbsDownloadTask downloadTask = downloadEntities.get(position);
+            if (downloadTask != null) {
+                return downloadTask.getDownloadInfo();
+            }
+            return null;
+        }
+
+        @Override
+        public int getPosition(long downloadId) {
+            for (int i = 0; i < downloadEntities.size(); i++) {
+                AbsDownloadTask absDownloadTask = downloadEntities.get(i);
+                if (absDownloadTask.getDownloadInfo().getId() == downloadId) {
+                    return i;
+                }
+            }
+            return -1;
         }
     };
 }

@@ -22,7 +22,7 @@ public abstract class DownloadManager {
         DownloadManager.context = context.getApplicationContext();
     }
 
-    public static Context getContext() {
+    public static Context getApplicationContext() {
         return context;
     }
 
@@ -70,15 +70,13 @@ public abstract class DownloadManager {
      *
      * @param downloadId
      */
-    public abstract void cancel(long downloadId);
+    public abstract void remove(long downloadId);
 
-    public abstract DownloadInfo getDownloadEntity(long id);
+    public abstract DownloadInfo getDownloadEntity(long downloadId);
 
-    public abstract DownloadParams getDownloadParams(long id);
+    public abstract DownloadParams getDownloadParams(long downloadId);
 
-    public abstract DownloadInfo get(int position);
-
-    public abstract int getTaskCount();
+    public abstract DownloadCursor getDownloadCursor();
 
     public abstract void registerDownloadListener(DownloadListener downloadListener);
 

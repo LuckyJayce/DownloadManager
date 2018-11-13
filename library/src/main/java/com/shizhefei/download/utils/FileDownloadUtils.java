@@ -8,7 +8,6 @@ import android.os.Build;
 import android.os.StatFs;
 
 import com.shizhefei.download.entity.DownloadInfo;
-import com.shizhefei.download.entity.HttpInfo;
 import com.shizhefei.download.imp.DownloadManager;
 
 import java.net.HttpURLConnection;
@@ -20,7 +19,7 @@ public class FileDownloadUtils {
     public static final int TOTAL_VALUE_IN_CHUNKED_RESOURCE = -1;
 
     public static boolean isNetworkNotOnWifiType() {
-        final ConnectivityManager manager = (ConnectivityManager) DownloadManager.getContext().
+        final ConnectivityManager manager = (ConnectivityManager) DownloadManager.getApplicationContext().
                 getSystemService(Context.CONNECTIVITY_SERVICE);
         if (manager == null) {
             DownloadLogUtils.d("failed to get connectivity manager!");

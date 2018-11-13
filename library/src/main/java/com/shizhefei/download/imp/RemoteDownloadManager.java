@@ -25,7 +25,7 @@ public class RemoteDownloadManager extends DownloadManager {
     }
 
     @Override
-    public void cancel(long downloadId) {
+    public void remove(long downloadId) {
 
     }
 
@@ -40,13 +40,8 @@ public class RemoteDownloadManager extends DownloadManager {
     }
 
     @Override
-    public DownloadInfo get(int position) {
+    public DownloadCursor getDownloadCursor() {
         return null;
-    }
-
-    @Override
-    public int getTaskCount() {
-        return 0;
     }
 
     @Override
