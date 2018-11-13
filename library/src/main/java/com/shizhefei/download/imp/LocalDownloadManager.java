@@ -32,7 +32,7 @@ public class LocalDownloadManager extends DownloadManager {
     private LongSparseArray<DownloadData> tasks = new LongSparseArray<>();
     private LongSparseArray<DownloadListener> listeners = new LongSparseArray<>();
     private Set<DownloadListener> downloadListeners = new HashSet<>();
-    private List<AbsDownloadTask> downloadEntities = new ArrayList<>();
+    private List<DownloadInfo> downloadInfoList;
     private Executor executor;
 
     public LocalDownloadManager(Context context, DownloadTaskFactory downloadTaskFactory, Executor executor) {
@@ -49,7 +49,7 @@ public class LocalDownloadManager extends DownloadManager {
                 return downloadDB.addAndGetDownloadId();
             }
         };
-        //TODO 把数据库中的task查找出来赋值给tasks
+        downloadInfoList = downloadDB.findAll();
     }
 
     @Override
@@ -66,7 +66,7 @@ public class LocalDownloadManager extends DownloadManager {
 
         RemoveHandler removeHandler = new RemoveHandlerImp();
         AbsDownloadTask downloadTask = downloadTaskFactory.buildDownloadTask(downloadId, downloadParams, downloadDB, removeHandler, executor);
-        downloadEntities.add(downloadTask);
+        downloadInfoList.add(downloadTask.getDownloadInfo());
 
         TaskHandle taskHandle = taskHelper.execute(downloadTask, new DownloadListenerProxy(downloadId, proxyDownloadListener));
 
@@ -239,23 +239,19 @@ public class LocalDownloadManager extends DownloadManager {
     private DownloadCursor downloadCursor = new DownloadCursor() {
         @Override
         public int getCount() {
-            return downloadEntities.size();
+            return downloadInfoList.size();
         }
 
         @Override
         public DownloadInfo getDownloadInfo(int position) {
-            AbsDownloadTask downloadTask = downloadEntities.get(position);
-            if (downloadTask != null) {
-                return downloadTask.getDownloadInfo();
-            }
-            return null;
+            return downloadInfoList.get(position);
         }
 
         @Override
         public int getPosition(long downloadId) {
-            for (int i = 0; i < downloadEntities.size(); i++) {
-                AbsDownloadTask absDownloadTask = downloadEntities.get(i);
-                if (absDownloadTask.getDownloadInfo().getId() == downloadId) {
+            for (int i = 0; i < downloadInfoList.size(); i++) {
+                DownloadInfo downloadInfo = downloadInfoList.get(i);
+                if (downloadInfo.getId() == downloadId) {
                     return i;
                 }
             }

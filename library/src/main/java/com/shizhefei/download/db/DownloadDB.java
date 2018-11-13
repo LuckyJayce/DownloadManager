@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Pair;
 
@@ -14,6 +15,8 @@ import com.shizhefei.mvc.ProgressSender;
 import com.shizhefei.task.ITask;
 import com.shizhefei.task.TaskHelper;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -49,49 +52,6 @@ public class DownloadDB {
         DownloadLogUtils.d("find downloadMaxId={}", downloadMaxId);
     }
 
-//    @Nullable
-//    public DownloadInfo.Agency findAll() {
-//        DownloadInfo.Agency downloadInfoAgency = null;
-//        try {
-//            SQLiteDatabase database = dbHelper.getReadableDatabase();
-//            Cursor cursor = database.rawQuery(SQL_SELECT_ALL, new String[]{});
-//            while (cursor.moveToNext()) {
-//                String downloadParams = cursor.getString(cursor.getColumnIndex(DBHelper.FIELD_DOWNLOAD_PARAMS));
-//                String dir = cursor.getString(cursor.getColumnIndex(DBHelper.FIELD_DIR));
-//                String fileName = cursor.getString(cursor.getColumnIndex(DBHelper.FIELD_FILENAME));
-//                String tempFileName = cursor.getString(cursor.getColumnIndex(DBHelper.FIELD_TEMP_FILENAME));
-//                String httpInfo = cursor.getString(cursor.getColumnIndex(DBHelper.FIELD_HTTP_INFO));
-//                String errorInfo = cursor.getString(cursor.getColumnIndex(DBHelper.FIELD_ERROR_INFO));
-//                String extInfo = cursor.getString(cursor.getColumnIndex(DBHelper.FIELD_EXT_INFO));
-//                String url = cursor.getString(cursor.getColumnIndex(DBHelper.FIELD_URL));
-//                int status = cursor.getInt(cursor.getColumnIndex(DBHelper.FIELD_STATUS));
-//                long startTime = cursor.getLong(cursor.getColumnIndex(DBHelper.FIELD_START_TIME));
-//                long current = cursor.getLong(cursor.getColumnIndex(DBHelper.FIELD_CURRENT));
-//                long total = cursor.getLong(cursor.getColumnIndex(DBHelper.FIELD_TOTAL));
-//                long downloadId = cursor.getLong(cursor.getColumnIndex(DBHelper.FIELD_DIR));
-//
-//                DownloadInfo.Agency agency = new DownloadInfo.Agency(new DownloadParams.Builder(downloadParams).build());
-//                agency.setCurrent(current);
-//                agency.setStatus(status);
-//                agency.setTempFileName(tempFileName);
-//                agency.setFilename(fileName);
-//                agency.setTotal(total);
-//                agency.setDir(dir);
-//                agency.setUrl(url);
-//                agency.setId(downloadId);
-//                agency.setStartTime(startTime);
-//                agency.getHttpInfoAgency().setByJson(httpInfo);
-//                agency.getErrorInfoAgency().setByJson(errorInfo);
-//                agency.setExtInfo(extInfo);
-//                downloadInfoAgency = agency;
-//            }
-//            cursor.close();
-//        } catch (Exception e) {
-//            DownloadLogUtils.e(e, "find error downloadId={}", downloadId);
-//        }
-//        return paramsPair;
-//    }
-
     @Nullable
     public DownloadInfo.Agency find(long downloadId) {
         DownloadInfo.Agency downloadInfoAgency = null;
@@ -106,6 +66,22 @@ public class DownloadDB {
             DownloadLogUtils.e(e, "find error downloadId={}", downloadId);
         }
         return downloadInfoAgency;
+    }
+
+    @NonNull
+    public List<DownloadInfo> findAll() {
+        List<DownloadInfo> list = new ArrayList<>();
+        try {
+            SQLiteDatabase database = dbHelper.getReadableDatabase();
+            Cursor cursor = database.rawQuery(SQL_SELECT_ALL, new String[]{});
+            while (cursor.moveToNext()) {
+                list.add(get(cursor).getInfo());
+            }
+            cursor.close();
+        } catch (Exception e) {
+            DownloadLogUtils.e(e, "findAll");
+        }
+        return list;
     }
 
     private DownloadInfo.Agency get(Cursor cursor) {
