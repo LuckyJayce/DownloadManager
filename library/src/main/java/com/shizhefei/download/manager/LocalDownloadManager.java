@@ -157,6 +157,7 @@ public class LocalDownloadManager extends DownloadManager {
         if (data != null) {
             data.removeHandler.remove();
             tasks.remove(downloadId);
+            downloadDB.delete(downloadId);
         } else {//没有在执行，直接删除数据库中的
             if (downloadInfo != null) {
                 if (!TextUtils.isEmpty(downloadInfo.getTempFileName())) {
