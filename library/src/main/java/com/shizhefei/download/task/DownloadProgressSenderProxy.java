@@ -1,4 +1,4 @@
-package com.shizhefei.download.prxoy;
+package com.shizhefei.download.task;
 
 import android.os.Bundle;
 import android.support.v4.util.Pools;

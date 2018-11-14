@@ -1,4 +1,4 @@
-package com.shizhefei.download.prxoy;
+package com.shizhefei.download.task;
 
 import android.os.Bundle;
 import android.text.TextUtils;

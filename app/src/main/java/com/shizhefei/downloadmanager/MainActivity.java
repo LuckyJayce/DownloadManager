@@ -28,7 +28,7 @@ public class MainActivity extends AppCompatActivity {
     private View addButton;
     private EditText editText;
     private DataAdapter dataAdapter;
-    private LocalDownloadManager downloadManager;
+    private DownloadManager downloadManager;
     private PermissionHelper permissionHelper;
     private View pauseAllButton;
 
@@ -36,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        downloadManager = DownloadManager.getLocal();
+        downloadManager = DownloadManager.getRemote();
         downloadManager.registerDownloadListener(downloadListener);
 
         recyclerView = findViewById(R.id.recyclerView);

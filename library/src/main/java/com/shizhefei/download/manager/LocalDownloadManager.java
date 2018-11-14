@@ -18,7 +18,7 @@ import com.shizhefei.download.entity.HttpInfo;
 import com.shizhefei.download.idgenerator.DefaultIdGenerator;
 import com.shizhefei.download.taskfactory.DefaultDownloadTaskFactory;
 import com.shizhefei.download.base.DownloadCursor;
-import com.shizhefei.download.prxoy.DownloadListenerProxy;
+import com.shizhefei.download.task.DownloadListenerProxy;
 import com.shizhefei.mvc.RequestHandle;
 import com.shizhefei.task.TaskHandle;
 import com.shizhefei.task.TaskHelper;

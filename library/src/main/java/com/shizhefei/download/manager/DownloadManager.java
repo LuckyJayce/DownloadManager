@@ -103,7 +103,7 @@ public abstract class DownloadManager {
     private static DownloadConfig downloadConfig;
     private static boolean isInit;
 
-    public static void init(Context context, DownloadConfig config) {
+    public static void init(Context context, boolean remote, DownloadConfig config) {
         DownloadConfig.Builder builder = new DownloadConfig.Builder(config);
         if (TextUtils.isEmpty(builder.getDir())) {
             String dir = Environment.getExternalStorageDirectory() + File.separator + context.getPackageName() + File.separator + "download";
@@ -124,16 +124,15 @@ public abstract class DownloadManager {
         downloadConfig = builder.build();
         DownloadManager.context = context.getApplicationContext();
         isInit = true;
+        if (remote) {
+            getRemote().bindService();
+        }
     }
 
     @NonNull
     public static String defaultUserAgent() {
         return DownloadUtils.formatString("%s/%s", LIB_NAME, BuildConfig.VERSION_NAME);
     }
-
-//    public abstract DownloadInfo findFirst(DownloadQuery downloadQuery);
-//
-//    public abstract List<DownloadInfo> find(DownloadQuery downloadQuery);
 
     @Nullable
     public abstract DownloadInfo findFirst(String url);
@@ -177,7 +176,7 @@ public abstract class DownloadManager {
         if (remoteDownloadManager == null) {
             synchronized (DownloadManager.class) {
                 if (remoteDownloadManager == null) {
-                    remoteDownloadManager = new RemoteDownloadManager(localDownloadManager);
+                    remoteDownloadManager = new RemoteDownloadManager();
                 }
             }
         }

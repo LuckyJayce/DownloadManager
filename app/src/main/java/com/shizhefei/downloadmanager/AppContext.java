@@ -10,6 +10,6 @@ public class AppContext extends Application {
     public void onCreate() {
         super.onCreate();
         DownloadConfig.Builder builder = new DownloadConfig.Builder().setWifiRequired(false);
-        DownloadManager.init(this, builder.build());
+        DownloadManager.init(this, true, builder.build());
     }
 }

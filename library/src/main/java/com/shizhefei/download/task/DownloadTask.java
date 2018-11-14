@@ -11,7 +11,6 @@ import com.shizhefei.download.entity.HttpInfo;
 import com.shizhefei.download.exception.DownloadException;
 import com.shizhefei.download.exception.RemoveException;
 import com.shizhefei.download.manager.DownloadManager;
-import com.shizhefei.download.prxoy.DownloadProgressSenderProxy;
 import com.shizhefei.download.utils.FileNameUtils;
 import com.shizhefei.download.utils.DownloadUtils;
 import com.shizhefei.mvc.ProgressSender;

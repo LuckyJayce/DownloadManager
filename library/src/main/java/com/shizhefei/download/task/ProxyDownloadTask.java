@@ -9,7 +9,6 @@ import com.shizhefei.download.db.DownloadDB;
 import com.shizhefei.download.entity.ErrorInfo;
 import com.shizhefei.download.entity.HttpInfo;
 import com.shizhefei.download.manager.DownloadManager;
-import com.shizhefei.download.prxoy.DownloadListenerProxy;
 import com.shizhefei.mvc.RequestHandle;
 import com.shizhefei.mvc.ResponseSender;
 import com.shizhefei.task.tasks.Tasks;
