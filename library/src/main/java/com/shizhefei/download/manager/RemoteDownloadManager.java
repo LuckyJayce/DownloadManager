@@ -145,7 +145,7 @@ public class RemoteDownloadManager extends DownloadManager {
     public DownloadInfo getDownloadInfo(long id) {
         checkHasExecuteBind();
         try {
-            return eventServiceExecutor.getDownloadEntity(id);
+            return eventServiceExecutor.getDownloadInfo(id);
         } catch (RemoteException e) {
             e.printStackTrace();
         }

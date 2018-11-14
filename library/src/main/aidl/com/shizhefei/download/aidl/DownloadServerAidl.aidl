@@ -43,7 +43,7 @@ interface DownloadServerAidl {
         */
        void remove(long downloadId);
 
-       DownloadInfo getDownloadEntity(long downloadId);
+       DownloadInfo getDownloadInfo(long downloadId);
 
        DownloadParams getDownloadParams(long downloadId);
 
@@ -53,7 +53,7 @@ interface DownloadServerAidl {
 
        int getCount();
 
-       DownloadInfo getDownloadInfo(int position);
+       DownloadInfo getDownloadInfoByPosition(int position);
 
        int getPosition(long downloadId);
 }
