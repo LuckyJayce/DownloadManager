@@ -84,7 +84,7 @@ public class DownloadService extends Service {
 
         @Override
         public DownloadInfo getDownloadEntity(long downloadId) throws RemoteException {
-            return downloadManager.getDownloadEntity(downloadId);
+            return downloadManager.getDownloadInfo(downloadId);
         }
 
         @Override
@@ -104,17 +104,17 @@ public class DownloadService extends Service {
 
         @Override
         public int getCount() throws RemoteException {
-            return downloadManager.getDownloadCursor().getCount();
+            return downloadManager.getDownloadInfoList().getCount();
         }
 
         @Override
         public DownloadInfo getDownloadInfo(int position) throws RemoteException {
-            return downloadManager.getDownloadCursor().getDownloadInfo(position);
+            return downloadManager.getDownloadInfoList().getDownloadInfo(position);
         }
 
         @Override
         public int getPosition(long downloadId) throws RemoteException {
-            return downloadManager.getDownloadCursor().getPosition(downloadId);
+            return downloadManager.getDownloadInfoList().getPosition(downloadId);
         }
     };
 

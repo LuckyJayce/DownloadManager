@@ -13,7 +13,7 @@ import com.shizhefei.download.base.DownloadListener;
 import com.shizhefei.download.entity.DownloadParams;
 import com.shizhefei.download.taskfactory.DefaultDownloadTaskFactory;
 import com.shizhefei.download.entity.DownloadConfig;
-import com.shizhefei.download.base.DownloadCursor;
+import com.shizhefei.download.base.DownloadInfoList;
 import com.shizhefei.download.utils.DownloadUtils;
 
 import java.io.File;
@@ -97,9 +97,6 @@ public abstract class DownloadManager {
     public static final int INVALID_POSITION = -1;
 
     private static Context context;
-    //    private static DownloadTaskFactory staticDownloadTaskFactory;
-//    private static IdGenerator staticIdGenerator;
-//    private static DownloadDB downloadDB;
     private static volatile LocalDownloadManager localDownloadManager;
     private static volatile RemoteDownloadManager remoteDownloadManager;
     private static DownloadConfig downloadConfig;
@@ -219,11 +216,11 @@ public abstract class DownloadManager {
      */
     public abstract void remove(long downloadId);
 
-    public abstract DownloadInfo getDownloadEntity(long downloadId);
+    public abstract DownloadInfo getDownloadInfo(long downloadId);
 
     public abstract DownloadParams getDownloadParams(long downloadId);
 
-    public abstract DownloadCursor getDownloadCursor();
+    public abstract DownloadInfoList getDownloadInfoList();
 
     public abstract void registerDownloadListener(DownloadListener downloadListener);
 

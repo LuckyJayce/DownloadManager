@@ -2,7 +2,7 @@ package com.shizhefei.download.base;
 
 import com.shizhefei.download.entity.DownloadInfo;
 
-public interface DownloadCursor {
+public interface DownloadInfoList {
     int getCount();
 
     DownloadInfo getDownloadInfo(int position);

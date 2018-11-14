@@ -11,7 +11,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.shizhefei.download.entity.DownloadInfo;
-import com.shizhefei.download.base.DownloadCursor;
+import com.shizhefei.download.base.DownloadInfoList;
 import com.shizhefei.download.manager.DownloadManager;
 
 import java.io.File;
@@ -19,11 +19,11 @@ import java.io.File;
 public class DataAdapter extends RecyclerView.Adapter {
 
     private final DownloadManager downloadManager;
-    private final DownloadCursor downloadCursor;
+    private final DownloadInfoList downloadInfoList;
 
     public DataAdapter(DownloadManager downloadManager) {
         this.downloadManager = downloadManager;
-        downloadCursor = downloadManager.getDownloadCursor();
+        downloadInfoList = downloadManager.getDownloadInfoList();
     }
 
     @NonNull
@@ -34,14 +34,14 @@ public class DataAdapter extends RecyclerView.Adapter {
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder viewHolder, int position) {
-        DownloadInfo downloadInfo = downloadCursor.getDownloadInfo(position);
+        DownloadInfo downloadInfo = downloadInfoList.getDownloadInfo(position);
         ItemViewHolder itemViewHolder = (ItemViewHolder) viewHolder;
         itemViewHolder.setData(downloadInfo);
     }
 
     @Override
     public int getItemCount() {
-        return downloadCursor.getCount();
+        return downloadInfoList.getCount();
     }
 
     private class ItemViewHolder extends RecyclerView.ViewHolder {

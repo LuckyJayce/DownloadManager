@@ -34,10 +34,6 @@ public class DownloadDB {
         taskHelper.setThreadExecutor(executor);
     }
 
-    public SQLiteDatabase getReadableDatabase() {
-        return dbHelper.getReadableDatabase();
-    }
-
     @Nullable
     public DownloadInfo.Agency find(long downloadId) {
         DownloadInfo.Agency downloadInfoAgency = null;

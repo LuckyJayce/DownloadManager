@@ -1,14 +1,10 @@
 package com.shizhefei.downloadmanager;
 
 import android.Manifest;
-import android.content.pm.PackageManager;
-import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
-import android.text.format.Formatter;
-import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -17,7 +13,6 @@ import com.shizhefei.download.base.DownloadListener;
 import com.shizhefei.download.entity.DownloadParams;
 import com.shizhefei.download.entity.HttpInfo;
 import com.shizhefei.download.manager.DownloadManager;
-import com.shizhefei.download.utils.DownloadUtils;
 
 import java.util.List;
 
@@ -101,47 +96,47 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onStart(long downloadId) {
             super.onStart(downloadId);
-            int position = downloadManager.getDownloadCursor().getPosition(downloadId);
+            int position = downloadManager.getDownloadInfoList().getPosition(downloadId);
             dataAdapter.notifyItemChanged(position);
         }
 
         @Override
         public void onDownloadIng(long downloadId, long current, long total) {
             super.onDownloadIng(downloadId, current, total);
-            int position = downloadManager.getDownloadCursor().getPosition(downloadId);
+            int position = downloadManager.getDownloadInfoList().getPosition(downloadId);
             dataAdapter.notifyItemChanged(position);
         }
 
         @Override
         public void onConnected(long downloadId, HttpInfo httpInfo, String saveDir, String saveFileName, String tempFileName) {
             super.onConnected(downloadId, httpInfo, saveDir, saveFileName, tempFileName);
-            int position = downloadManager.getDownloadCursor().getPosition(downloadId);
+            int position = downloadManager.getDownloadInfoList().getPosition(downloadId);
             dataAdapter.notifyItemChanged(position);
         }
 
         @Override
         public void onError(long downloadId, int errorCode, String errorMessage) {
-            int position = downloadManager.getDownloadCursor().getPosition(downloadId);
+            int position = downloadManager.getDownloadInfoList().getPosition(downloadId);
             dataAdapter.notifyItemChanged(position);
         }
 
         @Override
         public void onComplete(long downloadId) {
-            int position = downloadManager.getDownloadCursor().getPosition(downloadId);
+            int position = downloadManager.getDownloadInfoList().getPosition(downloadId);
             dataAdapter.notifyItemChanged(position);
         }
 
         @Override
         public void onPaused(long downloadId) {
             super.onPaused(downloadId);
-            int position = downloadManager.getDownloadCursor().getPosition(downloadId);
+            int position = downloadManager.getDownloadInfoList().getPosition(downloadId);
             dataAdapter.notifyItemChanged(position);
         }
 
         @Override
         public void onDownloadResetBegin(long downloadId, int reason) {
             super.onDownloadResetBegin(downloadId, reason);
-            int position = downloadManager.getDownloadCursor().getPosition(downloadId);
+            int position = downloadManager.getDownloadInfoList().getPosition(downloadId);
             dataAdapter.notifyItemChanged(position);
         }
 

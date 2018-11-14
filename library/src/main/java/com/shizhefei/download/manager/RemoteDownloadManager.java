@@ -17,7 +17,7 @@ import com.shizhefei.download.aidl.DownloadServerAidl;
 import com.shizhefei.download.entity.DownloadInfo;
 import com.shizhefei.download.base.DownloadListener;
 import com.shizhefei.download.entity.DownloadParams;
-import com.shizhefei.download.base.DownloadCursor;
+import com.shizhefei.download.base.DownloadInfoList;
 import com.shizhefei.download.entity.HttpInfo;
 import com.shizhefei.download.service.DownloadService;
 
@@ -142,7 +142,7 @@ public class RemoteDownloadManager extends DownloadManager {
     }
 
     @Override
-    public DownloadInfo getDownloadEntity(long id) {
+    public DownloadInfo getDownloadInfo(long id) {
         checkHasExecuteBind();
         try {
             return eventServiceExecutor.getDownloadEntity(id);
@@ -164,9 +164,9 @@ public class RemoteDownloadManager extends DownloadManager {
     }
 
     @Override
-    public DownloadCursor getDownloadCursor() {
+    public DownloadInfoList getDownloadInfoList() {
         checkHasExecuteBind();
-        return downloadCursor;
+        return downloadInfoList;
     }
 
     @Override
@@ -363,7 +363,7 @@ public class RemoteDownloadManager extends DownloadManager {
         }
     };
 
-    private DownloadCursor downloadCursor = new DownloadCursor() {
+    private DownloadInfoList downloadInfoList = new DownloadInfoList() {
         private DownloadInfo DOWNLOAD_INFO_NONE = new DownloadInfo.Agency(new DownloadParams.Builder().build()).getInfo();
         @Override
         public int getCount() {

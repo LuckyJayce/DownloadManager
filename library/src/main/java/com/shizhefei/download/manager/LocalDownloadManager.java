@@ -5,7 +5,6 @@ import android.os.AsyncTask;
 import android.os.Process;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
-import android.util.Log;
 import android.util.LongSparseArray;
 
 import com.shizhefei.download.base.AbsDownloadTask;
@@ -19,7 +18,7 @@ import com.shizhefei.download.base.IdGenerator;
 import com.shizhefei.download.entity.HttpInfo;
 import com.shizhefei.download.idgenerator.DefaultIdGenerator;
 import com.shizhefei.download.taskfactory.DefaultDownloadTaskFactory;
-import com.shizhefei.download.base.DownloadCursor;
+import com.shizhefei.download.base.DownloadInfoList;
 import com.shizhefei.download.task.DownloadListenerProxy;
 import com.shizhefei.download.utils.DownloadUtils;
 import com.shizhefei.mvc.RequestHandle;
@@ -215,7 +214,7 @@ public class LocalDownloadManager extends DownloadManager {
     }
 
     @Override
-    public DownloadInfo getDownloadEntity(long downloadId) {
+    public DownloadInfo getDownloadInfo(long downloadId) {
         for (DownloadInfo downloadInfo : downloadInfoList) {
             if (downloadInfo.getId() == downloadId) {
                 return downloadInfo;
@@ -235,8 +234,8 @@ public class LocalDownloadManager extends DownloadManager {
     }
 
     @Override
-    public DownloadCursor getDownloadCursor() {
-        return downloadCursor;
+    public DownloadInfoList getDownloadInfoList() {
+        return downloadInfoListProxy;
     }
 
     @Override
@@ -387,7 +386,7 @@ public class LocalDownloadManager extends DownloadManager {
         }
     };
 
-    private DownloadCursor downloadCursor = new DownloadCursor() {
+    private DownloadInfoList downloadInfoListProxy = new DownloadInfoList() {
         @Override
         public int getCount() {
             return downloadInfoList.size();

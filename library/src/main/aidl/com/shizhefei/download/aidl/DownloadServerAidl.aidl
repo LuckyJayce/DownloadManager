@@ -1,12 +1,8 @@
-// EventServiceExecuter.aidl
 package com.shizhefei.download.aidl;
 import com.shizhefei.download.entity.DownloadInfo;
 import com.shizhefei.download.entity.DownloadParams;
 import com.shizhefei.download.aidl.DownloadListenerAidl;
-// Declare any non-default types here with import statements
-/**
-* EventServiceExecutor用于Service提供注册EventProcessExecutor，分发事件给对应的EventProcessExecutor
-* */
+
 interface DownloadServerAidl {
 
        DownloadInfo findFirstByUrl(String url);
