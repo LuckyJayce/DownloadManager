@@ -34,7 +34,12 @@ import java.util.Map;
 public class DownloadTask implements ITask<Void>, RemoveHandler.OnRemoveListener {
     private static final int BUFFER_SIZE = 1024 * 4;
     private final long downloadId;
-    private final DownloadInfo downloadInfo;
+    private final boolean isAcceptRange;
+    private final String etag;
+    private long current;
+    private long total;
+    private String tempFileName;
+    private String saveFileName;
     private DownloadParams downloadParams;
     private HttpURLConnection httpURLConnection;
     private volatile boolean cancel;
@@ -43,13 +48,19 @@ public class DownloadTask implements ITask<Void>, RemoveHandler.OnRemoveListener
     public DownloadTask(long downloadId, DownloadParams downloadParams, DownloadInfo downloadInfo) {
         this.downloadId = downloadId;
         this.downloadParams = downloadParams;
-        this.downloadInfo = downloadInfo;
+        this.current = downloadInfo.getCurrent();
+        this.total = downloadInfo.getTotal();
+        if (!TextUtils.isEmpty(downloadInfo.getTempFileName())) {
+            this.saveFileName = downloadInfo.getFileName();
+        } else {
+            this.saveFileName = downloadParams.getFileName();
+        }
+        this.isAcceptRange = downloadInfo.getHttpInfo().isAcceptRange();
+        this.etag = downloadInfo.getHttpInfo().getETag();
     }
 
     @Override
     public Void execute(ProgressSender sender) throws Exception {
-        long current = downloadInfo.getCurrent();
-        long total = downloadInfo.getTotal();
         InputStream inputStream = null;
         RandomAccessFile randomAccessFile = null;
         File saveFileTemp = null;
@@ -67,7 +78,7 @@ public class DownloadTask implements ITask<Void>, RemoveHandler.OnRemoveListener
 
             //添加header
             Map<String, List<String>> headers = downloadParams.getHeaders();
-            DownloadLogUtils.d("<---- %s request header %s", downloadId, headers);
+            DownloadLogUtils.d("downloadId：%d request header %s", downloadId, headers);
             httpURLConnection = (HttpURLConnection) new URL(downloadParams.getUrl()).openConnection();
             if (headers != null) {
                 for (Map.Entry<String, List<String>> header : headers.entrySet()) {
@@ -77,7 +88,6 @@ public class DownloadTask implements ITask<Void>, RemoveHandler.OnRemoveListener
                 }
             }
 
-            String tempFileName = downloadInfo.getTempFileName();
             if (!TextUtils.isEmpty(tempFileName)) {
                 File temp = new File(saveDir, tempFileName);
                 if (current > 0 && !temp.exists()) {
@@ -87,7 +97,7 @@ public class DownloadTask implements ITask<Void>, RemoveHandler.OnRemoveListener
             }
 
             if (current > 0) {
-                if (downloadInfo.getHttpInfo().isAcceptRange()) {
+                if (isAcceptRange) {
                     DownloadUtils.addRangeHeader(httpURLConnection, current, DownloadUtils.RANGE_INFINITE);
                 } else {
                     senderProxy.sendDownloadFromBegin(current, total, DownloadManager.DOWNLOAD_FROM_BEGIN_UNSUPPORT_RANGE);
@@ -98,8 +108,8 @@ public class DownloadTask implements ITask<Void>, RemoveHandler.OnRemoveListener
             httpURLConnection.setInstanceFollowRedirects(true);
             httpURLConnection.connect();
 
-            final String oldETag = downloadInfo.getHttpInfo().getETag();
-            String newETag = DownloadUtils.findEtag(downloadInfo.getId(), httpURLConnection);
+            final String oldETag = etag;
+            String newETag = DownloadUtils.findEtag(downloadId, httpURLConnection);
             if (current > 0) {
                 if (oldETag != null && !oldETag.equals(newETag)) {
                     senderProxy.sendDownloadFromBegin(current, total, DownloadManager.DOWNLOAD_FROM_BEGIN_ETAG_CHANGE);

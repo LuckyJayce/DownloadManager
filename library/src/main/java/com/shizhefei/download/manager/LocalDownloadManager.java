@@ -166,7 +166,7 @@ public class LocalDownloadManager extends DownloadManager {
                 if (file.exists()) {
                     file.delete();
                 }
-                //下载好的 downloadInfo.getFilename() 没做删除处理
+                //下载好的 downloadInfo.getFileName() 没做删除处理
             }
             downloadDB.delete(downloadId);
         }

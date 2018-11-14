@@ -178,7 +178,7 @@ public class DownloadDB {
             ContentValues contentValues = new ContentValues();
             contentValues.put(DBHelper.FIELD_STATUS, downloadInfo.getStatus());
             contentValues.put(DBHelper.FIELD_DIR, downloadInfo.getCurrent());
-            contentValues.put(DBHelper.FIELD_FILENAME, downloadInfo.getFilename());
+            contentValues.put(DBHelper.FIELD_FILENAME, downloadInfo.getFileName());
             contentValues.put(DBHelper.FIELD_TEMP_FILENAME, downloadInfo.getTempFileName());
             contentValues.put(DBHelper.FIELD_HTTP_INFO, downloadInfo.getHttpInfo().toJson());
             contentValues.put(DBHelper.FIELD_ERROR_INFO, downloadInfo.getErrorInfo().toJson());
@@ -216,7 +216,7 @@ public class DownloadDB {
             contentValues.put(DBHelper.FIELD_DOWNLOAD_PARAMS, downloadParams.toJson());
             contentValues.put(DBHelper.FIELD_STATUS, downloadInfo.getStatus());
             contentValues.put(DBHelper.FIELD_DIR, downloadInfo.getCurrent());
-            contentValues.put(DBHelper.FIELD_FILENAME, downloadInfo.getFilename());
+            contentValues.put(DBHelper.FIELD_FILENAME, downloadInfo.getFileName());
             contentValues.put(DBHelper.FIELD_TEMP_FILENAME, downloadInfo.getTempFileName());
             contentValues.put(DBHelper.FIELD_HTTP_INFO, downloadInfo.getHttpInfo().toJson());
             contentValues.put(DBHelper.FIELD_ERROR_INFO, downloadInfo.getErrorInfo().toJson());

@@ -102,12 +102,12 @@ public class DownloadParams implements Parcelable {
      * @param fileName   下载保存的文件名
      * @param isOverride 是否覆盖已有的文件
      */
-    public void setSaveFileName(String fileName, boolean isOverride) {
+    public void setFileName(String fileName, boolean isOverride) {
         this.fileName = fileName;
         this.override = isOverride;
     }
 
-    public void setSaveFileName(String fileName) {
+    public void setFileName(String fileName) {
         this.fileName = fileName;
         this.override = false;
     }

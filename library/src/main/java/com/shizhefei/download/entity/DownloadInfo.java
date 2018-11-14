@@ -112,7 +112,7 @@ public class DownloadInfo implements Parcelable {
     }
 
     @Nullable
-    public String getFilename() {
+    public String getFileName() {
         return filename;
     }
 
@@ -240,7 +240,7 @@ public class DownloadInfo implements Parcelable {
         }
 
         public String getFilename() {
-            return downloadInfo.getFilename();
+            return downloadInfo.getFileName();
         }
 
         public void setFilename(String filename) {
