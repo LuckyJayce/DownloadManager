@@ -1,8 +1,6 @@
 package com.shizhefei.downloadmanager;
 
-import android.Manifest;
 import android.app.Activity;
-import android.content.Context;
 import android.content.pm.PackageManager;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -10,6 +8,7 @@ import android.support.v4.content.ContextCompat;
 import android.util.SparseArray;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class PermissionHelper {
@@ -33,6 +32,18 @@ public class PermissionHelper {
             }
         }
         return true;
+    }
+
+    public void checkAndRequestPermission(String[] permissions, OnCheckCallback onCheckCallback) {
+        if (!checkSelfPermission(permissions)) {
+            requestPermissions(permissions, onCheckCallback);
+        } else {
+            onCheckCallback.onSuccess(Arrays.asList(permissions));
+        }
+    }
+
+    public void checkAndRequestPermission(String permission, OnCheckCallback onCheckCallback) {
+        checkAndRequestPermission(new String[]{permission}, onCheckCallback);
     }
 
     public void requestPermissions(String[] permissions, OnCheckCallback onCheckCallback) {

@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">DownloadManager</string>
+    <string name="permission_denied">没有提供存储权限无法下载</string>
 </resources>

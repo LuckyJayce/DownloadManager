@@ -55,32 +55,25 @@ public class MainActivity extends AppCompatActivity {
         downloadManager.unregisterDownloadListener(downloadListener);
     }
 
-    private static final int MY_PERMISSIONS_REQUEST_READ_CONTACTS = 324;
-
     private View.OnClickListener onClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
             if (v == addButton) {
-//                String[] permissions = {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.WRITE_EXTERNAL_STORAGE};
-//                if (!permissionHelper.checkSelfPermission(permissions)) {
-//                    permissionHelper.requestPermissions(permissions, new PermissionHelper.OnCheckCallback() {
-//                        @Override
-//                        public void onFail(List<String> successPermissions, List<String> failPermissions) {
-//                            Log.d("tttt", "onFail successPermissions:" + new Gson().toJson(successPermissions) + " failPermissions:" + failPermissions);
-//                        }
-//
-//                        @Override
-//                        public void onSuccess(List<String> successPermissions) {
-//                            Log.d("tttt", "onSuccess successPermissions:" + new Gson().toJson(successPermissions));
-//                        }
-//                    });
-//                }
-////
-                String url = editText.getText().toString();
-                DownloadParams downloadParams = new DownloadParams.Builder()
-                        .setUrl(url)
-                        .build();
-                downloadManager.start(downloadParams);
+                permissionHelper.checkAndRequestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, new PermissionHelper.OnCheckCallback() {
+                    @Override
+                    public void onFail(List<String> successPermissions, List<String> failPermissions) {
+                        Toast.makeText(getApplicationContext(), getString(R.string.permission_denied), Toast.LENGTH_LONG).show();
+                    }
+
+                    @Override
+                    public void onSuccess(List<String> successPermissions) {
+                        String url = editText.getText().toString();
+                        DownloadParams downloadParams = new DownloadParams.Builder()
+                                .setUrl(url)
+                                .build();
+                        downloadManager.start(downloadParams);
+                    }
+                });
             }
         }
     };
