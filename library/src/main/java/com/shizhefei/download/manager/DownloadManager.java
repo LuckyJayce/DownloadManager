@@ -67,7 +67,7 @@ public abstract class DownloadManager {
     public static final int STATUS_DOWNLOAD_ING = 4;
     public static final int STATUS_PAUSED = 5;//连接上服务器
     public static final int STATUS_FINISHED = 6;
-    public static final int STATUS_FAIL = 7;
+    public static final int STATUS_ERROR = 7;
     public static final int STATUS_REMOVE = 8;//连接上服务器
     //----------------------   status ------------------------------------------------------------//
 
@@ -78,6 +78,7 @@ public abstract class DownloadManager {
     private static volatile LocalDownloadManager localDownloadManager;
     private static volatile RemoteDownloadManager remoteDownloadManager;
     private static DownloadConfig downloadConfig;
+    private static boolean isInit;
 
     public static void init(Context context, DownloadConfig config) {
         DownloadConfig.Builder builder = new DownloadConfig.Builder(config);
@@ -94,8 +95,12 @@ public abstract class DownloadManager {
         if (TextUtils.isEmpty(builder.getUserAgent())) {
             builder.setUserAgent(defaultUserAgent());
         }
+        if (builder.getMinDownloadProgressTime() <= 0) {
+            builder.setMinDownloadProgressTime(100);
+        }
         downloadConfig = builder.build();
         DownloadManager.context = context.getApplicationContext();
+        isInit = true;
     }
 
     public static String defaultUserAgent() {
@@ -111,6 +116,9 @@ public abstract class DownloadManager {
     }
 
     public static LocalDownloadManager getLocal() {
+        if (!isInit) {
+            throw new RuntimeException("请先调用init进行初始化");
+        }
         if (localDownloadManager == null) {
             synchronized (DownloadManager.class) {
                 if (localDownloadManager == null) {
@@ -122,6 +130,9 @@ public abstract class DownloadManager {
     }
 
     public static RemoteDownloadManager getRemote() {
+        if (!isInit) {
+            throw new RuntimeException("请先调用init进行初始化");
+        }
         if (remoteDownloadManager == null) {
             synchronized (DownloadManager.class) {
                 if (remoteDownloadManager == null) {
@@ -191,8 +202,8 @@ public abstract class DownloadManager {
                 return "STATUS_PAUSED";
             case STATUS_FINISHED:
                 return "STATUS_FINISHED";
-            case STATUS_FAIL:
-                return "STATUS_FAIL";
+            case STATUS_ERROR:
+                return "STATUS_ERROR";
         }
         return "UNKNOWN";
     }

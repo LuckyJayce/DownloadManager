@@ -91,7 +91,7 @@ public class LocalDownloadManager extends DownloadManager {
         }
         if (downloadInfo != null) {
             int status = downloadInfo.getStatus();
-            if (status == DownloadManager.STATUS_PAUSED || status == DownloadManager.STATUS_FAIL) {
+            if (status == DownloadManager.STATUS_PAUSED || status == DownloadManager.STATUS_ERROR) {
                 DownloadParams downloadParams = downloadInfo.getDownloadParams();
                 if (downloadListener != null) {
                     listeners.put(downloadId, downloadListener);
@@ -226,6 +226,7 @@ public class LocalDownloadManager extends DownloadManager {
     }
 
     private DownloadListener proxyDownloadListener = new DownloadListener() {
+
         @Override
         public void onPending(long downloadId) {
             for (DownloadListener downloadListener : downloadListeners) {

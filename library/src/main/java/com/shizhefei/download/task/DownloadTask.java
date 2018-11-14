@@ -1,6 +1,7 @@
 package com.shizhefei.download.task;
 
 import android.Manifest;
+import android.os.SystemClock;
 import android.text.TextUtils;
 
 import com.shizhefei.download.base.RemoveHandler;
@@ -170,10 +171,16 @@ public class DownloadTask implements ITask<Void>, RemoveHandler.OnRemoveListener
             inputStream = new BufferedInputStream(inputStream);
             byte[] buffer = new byte[BUFFER_SIZE];
             int length;
+            long time = SystemClock.elapsedRealtime();
             while ((length = inputStream.read(buffer)) != -1 && !cancel) {
                 randomAccessFile.write(buffer, 0, length);
                 current += length;
-                senderProxy.sendDownloading(current, total);
+
+                long currentTime = SystemClock.elapsedRealtime();
+                if ((time + DownloadManager.getDownloadConfig().getMinDownloadProgressTime() < currentTime) || (current >= total)) {
+                    time = currentTime;
+                    senderProxy.sendDownloading(current, total);
+                }
                 checkupWifiConnect();
             }
         } catch (FileNotFoundException e) {

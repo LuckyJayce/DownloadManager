@@ -9,7 +9,6 @@ import com.shizhefei.download.db.DownloadDB;
 import com.shizhefei.download.entity.ErrorInfo;
 import com.shizhefei.download.entity.HttpInfo;
 import com.shizhefei.download.manager.DownloadManager;
-import com.shizhefei.download.task.DownloadTask;
 import com.shizhefei.download.prxoy.DownloadListenerProxy;
 import com.shizhefei.mvc.RequestHandle;
 import com.shizhefei.mvc.ResponseSender;
@@ -112,7 +111,7 @@ public class ProxyDownloadTask extends AbsDownloadTask {
         @Override
         public void onError(long downloadId, int errorCode, String errorMessage) {
             errorInfoAgency.set(errorCode, errorMessage);
-            downloadInfoAgency.setStatus(DownloadManager.STATUS_FAIL);
+            downloadInfoAgency.setStatus(DownloadManager.STATUS_ERROR);
             downloadDB.update(downloadInfoAgency.getInfo());
         }
 

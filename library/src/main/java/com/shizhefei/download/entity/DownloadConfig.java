@@ -11,6 +11,11 @@ public class DownloadConfig {
     private DownloadTaskFactory downloadTaskFactory;
     private Executor executor;
     private String userAgent;
+    private long minDownloadProgressTime;
+
+    public long getMinDownloadProgressTime() {
+        return minDownloadProgressTime;
+    }
 
     public String getUserAgent() {
         return userAgent;
@@ -43,6 +48,7 @@ public class DownloadConfig {
         private DownloadTaskFactory downloadTaskFactory;
         private Executor executor;
         private String userAgent;
+        private long minDownloadProgressTime;
 
         public Builder() {
         }
@@ -54,6 +60,7 @@ public class DownloadConfig {
             blockSize = config.getBlockSize();
             isWifiRequired = config.isWifiRequired();
             userAgent = config.getUserAgent();
+            minDownloadProgressTime = config.getMinDownloadProgressTime();
         }
 
         public Builder setBlockSize(int blockSize) {
@@ -90,8 +97,16 @@ public class DownloadConfig {
             return this;
         }
 
+        public void setMinDownloadProgressTime(long minDownloadProgressTime) {
+            this.minDownloadProgressTime = minDownloadProgressTime;
+        }
+
         public String getDir() {
             return dir;
+        }
+
+        public long getMinDownloadProgressTime() {
+            return minDownloadProgressTime;
         }
 
         public DownloadTaskFactory getDownloadTaskFactory() {
@@ -110,6 +125,7 @@ public class DownloadConfig {
             downloadConfig.blockSize = this.blockSize;
             downloadConfig.isWifiRequired = this.isWifiRequired;
             downloadConfig.userAgent = this.userAgent;
+            downloadConfig.minDownloadProgressTime = this.minDownloadProgressTime;
             return downloadConfig;
         }
     }
