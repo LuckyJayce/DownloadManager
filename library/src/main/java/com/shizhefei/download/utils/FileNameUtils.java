@@ -13,57 +13,87 @@ import java.io.File;
 public class FileNameUtils {
     private static final String DOWNLOAD = "download";
 
-    public static String getFileName(File dir, String fileName, String urlString, String contentType, String headContentDisposition, long downloadId) {
-        String preName = null;
-        String endName = null;
-        if (!TextUtils.isEmpty(fileName)) {
-            if (fileName.contains(".")) {
-                return fileName;
+    public static String getFileName(File dir, String userSetFileName, String urlString, String contentType, String headContentDisposition, long downloadId) {
+        String userSetPreName = null;
+        String filename;
+        String preName = "";
+        String endName = "";
+        if (!TextUtils.isEmpty(userSetFileName)) {
+            if (userSetFileName.contains(".")) {
+                return userSetFileName;
             } else {
-                preName = fileName;
+                userSetPreName = userSetFileName;
+                preName = userSetPreName;
             }
         }
-        fileName = getNameFromDisposition(headContentDisposition);
-        if (fileName == null) {
-            String urlName = getNameFromUrl(urlString);
-            if (urlName != null) {
-                int index = urlName.lastIndexOf(".");
-                if (index >= 0) {
-                    if (preName == null) {
-                        preName = urlName.substring(0, index) + String.valueOf(System.currentTimeMillis());
-                    }
-                    endName = urlName.substring(index, urlName.length());
-                } else {
-                    if (preName == null) {
-                        preName = urlName;
-                    }
+        //后期还可以再优化 endName判断是否是常用格式，来更精准定位哪个才是真正endName进行选取
+        String dispositionName = getNameFromDisposition(headContentDisposition);
+        if (!TextUtils.isEmpty(dispositionName)) {
+            int index = dispositionName.lastIndexOf(".");
+            if (index > 0) {
+                if (TextUtils.isEmpty(preName)) {
+                    preName = dispositionName.substring(0, index);
+                }
+                if (TextUtils.isEmpty(endName)) {
+                    endName = dispositionName.substring(index, dispositionName.length());
                 }
             } else {
-                preName = String.valueOf(downloadId);
+                if (TextUtils.isEmpty(preName)) {
+                    preName = dispositionName;
+                }
             }
+        }
+        String urlName = getFileNameFromUrl(urlString);
+        DownloadLogUtils.d("downloadId:%d  getFileName() urlName:%s", downloadId, urlName);
+        if (urlName != null) {
+            int index = urlName.lastIndexOf(".");
+            if (index >= 0) {
+                if (TextUtils.isEmpty(preName) || TextUtils.isEmpty(userSetPreName)) {
+                    preName = urlName.substring(0, index);
+                }
+                if (TextUtils.isEmpty(endName)) {
+                    endName = urlName.substring(index, urlName.length());
+                }
+            } else {
+                if (TextUtils.isEmpty(preName) || TextUtils.isEmpty(userSetPreName)) {
+                    preName = urlName;
+                }
+            }
+        }
+        if (TextUtils.isEmpty(endName)) {
             if (!TextUtils.isEmpty(contentType)) {
                 String e = getEndName(contentType);
                 if (!TextUtils.isEmpty(e)) {
                     endName = "." + e;
                 }
             }
-            if (endName == null) {
-                fileName = preName;
-            } else {
-                fileName = preName + endName;
-            }
+        }
+        if (TextUtils.isEmpty(preName)) {
+            preName = downloadId + "_" + String.valueOf(System.currentTimeMillis());
         } else {
-            if (preName != null) {
-                int index = fileName.lastIndexOf(".");
-                if (index > 0) {
-                    fileName = preName + fileName.substring(index, fileName.length());
-                } else {
-                    fileName = preName;
-                }
+            if (!preName.equals(userSetPreName)) {
+                preName = downloadId + "_" + preName;
             }
         }
-        Log.i(DOWNLOAD, "fileName:" + fileName);
-        return toValidFileName(dir, fileName);
+        filename = preName + endName;
+        return toValidFileName(dir, filename);
+    }
+
+    private static String getFileNameFromUrl(String url) {
+        int fragment = url.lastIndexOf('#');
+        if (fragment > 0) {
+            url = url.substring(0, fragment);
+        }
+
+        int query = url.lastIndexOf('?');
+        if (query > 0) {
+            url = url.substring(0, query);
+        }
+
+        int filenamePos = url.lastIndexOf('/');
+        String filename =
+                0 <= filenamePos ? url.substring(filenamePos + 1) : url;
+        return filename;
     }
 
     /**

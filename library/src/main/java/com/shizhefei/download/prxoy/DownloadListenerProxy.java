@@ -51,9 +51,6 @@ public class DownloadListenerProxy implements ICallback<Void> {
                     downloadListener.onDownloadResetBegin(downloadId, reason);
                 }
                 break;
-            case DownloadManager.STATUS_REMOVE:
-                downloadListener.onRemove(downloadId);
-                break;
             case DownloadManager.STATUS_CONNECTED:
                 if (bundle != null) {
                     HttpInfo httpInfo = bundle.getParcelable(DownloadProgressSenderProxy.PARAM_HTTPINFO);

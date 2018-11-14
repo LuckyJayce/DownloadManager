@@ -117,7 +117,7 @@ public class ProxyDownloadTask extends AbsDownloadTask {
 
         @Override
         public void onRemove(long downloadId) {
-            downloadInfoAgency.setStatus(DownloadManager.STATUS_REMOVE);
+            downloadInfoAgency.setStatus(DownloadManager.STATUS_PAUSED);
             downloadDB.delete(downloadId);
         }
     };

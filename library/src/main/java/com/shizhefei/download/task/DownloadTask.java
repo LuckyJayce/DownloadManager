@@ -147,7 +147,7 @@ public class DownloadTask implements ITask<Void>, RemoveHandler.OnRemoveListener
                 saveFileName = FileNameUtils.getFileName(saveDir, saveFileName, url, contentType, disposition, downloadId);
             }
             if (TextUtils.isEmpty(tempFileName)) {
-                tempFileName = FileNameUtils.toValidFileName(saveDir, saveFileName + ".temp");
+                tempFileName = FileNameUtils.toValidFileName(saveDir, saveFileName + ".temp_" + downloadId);
             }
 
             HttpInfo.Agency agency = new HttpInfo.Agency();
@@ -235,10 +235,12 @@ public class DownloadTask implements ITask<Void>, RemoveHandler.OnRemoveListener
                 saveFile.delete();
                 DownloadLogUtils.d("saveFile delete saveFile %s" + saveFile);
             }
-            senderProxy.sendRemove(current, total);
             throw new RemoveException(downloadId);
         }
         if (!cancel && !remove) {
+            if (saveFile.exists()) {
+                saveFile.delete();
+            }
             boolean success = saveFileTemp.renameTo(saveFile);
             DownloadLogUtils.d("success " + success);
         }

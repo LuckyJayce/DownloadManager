@@ -49,14 +49,6 @@ public class DownloadProgressSenderProxy {
         progressSender.sendProgress(current, total, DownloadManager.STATUS_DOWNLOAD_ING);
     }
 
-//    public void sendBlockComplete() {
-//
-//    }
-
-    public void sendRemove(long current, long total) {
-        progressSender.sendProgress(current, total, DownloadManager.STATUS_REMOVE);
-    }
-
     public static void release(Bundle bundle) {
         bundle.clear();
         bundleSynchronizedPool.release(bundle);

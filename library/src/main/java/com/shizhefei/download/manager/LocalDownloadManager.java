@@ -2,6 +2,7 @@ package com.shizhefei.download.manager;
 
 import android.content.Context;
 import android.os.AsyncTask;
+import android.text.TextUtils;
 import android.util.LongSparseArray;
 
 import com.shizhefei.download.base.AbsDownloadTask;
@@ -155,16 +156,20 @@ public class LocalDownloadManager extends DownloadManager {
                 break;
             }
         }
+        //通知移除
+        proxyDownloadListener.onRemove(downloadId);
+
         DownloadData data = tasks.get(downloadId);
         if (data != null) {
             data.removeHandler.remove();
             tasks.remove(downloadId);
         } else {//没有在执行，直接删除数据库中的
-            proxyDownloadListener.onRemove(downloadId);
             if (downloadInfo != null) {
-                File file = new File(downloadInfo.getDir(), downloadInfo.getTempFileName());
-                if (file.exists()) {
-                    file.delete();
+                if (!TextUtils.isEmpty(downloadInfo.getTempFileName())) {
+                    File file = new File(downloadInfo.getDir(), downloadInfo.getTempFileName());
+                    if (file.exists()) {
+                        file.delete();
+                    }
                 }
                 //下载好的 downloadInfo.getFileName() 没做删除处理
             }
