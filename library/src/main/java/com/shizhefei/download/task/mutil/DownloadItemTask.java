@@ -1,7 +1,7 @@
 package com.shizhefei.download.task.mutil;
 
 import com.shizhefei.download.entity.DownloadInfo;
-import com.shizhefei.download.entity.DownloadItem;
+import com.shizhefei.download.entity.DownloadBlockInfo;
 import com.shizhefei.download.entity.DownloadParams;
 import com.shizhefei.download.db.DownloadDB;
 import com.shizhefei.mvc.ProgressSender;
@@ -16,7 +16,7 @@ public class DownloadItemTask implements ITask<Void> {
     private DownloadParams downloadParams;
     private DownloadInfo downloadInfo;
 
-    public DownloadItemTask(long downloadId, DownloadParams downloadParams, DownloadInfo entity, DownloadItem downloadItem, DownloadDB downloadDB) {
+    public DownloadItemTask(long downloadId, DownloadParams downloadParams, DownloadInfo entity, DownloadBlockInfo downloadItem, DownloadDB downloadDB) {
         this.downloadId = downloadId;
         this.downloadParams = downloadParams;
         this.downloadDB = downloadDB;

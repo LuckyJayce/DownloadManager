@@ -2,6 +2,7 @@ package com.shizhefei.download.manager;
 
 import android.content.Context;
 import android.os.AsyncTask;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.util.LongSparseArray;
 
@@ -75,7 +76,7 @@ public class LocalDownloadManager extends DownloadManager {
     }
 
     @Override
-    public long restartPauseOrFail(long downloadId, DownloadListener downloadListener) {
+    public boolean restartPauseOrFail(long downloadId, DownloadListener downloadListener) {
         int index = -1;
         DownloadInfo downloadInfo = null;
         for (int i = 0; i < downloadInfoList.size(); i++) {
@@ -100,9 +101,45 @@ public class LocalDownloadManager extends DownloadManager {
 
                 TaskHandle taskHandle = taskHelper.execute(downloadTask, new DownloadListenerProxy(downloadId, proxyDownloadListener));
                 tasks.put(downloadId, new DownloadData(taskHandle, downloadTask, removeHandler));
+                return true;
             }
         }
-        return downloadId;
+        return false;
+    }
+
+    @NonNull
+    @Override
+    public List<DownloadInfo> find(String url) {
+        List<DownloadInfo> list = new ArrayList<>(2);
+        for (DownloadInfo downloadInfo : downloadInfoList) {
+            if (downloadInfo.getDownloadParams().getUrl().equals(url)) {
+                list.add(downloadInfo);
+            }
+        }
+        return list;
+    }
+
+    @Override
+    public DownloadInfo findFirst(String url) {
+        for (DownloadInfo downloadInfo : downloadInfoList) {
+            if (downloadInfo.getDownloadParams().getUrl().equals(url)) {
+                return downloadInfo;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public DownloadInfo findFirst(String url, String dir, String fileName) {
+        for (DownloadInfo downloadInfo : downloadInfoList) {
+            DownloadParams downloadParams = downloadInfo.getDownloadParams();
+            if (downloadParams.getUrl().equals(url) &&
+                    downloadParams.getDir().equals(dir)
+                    && (downloadParams.getFileName() != null && downloadParams.getFileName().equals(fileName))) {
+                return downloadInfo;
+            }
+        }
+        return null;
     }
 
     @Override

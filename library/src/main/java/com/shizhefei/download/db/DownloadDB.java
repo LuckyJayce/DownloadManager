@@ -9,6 +9,7 @@ import android.support.annotation.Nullable;
 
 import com.shizhefei.download.entity.DownloadParams;
 import com.shizhefei.download.entity.DownloadInfo;
+import com.shizhefei.download.manager.DownloadManager;
 import com.shizhefei.download.utils.DownloadUtils;
 import com.shizhefei.mvc.ProgressSender;
 import com.shizhefei.task.ITask;
@@ -17,14 +18,13 @@ import com.shizhefei.task.TaskHelper;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
-import java.util.concurrent.atomic.AtomicLong;
 
 public class DownloadDB {
     private static final int DB_VERSION = 1;
     private static final int DOWNLOAD_ID_INVALID = -1;//非法的id
     private static final int DOWNLOAD_ID_MIN = 1;//最小的id
-    private static final String SQL_SELECT = "select * from " + DBHelper.TABLE_NAME + " where " + DBHelper.FIELD_KEY + "=?";
-    private static final String SQL_SELECT_ALL = "select * from " + DBHelper.TABLE_NAME;
+    private static final String SQL_SELECT = "select * from " + DownloadManager.TABLE_NAME + " where " + DownloadManager.FIELD_KEY + "=?";
+    private static final String SQL_SELECT_ALL = "select * from " + DownloadManager.TABLE_NAME;
     private final DBHelper dbHelper;
     private TaskHelper taskHelper;
 
@@ -32,6 +32,10 @@ public class DownloadDB {
         dbHelper = new DBHelper(context, "DownloadDB", null, DB_VERSION);
         taskHelper = new TaskHelper();
         taskHelper.setThreadExecutor(executor);
+    }
+
+    public SQLiteDatabase getReadableDatabase() {
+        return dbHelper.getReadableDatabase();
     }
 
     @Nullable
@@ -67,19 +71,19 @@ public class DownloadDB {
     }
 
     private DownloadInfo.Agency get(Cursor cursor) {
-        String downloadParams = cursor.getString(cursor.getColumnIndex(DBHelper.FIELD_DOWNLOAD_PARAMS));
-        String dir = cursor.getString(cursor.getColumnIndex(DBHelper.FIELD_DIR));
-        String fileName = cursor.getString(cursor.getColumnIndex(DBHelper.FIELD_FILENAME));
-        String tempFileName = cursor.getString(cursor.getColumnIndex(DBHelper.FIELD_TEMP_FILENAME));
-        String httpInfo = cursor.getString(cursor.getColumnIndex(DBHelper.FIELD_HTTP_INFO));
-        String errorInfo = cursor.getString(cursor.getColumnIndex(DBHelper.FIELD_ERROR_INFO));
-        String extInfo = cursor.getString(cursor.getColumnIndex(DBHelper.FIELD_EXT_INFO));
-        String url = cursor.getString(cursor.getColumnIndex(DBHelper.FIELD_URL));
-        int status = cursor.getInt(cursor.getColumnIndex(DBHelper.FIELD_STATUS));
-        long startTime = cursor.getLong(cursor.getColumnIndex(DBHelper.FIELD_START_TIME));
-        long current = cursor.getLong(cursor.getColumnIndex(DBHelper.FIELD_CURRENT));
-        long total = cursor.getLong(cursor.getColumnIndex(DBHelper.FIELD_TOTAL));
-        long downloadId = cursor.getLong(cursor.getColumnIndex(DBHelper.FIELD_KEY));
+        String downloadParams = cursor.getString(cursor.getColumnIndex(DownloadManager.FIELD_DOWNLOAD_PARAMS));
+        String dir = cursor.getString(cursor.getColumnIndex(DownloadManager.FIELD_DIR));
+        String fileName = cursor.getString(cursor.getColumnIndex(DownloadManager.FIELD_FILENAME));
+        String tempFileName = cursor.getString(cursor.getColumnIndex(DownloadManager.FIELD_TEMP_FILENAME));
+        String httpInfo = cursor.getString(cursor.getColumnIndex(DownloadManager.FIELD_HTTP_INFO));
+        String errorInfo = cursor.getString(cursor.getColumnIndex(DownloadManager.FIELD_ERROR_INFO));
+        String extInfo = cursor.getString(cursor.getColumnIndex(DownloadManager.FIELD_EXT_INFO));
+        String url = cursor.getString(cursor.getColumnIndex(DownloadManager.FIELD_URL));
+        int status = cursor.getInt(cursor.getColumnIndex(DownloadManager.FIELD_STATUS));
+        long startTime = cursor.getLong(cursor.getColumnIndex(DownloadManager.FIELD_START_TIME));
+        long current = cursor.getLong(cursor.getColumnIndex(DownloadManager.FIELD_CURRENT));
+        long total = cursor.getLong(cursor.getColumnIndex(DownloadManager.FIELD_TOTAL));
+        long downloadId = cursor.getLong(cursor.getColumnIndex(DownloadManager.FIELD_KEY));
 
         DownloadInfo.Agency agency = new DownloadInfo.Agency(new DownloadParams.Builder(downloadParams).build());
         agency.setId(downloadId);
@@ -130,9 +134,9 @@ public class DownloadDB {
         public Void execute(ProgressSender progressSender) throws Exception {
             SQLiteDatabase database = dbHelper.getWritableDatabase();
             ContentValues contentValues = new ContentValues();
-            contentValues.put(DBHelper.FIELD_CURRENT, current);
-            contentValues.put(DBHelper.FIELD_TOTAL, total);
-            database.update(DBHelper.TABLE_NAME, contentValues, DBHelper.FIELD_KEY + " = ?", new String[]{String.valueOf(downloadId)});
+            contentValues.put(DownloadManager.FIELD_CURRENT, current);
+            contentValues.put(DownloadManager.FIELD_TOTAL, total);
+            database.update(DownloadManager.TABLE_NAME, contentValues, DownloadManager.FIELD_KEY + " = ?", new String[]{String.valueOf(downloadId)});
             return null;
         }
 
@@ -155,18 +159,18 @@ public class DownloadDB {
         public Void execute(ProgressSender progressSender) throws Exception {
             SQLiteDatabase database = dbHelper.getWritableDatabase();
             ContentValues contentValues = new ContentValues();
-            contentValues.put(DBHelper.FIELD_STATUS, downloadInfo.getStatus());
-            contentValues.put(DBHelper.FIELD_DIR, downloadInfo.getCurrent());
-            contentValues.put(DBHelper.FIELD_FILENAME, downloadInfo.getFileName());
-            contentValues.put(DBHelper.FIELD_TEMP_FILENAME, downloadInfo.getTempFileName());
-            contentValues.put(DBHelper.FIELD_HTTP_INFO, downloadInfo.getHttpInfo().toJson());
-            contentValues.put(DBHelper.FIELD_ERROR_INFO, downloadInfo.getErrorInfo().toJson());
-            contentValues.put(DBHelper.FIELD_EXT_INFO, downloadInfo.getExtInfo());
-            contentValues.put(DBHelper.FIELD_URL, downloadInfo.getUrl());
-            contentValues.put(DBHelper.FIELD_START_TIME, downloadInfo.getStartTime());
-            contentValues.put(DBHelper.FIELD_CURRENT, downloadInfo.getCurrent());
-            contentValues.put(DBHelper.FIELD_TOTAL, downloadInfo.getTotal());
-            database.update(DBHelper.TABLE_NAME, contentValues, DBHelper.FIELD_KEY + " = ?", new String[]{String.valueOf(downloadInfo.getId())});
+            contentValues.put(DownloadManager.FIELD_STATUS, downloadInfo.getStatus());
+            contentValues.put(DownloadManager.FIELD_DIR, downloadInfo.getCurrent());
+            contentValues.put(DownloadManager.FIELD_FILENAME, downloadInfo.getFileName());
+            contentValues.put(DownloadManager.FIELD_TEMP_FILENAME, downloadInfo.getTempFileName());
+            contentValues.put(DownloadManager.FIELD_HTTP_INFO, downloadInfo.getHttpInfo().toJson());
+            contentValues.put(DownloadManager.FIELD_ERROR_INFO, downloadInfo.getErrorInfo().toJson());
+            contentValues.put(DownloadManager.FIELD_EXT_INFO, downloadInfo.getExtInfo());
+            contentValues.put(DownloadManager.FIELD_URL, downloadInfo.getUrl());
+            contentValues.put(DownloadManager.FIELD_START_TIME, downloadInfo.getStartTime());
+            contentValues.put(DownloadManager.FIELD_CURRENT, downloadInfo.getCurrent());
+            contentValues.put(DownloadManager.FIELD_TOTAL, downloadInfo.getTotal());
+            database.update(DownloadManager.TABLE_NAME, contentValues, DownloadManager.FIELD_KEY + " = ?", new String[]{String.valueOf(downloadInfo.getId())});
             return null;
         }
 
@@ -191,20 +195,20 @@ public class DownloadDB {
         public Void execute(ProgressSender progressSender) throws Exception {
             SQLiteDatabase database = dbHelper.getWritableDatabase();
             ContentValues contentValues = new ContentValues();
-            contentValues.put(DBHelper.FIELD_KEY, downloadInfo.getId());
-            contentValues.put(DBHelper.FIELD_DOWNLOAD_PARAMS, downloadParams.toJson());
-            contentValues.put(DBHelper.FIELD_STATUS, downloadInfo.getStatus());
-            contentValues.put(DBHelper.FIELD_DIR, downloadInfo.getCurrent());
-            contentValues.put(DBHelper.FIELD_FILENAME, downloadInfo.getFileName());
-            contentValues.put(DBHelper.FIELD_TEMP_FILENAME, downloadInfo.getTempFileName());
-            contentValues.put(DBHelper.FIELD_HTTP_INFO, downloadInfo.getHttpInfo().toJson());
-            contentValues.put(DBHelper.FIELD_ERROR_INFO, downloadInfo.getErrorInfo().toJson());
-            contentValues.put(DBHelper.FIELD_EXT_INFO, downloadInfo.getExtInfo());
-            contentValues.put(DBHelper.FIELD_URL, downloadInfo.getUrl());
-            contentValues.put(DBHelper.FIELD_START_TIME, downloadInfo.getStartTime());
-            contentValues.put(DBHelper.FIELD_CURRENT, downloadInfo.getCurrent());
-            contentValues.put(DBHelper.FIELD_TOTAL, downloadInfo.getTotal());
-            database.replace(DBHelper.TABLE_NAME, null, contentValues);
+            contentValues.put(DownloadManager.FIELD_KEY, downloadInfo.getId());
+            contentValues.put(DownloadManager.FIELD_DOWNLOAD_PARAMS, downloadParams.toJson());
+            contentValues.put(DownloadManager.FIELD_STATUS, downloadInfo.getStatus());
+            contentValues.put(DownloadManager.FIELD_DIR, downloadInfo.getCurrent());
+            contentValues.put(DownloadManager.FIELD_FILENAME, downloadInfo.getFileName());
+            contentValues.put(DownloadManager.FIELD_TEMP_FILENAME, downloadInfo.getTempFileName());
+            contentValues.put(DownloadManager.FIELD_HTTP_INFO, downloadInfo.getHttpInfo().toJson());
+            contentValues.put(DownloadManager.FIELD_ERROR_INFO, downloadInfo.getErrorInfo().toJson());
+            contentValues.put(DownloadManager.FIELD_EXT_INFO, downloadInfo.getExtInfo());
+            contentValues.put(DownloadManager.FIELD_URL, downloadInfo.getUrl());
+            contentValues.put(DownloadManager.FIELD_START_TIME, downloadInfo.getStartTime());
+            contentValues.put(DownloadManager.FIELD_CURRENT, downloadInfo.getCurrent());
+            contentValues.put(DownloadManager.FIELD_TOTAL, downloadInfo.getTotal());
+            database.replace(DownloadManager.TABLE_NAME, null, contentValues);
             return null;
         }
 
@@ -226,7 +230,7 @@ public class DownloadDB {
         @Override
         public Void execute(ProgressSender progressSender) throws Exception {
             SQLiteDatabase database = dbHelper.getWritableDatabase();
-            database.delete(DBHelper.TABLE_NAME, DBHelper.FIELD_KEY + " = ?", new String[]{String.valueOf(downloadId)});
+            database.delete(DownloadManager.TABLE_NAME, DownloadManager.FIELD_KEY + " = ?", new String[]{String.valueOf(downloadId)});
             return null;
         }
 

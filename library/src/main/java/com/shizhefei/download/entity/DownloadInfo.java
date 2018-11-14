@@ -22,7 +22,7 @@ public class DownloadInfo implements Parcelable {
     private final ErrorInfo errorInfo;
     private String extInfo;
 //    //当线程下载为null，多线程下载 DownloadEntity对应多个DownloadItem
-//    private List<DownloadItem> downloadItems;
+//    private List<DownloadBlockInfo> downloadItems;
 
     private DownloadInfo(@NonNull DownloadParams downloadParams, @NonNull HttpInfo httpInfo, @NonNull ErrorInfo errorInfo) {
         this.downloadParams = downloadParams;
@@ -154,11 +154,15 @@ public class DownloadInfo implements Parcelable {
         return errorInfo;
     }
 
-//    public List<DownloadItem> getDownloadItems() {
+    public boolean isRunning() {
+        return status != DownloadManager.STATUS_ERROR && status != DownloadManager.STATUS_FINISHED && status != DownloadManager.STATUS_CONNECTED;
+    }
+
+//    public List<DownloadBlockInfo> getDownloadItems() {
 //        return downloadItems;
 //    }
 //
-//    private void setDownloadItems(List<DownloadItem> downloadItems) {
+//    private void setDownloadItems(List<DownloadBlockInfo> downloadItems) {
 //        this.downloadItems = downloadItems;
 //    }
 
@@ -297,11 +301,11 @@ public class DownloadInfo implements Parcelable {
             return downloadInfo.getErrorInfo();
         }
 
-//        public List<DownloadItem> getDownloadItems() {
+//        public List<DownloadBlockInfo> getDownloadItems() {
 //            return downloadInfo.getDownloadItems();
 //        }
 //
-//        public void setDownloadItems(List<DownloadItem> downloadItems) {
+//        public void setDownloadItems(List<DownloadBlockInfo> downloadItems) {
 //            downloadInfo.setDownloadItems(downloadItems);
 //        }
     }

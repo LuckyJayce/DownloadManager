@@ -1,6 +1,6 @@
 package com.shizhefei.download.entity;
 
-public class DownloadItem {
+public class DownloadBlockInfo {
     private long downloadId;
     private long itemId;//自增长id
     private long itemCurrent;

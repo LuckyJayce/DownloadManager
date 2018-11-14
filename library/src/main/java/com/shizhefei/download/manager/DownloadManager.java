@@ -3,6 +3,8 @@ package com.shizhefei.download.manager;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Environment;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
 import com.shizhefei.download.BuildConfig;
@@ -15,6 +17,7 @@ import com.shizhefei.download.base.DownloadCursor;
 import com.shizhefei.download.utils.DownloadUtils;
 
 import java.io.File;
+import java.util.List;
 
 /**
  * 建议在不要多线程调用
@@ -74,6 +77,23 @@ public abstract class DownloadManager {
     public static final int STATUS_ERROR = 7;
     //----------------------   status ------------------------------------------------------------//
 
+    // ----------------------------------- database ---------------------------------------------//
+    public static final String TABLE_NAME = "download";
+    public static final String FIELD_DOWNLOAD_PARAMS = "download_params";
+    public static final String FIELD_STATUS = "status";
+    public static final String FIELD_DIR = "dir";
+    public static final String FIELD_FILENAME = "filename";
+    public static final String FIELD_TEMP_FILENAME = "tempFileName";
+    public static final String FIELD_HTTP_INFO = "http_info";
+    public static final String FIELD_ERROR_INFO = "error_info";
+    public static final String FIELD_EXT_INFO = "ext_info";
+    public static final String FIELD_URL = "url";
+    public static final String FIELD_START_TIME = "start_time";
+    public static final String FIELD_CURRENT = "current";
+    public static final String FIELD_TOTAL = "total";
+    public static final String FIELD_KEY = "id";
+    // ----------------------------------- database ---------------------------------------------//
+
     private static Context context;
     //    private static DownloadTaskFactory staticDownloadTaskFactory;
 //    private static IdGenerator staticIdGenerator;
@@ -106,18 +126,35 @@ public abstract class DownloadManager {
         isInit = true;
     }
 
+    @NonNull
     public static String defaultUserAgent() {
         return DownloadUtils.formatString("%s/%s", LIB_NAME, BuildConfig.VERSION_NAME);
     }
 
+//    public abstract DownloadInfo findFirst(DownloadQuery downloadQuery);
+//
+//    public abstract List<DownloadInfo> find(DownloadQuery downloadQuery);
+
+    @Nullable
+    public abstract DownloadInfo findFirst(String url);
+
+    @NonNull
+    public abstract List<DownloadInfo> find(String url);
+
+    @Nullable
+    public abstract DownloadInfo findFirst(String url, String dir, String fileName);
+
+    @NonNull
     public static DownloadConfig getDownloadConfig() {
         return downloadConfig;
     }
 
+    @NonNull
     public static Context getApplicationContext() {
         return context;
     }
 
+    @NonNull
     public static LocalDownloadManager getLocal() {
         if (!isInit) {
             throw new RuntimeException("请先调用init进行初始化");
@@ -132,6 +169,7 @@ public abstract class DownloadManager {
         return localDownloadManager;
     }
 
+    @NonNull
     public static RemoteDownloadManager getRemote() {
         if (!isInit) {
             throw new RuntimeException("请先调用init进行初始化");
@@ -151,8 +189,7 @@ public abstract class DownloadManager {
      * @param downloadListener
      * @return 返回下载的id
      */
-    public abstract long start(DownloadParams downloadParams, DownloadListener downloadListener)
-    ;
+    public abstract long start(DownloadParams downloadParams, DownloadListener downloadListener);
 
     public abstract long start(DownloadParams downloadParams);
 
@@ -163,7 +200,7 @@ public abstract class DownloadManager {
      * @param downloadId
      * @return
      */
-    public abstract long restartPauseOrFail(long downloadId, DownloadListener downloadListener);
+    public abstract boolean restartPauseOrFail(long downloadId, DownloadListener downloadListener);
 
     /**
      * 停止下载任务
@@ -191,6 +228,7 @@ public abstract class DownloadManager {
 
     public abstract void unregisterDownloadListener(DownloadListener downloadListener);
 
+    @NonNull
     public static String getStatusText(int status) {
         switch (status) {
             case STATUS_PENDING:
