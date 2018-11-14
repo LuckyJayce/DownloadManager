@@ -30,6 +30,7 @@ public class MainActivity extends AppCompatActivity {
     private DataAdapter dataAdapter;
     private LocalDownloadManager downloadManager;
     private PermissionHelper permissionHelper;
+    private View pauseAllButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,11 +42,14 @@ public class MainActivity extends AppCompatActivity {
         recyclerView = findViewById(R.id.recyclerView);
         addButton = findViewById(R.id.button);
         editText = findViewById(R.id.editText);
+        pauseAllButton = findViewById(R.id.pause_all_button);
 
         recyclerView.setLayoutManager(new FixLinearLayoutManager(this));
         recyclerView.setAdapter(dataAdapter = new DataAdapter(downloadManager));
 
         addButton.setOnClickListener(onClickListener);
+        pauseAllButton.setOnClickListener(onClickListener);
+
         permissionHelper = new PermissionHelper(this);
     }
 
@@ -74,6 +78,8 @@ public class MainActivity extends AppCompatActivity {
                         downloadManager.start(downloadParams);
                     }
                 });
+            } else if (v == pauseAllButton) {
+                downloadManager.pauseAll();
             }
         }
     };

@@ -31,6 +31,11 @@ public class RemoteDownloadManager extends DownloadManager {
     }
 
     @Override
+    public void pauseAll() {
+
+    }
+
+    @Override
     public void remove(long downloadId) {
 
     }

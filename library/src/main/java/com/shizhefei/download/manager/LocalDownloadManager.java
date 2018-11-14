@@ -134,6 +134,16 @@ public class LocalDownloadManager extends DownloadManager {
     }
 
     @Override
+    public void pauseAll() {
+        LongSparseArray<DownloadData> clone = tasks.clone();
+        for (int i = 0; i < clone.size(); i++) {
+            DownloadData data = clone.valueAt(i);
+            data.requestHandle.cancle();
+        }
+        tasks.clear();
+    }
+
+    @Override
     public void remove(long downloadId) {
         DownloadInfo downloadInfo = null;
         Iterator<DownloadInfo> iterator = downloadInfoList.iterator();

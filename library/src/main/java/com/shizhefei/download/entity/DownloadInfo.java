@@ -1,13 +1,13 @@
 package com.shizhefei.download.entity;
 
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.shizhefei.download.manager.DownloadManager;
 
-import java.util.List;
-
-public class DownloadInfo {
+public class DownloadInfo implements Parcelable {
     private long id;
     private String url;
     private String dir;
@@ -21,14 +21,42 @@ public class DownloadInfo {
     private final HttpInfo httpInfo;
     private final ErrorInfo errorInfo;
     private String extInfo;
-    //当线程下载为null，多线程下载 DownloadEntity对应多个DownloadItem
-    private List<DownloadItem> downloadItems;
+//    //当线程下载为null，多线程下载 DownloadEntity对应多个DownloadItem
+//    private List<DownloadItem> downloadItems;
 
     private DownloadInfo(@NonNull DownloadParams downloadParams, @NonNull HttpInfo httpInfo, @NonNull ErrorInfo errorInfo) {
         this.downloadParams = downloadParams;
         this.httpInfo = httpInfo;
         this.errorInfo = errorInfo;
     }
+
+    protected DownloadInfo(Parcel in) {
+        id = in.readLong();
+        url = in.readString();
+        dir = in.readString();
+        filename = in.readString();
+        tempFileName = in.readString();
+        startTime = in.readLong();
+        status = in.readInt();
+        total = in.readLong();
+        current = in.readLong();
+        downloadParams = in.readParcelable(DownloadParams.class.getClassLoader());
+        httpInfo = in.readParcelable(HttpInfo.class.getClassLoader());
+        errorInfo = in.readParcelable(ErrorInfo.class.getClassLoader());
+        extInfo = in.readString();
+    }
+
+    public static final Creator<DownloadInfo> CREATOR = new Creator<DownloadInfo>() {
+        @Override
+        public DownloadInfo createFromParcel(Parcel in) {
+            return new DownloadInfo(in);
+        }
+
+        @Override
+        public DownloadInfo[] newArray(int size) {
+            return new DownloadInfo[size];
+        }
+    };
 
     public DownloadParams getDownloadParams() {
         return downloadParams;
@@ -126,12 +154,34 @@ public class DownloadInfo {
         return errorInfo;
     }
 
-    public List<DownloadItem> getDownloadItems() {
-        return downloadItems;
+//    public List<DownloadItem> getDownloadItems() {
+//        return downloadItems;
+//    }
+//
+//    private void setDownloadItems(List<DownloadItem> downloadItems) {
+//        this.downloadItems = downloadItems;
+//    }
+
+    @Override
+    public int describeContents() {
+        return 0;
     }
 
-    private void setDownloadItems(List<DownloadItem> downloadItems) {
-        this.downloadItems = downloadItems;
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeLong(id);
+        dest.writeString(url);
+        dest.writeString(dir);
+        dest.writeString(filename);
+        dest.writeString(tempFileName);
+        dest.writeLong(startTime);
+        dest.writeInt(status);
+        dest.writeLong(total);
+        dest.writeLong(current);
+        dest.writeParcelable(downloadParams, flags);
+        dest.writeParcelable(httpInfo, flags);
+        dest.writeParcelable(errorInfo, flags);
+        dest.writeString(extInfo);
     }
 
     public static class Agency {
@@ -247,12 +297,12 @@ public class DownloadInfo {
             return downloadInfo.getErrorInfo();
         }
 
-        public List<DownloadItem> getDownloadItems() {
-            return downloadInfo.getDownloadItems();
-        }
-
-        public void setDownloadItems(List<DownloadItem> downloadItems) {
-            downloadInfo.setDownloadItems(downloadItems);
-        }
+//        public List<DownloadItem> getDownloadItems() {
+//            return downloadInfo.getDownloadItems();
+//        }
+//
+//        public void setDownloadItems(List<DownloadItem> downloadItems) {
+//            downloadInfo.setDownloadItems(downloadItems);
+//        }
     }
 }

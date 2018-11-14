@@ -169,6 +169,8 @@ public abstract class DownloadManager {
      */
     public abstract void pause(long downloadId);
 
+    public abstract void pauseAll();
+
     /**
      * 停止并删除下载任务
      *
