@@ -27,28 +27,11 @@ public class DownloadDB {
     private static final String SQL_SELECT_ALL = "select * from " + DBHelper.TABLE_NAME;
     private final DBHelper dbHelper;
     private TaskHelper taskHelper;
-    private AtomicLong downloadMaxId;
 
     public DownloadDB(Context context, Executor executor) {
         dbHelper = new DBHelper(context, "DownloadDB", null, DB_VERSION);
         taskHelper = new TaskHelper();
         taskHelper.setThreadExecutor(executor);
-        long downloadMaxId = DOWNLOAD_ID_INVALID;
-        SQLiteDatabase database = dbHelper.getReadableDatabase();
-        try {
-            Cursor cursor = database.rawQuery("select MAX(" + DBHelper.FIELD_KEY + ") as max_id from " + DBHelper.TABLE_NAME, new String[]{});
-            if (cursor.moveToNext()) {
-                downloadMaxId = cursor.getLong(cursor.getColumnIndex("max_id"));
-            }
-            cursor.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        if (downloadMaxId == DOWNLOAD_ID_INVALID) {
-            downloadMaxId = DOWNLOAD_ID_MIN;
-        }
-        this.downloadMaxId = new AtomicLong(downloadMaxId);
-        DownloadUtils.logD("find downloadMaxId={}", downloadMaxId);
     }
 
     @Nullable
@@ -62,7 +45,7 @@ public class DownloadDB {
             }
             cursor.close();
         } catch (Exception e) {
-            DownloadUtils.logE(e, "find error downloadId={}", downloadId);
+            DownloadUtils.logE(e, "find error downloadId=%d", downloadId);
         }
         return downloadInfoAgency;
     }
@@ -120,10 +103,6 @@ public class DownloadDB {
 
     public void update(long downloadId, long current, long total) {
         taskHelper.execute(new UpdateProgressTask(dbHelper, downloadId, current, total), null);
-    }
-
-    public long addAndGetDownloadId() {
-        return downloadMaxId.addAndGet(1);
     }
 
     public void replace(DownloadParams downloadParams, DownloadInfo downloadInfo) {

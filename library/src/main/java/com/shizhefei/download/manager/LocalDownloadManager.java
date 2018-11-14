@@ -14,6 +14,7 @@ import com.shizhefei.download.entity.DownloadParams;
 import com.shizhefei.download.base.DownloadTaskFactory;
 import com.shizhefei.download.base.IdGenerator;
 import com.shizhefei.download.entity.HttpInfo;
+import com.shizhefei.download.idgenerator.DefaultIdGenerator;
 import com.shizhefei.download.taskfactory.DefaultDownloadTaskFactory;
 import com.shizhefei.download.base.DownloadCursor;
 import com.shizhefei.download.prxoy.DownloadListenerProxy;
@@ -48,12 +49,7 @@ public class LocalDownloadManager extends DownloadManager {
             this.downloadTaskFactory = downloadTaskFactory;
         }
         this.executor = executor;
-        this.idGenerator = new IdGenerator() {
-            @Override
-            public long generateId(DownloadParams downloadParams) {
-                return downloadDB.addAndGetDownloadId();
-            }
-        };
+        this.idGenerator = new DefaultIdGenerator(context);
         List<DownloadInfo.Agency> infoList = downloadDB.findAll();
         downloadInfoList = new ArrayList<>(infoList.size());
         for (DownloadInfo.Agency info : infoList) {

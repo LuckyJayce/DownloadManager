@@ -16,6 +16,9 @@ import com.shizhefei.download.utils.DownloadUtils;
 
 import java.io.File;
 
+/**
+ * 建议在不要多线程调用
+ */
 public abstract class DownloadManager {
     public static final String LIB_NAME = "DownloadManager";
     public static final int DOWNLOAD_FROM_BEGIN_REASON_FILE_REMOVE = 0;//文件被移除
