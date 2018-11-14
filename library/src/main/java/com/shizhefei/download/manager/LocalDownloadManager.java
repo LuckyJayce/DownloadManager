@@ -152,8 +152,6 @@ public class LocalDownloadManager extends DownloadManager {
                 break;
             }
         }
-        //通知移除
-        proxyDownloadListener.onRemove(downloadId);
 
         DownloadData data = tasks.get(downloadId);
         if (data != null) {
@@ -171,6 +169,8 @@ public class LocalDownloadManager extends DownloadManager {
             }
             downloadDB.delete(downloadId);
         }
+        //通知移除
+        proxyDownloadListener.onRemove(downloadId);
     }
 
     @Override
