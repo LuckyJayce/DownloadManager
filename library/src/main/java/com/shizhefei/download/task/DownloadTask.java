@@ -12,7 +12,6 @@ import com.shizhefei.download.exception.DownloadException;
 import com.shizhefei.download.exception.RemoveException;
 import com.shizhefei.download.manager.DownloadManager;
 import com.shizhefei.download.prxoy.DownloadProgressSenderProxy;
-import com.shizhefei.download.utils.DownloadLogUtils;
 import com.shizhefei.download.utils.FileNameUtils;
 import com.shizhefei.download.utils.DownloadUtils;
 import com.shizhefei.mvc.ProgressSender;
@@ -78,7 +77,7 @@ public class DownloadTask implements ITask<Void>, RemoveHandler.OnRemoveListener
 
             //添加header
             Map<String, List<String>> headers = downloadParams.getHeaders();
-            DownloadLogUtils.d("downloadId：%d request header %s", downloadId, headers);
+            DownloadUtils.logD("downloadId：%d request header %s", downloadId, headers);
             httpURLConnection = (HttpURLConnection) new URL(downloadParams.getUrl()).openConnection();
             if (headers != null) {
                 for (Map.Entry<String, List<String>> header : headers.entrySet()) {
@@ -131,7 +130,7 @@ public class DownloadTask implements ITask<Void>, RemoveHandler.OnRemoveListener
 
             long contentLength = httpURLConnection.getContentLength();
             if (contentLength == 0) {
-                String errorMessage = DownloadUtils.formatString("there isn't any content need to download on %d-%d with the content-length is 0", downloadId);
+                String errorMessage = DownloadUtils.formatString("there isn't any content need to download on %d-%logD with the content-length is 0", downloadId);
                 throw new DownloadException(downloadId, DownloadManager.ERROR_EMPTY_SIZE, errorMessage);
             }
             if (current <= 0) {
@@ -229,11 +228,11 @@ public class DownloadTask implements ITask<Void>, RemoveHandler.OnRemoveListener
         if (remove) {
             if (saveFileTemp != null && saveFileTemp.exists()) {
                 saveFileTemp.delete();
-                DownloadLogUtils.d("saveFileTemp delete saveFileTemp %s" + saveFileTemp);
+                DownloadUtils.logD("saveFileTemp delete saveFileTemp %s" + saveFileTemp);
             }
             if (saveFile != null && saveFile.exists()) {
                 saveFile.delete();
-                DownloadLogUtils.d("saveFile delete saveFile %s" + saveFile);
+                DownloadUtils.logD("saveFile delete saveFile %s" + saveFile);
             }
             throw new RemoveException(downloadId);
         }
@@ -242,7 +241,7 @@ public class DownloadTask implements ITask<Void>, RemoveHandler.OnRemoveListener
                 saveFile.delete();
             }
             boolean success = saveFileTemp.renameTo(saveFile);
-            DownloadLogUtils.d("success " + success);
+            DownloadUtils.logD("success " + success);
         }
         return null;
     }
@@ -264,7 +263,7 @@ public class DownloadTask implements ITask<Void>, RemoveHandler.OnRemoveListener
 
     @Override
     public void onRemove() {
-        DownloadLogUtils.d("onRemove %d", downloadId);
+        DownloadUtils.logD("onRemove %d", downloadId);
         remove = true;
         cancel = true;
     }

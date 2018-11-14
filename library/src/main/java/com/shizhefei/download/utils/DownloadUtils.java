@@ -6,13 +6,22 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.StatFs;
+import android.util.Log;
 
 import com.shizhefei.download.entity.DownloadInfo;
 import com.shizhefei.download.manager.DownloadManager;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.net.HttpURLConnection;
 import java.net.ProtocolException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 public class DownloadUtils {
     public static final int RANGE_INFINITE = -1;
@@ -22,7 +31,7 @@ public class DownloadUtils {
         final ConnectivityManager manager = (ConnectivityManager) DownloadManager.getApplicationContext().
                 getSystemService(Context.CONNECTIVITY_SERVICE);
         if (manager == null) {
-            DownloadLogUtils.d("failed to get connectivity manager!");
+            logD("failed to get connectivity manager!");
             return true;
         }
         //noinspection MissingPermission, because we check permission accessable when invoked
@@ -41,7 +50,7 @@ public class DownloadUtils {
 
         final String newEtag = httpURLConnection.getHeaderField("Etag");
 
-        DownloadLogUtils.d("eTag find %s for task(%d)", newEtag, downloadId);
+        logD("eTag find %s for task(%d)", newEtag, downloadId);
 
         return newEtag;
     }
@@ -82,7 +91,7 @@ public class DownloadUtils {
             range = DownloadUtils.formatString("bytes=%d-", startOffset);
         } else {
             range = DownloadUtils
-                    .formatString("bytes=%d-%d", startOffset, endOffset);
+                    .formatString("bytes=%d-%logD", startOffset, endOffset);
         }
         connection.addRequestProperty("Range", range);
     }
@@ -105,5 +114,57 @@ public class DownloadUtils {
 
     public static String formatString(final String msg, Object... args) {
         return String.format(Locale.getDefault(), msg, args);
+    }
+
+    public static JSONObject toJsonObject(Map<String, List<String>> map) {
+        return new JSONObject(map);
+    }
+
+    public static JSONObject toJsonObject2(Map<String, String> map) {
+        return new JSONObject(map);
+    }
+
+    public static Map<String, List<String>> parseJson(JSONObject jsonObject) {
+        Map<String, List<String>> map = new HashMap<>();
+        try {
+            Iterator<String> keys = jsonObject.keys();
+            while (keys.hasNext()) {
+                String key = keys.next();
+                JSONArray jsonArray = jsonObject.optJSONArray(key);
+                int length = jsonArray.length();
+                List<String> values = new ArrayList<>(length);
+                for (int i = 0; i < length; i++) {
+                    String value = jsonArray.getString(i);
+                    values.add(value);
+                }
+                map.put(key, values);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return map;
+    }
+
+    public static Map<String, String> parseJson2(JSONObject jsonObject) {
+        Map<String, String> map = new HashMap<>();
+        try {
+            Iterator<String> keys = jsonObject.keys();
+            while (keys.hasNext()) {
+                String key = keys.next();
+                String value = jsonObject.optString(key);
+                map.put(key, value);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return map;
+    }
+
+    public static void logD(String msg, Object... args) {
+        Log.d(DownloadManager.LIB_NAME, formatString(msg, args));
+    }
+
+    public static void logE(Throwable e, String msg, Object... args) {
+        Log.e(DownloadManager.LIB_NAME, formatString(msg, args), e);
     }
 }

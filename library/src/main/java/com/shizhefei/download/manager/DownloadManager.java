@@ -17,6 +17,7 @@ import com.shizhefei.download.utils.DownloadUtils;
 import java.io.File;
 
 public abstract class DownloadManager {
+    public static final String LIB_NAME = "DownloadManager";
     public static final int DOWNLOAD_FROM_BEGIN_REASON_FILE_REMOVE = 0;//文件被移除
     public static final int DOWNLOAD_FROM_BEGIN_UNSUPPORT_RANGE = 1;//url的服务器不接受range要重新下载
     public static final int DOWNLOAD_FROM_BEGIN_ETAG_CHANGE = 2;//etag改变，表示内容变化
@@ -103,7 +104,7 @@ public abstract class DownloadManager {
     }
 
     public static String defaultUserAgent() {
-        return DownloadUtils.formatString("DownloadManager/%s", BuildConfig.VERSION_NAME);
+        return DownloadUtils.formatString("%s/%s", LIB_NAME, BuildConfig.VERSION_NAME);
     }
 
     public static DownloadConfig getDownloadConfig() {

@@ -1,7 +1,6 @@
 package com.shizhefei.download.utils;
 
 import android.text.TextUtils;
-import android.util.Log;
 import android.webkit.MimeTypeMap;
 
 import java.io.File;
@@ -44,7 +43,7 @@ public class FileNameUtils {
             }
         }
         String urlName = getFileNameFromUrl(urlString);
-        DownloadLogUtils.d("downloadId:%d  getFileName() urlName:%s", downloadId, urlName);
+        DownloadUtils.logD("downloadId:%d  getFileName() urlName:%s", downloadId, urlName);
         if (urlName != null) {
             int index = urlName.lastIndexOf(".");
             if (index >= 0) {

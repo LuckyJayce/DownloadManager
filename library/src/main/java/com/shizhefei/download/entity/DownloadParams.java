@@ -6,7 +6,7 @@ import android.os.Parcelable;
 import android.text.TextUtils;
 
 import com.shizhefei.download.manager.DownloadManager;
-import com.shizhefei.download.utils.DownloadJsonUtils;
+import com.shizhefei.download.utils.DownloadUtils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -39,17 +39,17 @@ public class DownloadParams implements Parcelable {
         blockSize = in.readInt();
         isWifiRequired = in.readByte() != 0;
         try {
-            params = DownloadJsonUtils.parse(new JSONObject(in.readString()));
+            params = DownloadUtils.parseJson(new JSONObject(in.readString()));
         } catch (JSONException e) {
             e.printStackTrace();
         }
         try {
-            headers = DownloadJsonUtils.parse(new JSONObject(in.readString()));
+            headers = DownloadUtils.parseJson(new JSONObject(in.readString()));
         } catch (JSONException e) {
             e.printStackTrace();
         }
         try {
-            extData = DownloadJsonUtils.parse2(new JSONObject(in.readString()));
+            extData = DownloadUtils.parseJson2(new JSONObject(in.readString()));
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -145,9 +145,9 @@ public class DownloadParams implements Parcelable {
             jsonObject.put("override", override);
             jsonObject.put("isWifiRequired", isWifiRequired);
             jsonObject.put("blockSize", blockSize);
-            jsonObject.put("params", DownloadJsonUtils.toJsonObject(params));
-            jsonObject.put("headers", DownloadJsonUtils.toJsonObject(headers));
-            jsonObject.put("extData", DownloadJsonUtils.toJsonObject2(extData));
+            jsonObject.put("params", DownloadUtils.toJsonObject(params));
+            jsonObject.put("headers", DownloadUtils.toJsonObject(headers));
+            jsonObject.put("extData", DownloadUtils.toJsonObject2(extData));
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -180,9 +180,9 @@ public class DownloadParams implements Parcelable {
         dest.writeByte((byte) (override ? 1 : 0));
         dest.writeInt(blockSize);
         dest.writeByte((byte) (isWifiRequired ? 1 : 0));
-        dest.writeString(DownloadJsonUtils.toJsonObject(params).toString());
-        dest.writeString(DownloadJsonUtils.toJsonObject(headers).toString());
-        dest.writeString(DownloadJsonUtils.toJsonObject2(extData).toString());
+        dest.writeString(DownloadUtils.toJsonObject(params).toString());
+        dest.writeString(DownloadUtils.toJsonObject(headers).toString());
+        dest.writeString(DownloadUtils.toJsonObject2(extData).toString());
     }
 
 
@@ -219,9 +219,9 @@ public class DownloadParams implements Parcelable {
                 this.override = jsonObject.optBoolean("override");
                 this.isWifiRequired = jsonObject.optBoolean("isWifiRequired");
                 this.blockSize = jsonObject.optInt("blockSize");
-                this.params = DownloadJsonUtils.parse(jsonObject.optJSONObject("params"));
-                this.headers = DownloadJsonUtils.parse(jsonObject.optJSONObject("headers"));
-                this.extData = DownloadJsonUtils.parse2(jsonObject.optJSONObject("extData"));
+                this.params = DownloadUtils.parseJson(jsonObject.optJSONObject("params"));
+                this.headers = DownloadUtils.parseJson(jsonObject.optJSONObject("headers"));
+                this.extData = DownloadUtils.parseJson2(jsonObject.optJSONObject("extData"));
             } catch (JSONException e) {
                 e.printStackTrace();
             }

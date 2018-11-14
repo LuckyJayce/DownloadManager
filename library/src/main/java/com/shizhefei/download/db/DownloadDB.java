@@ -9,7 +9,7 @@ import android.support.annotation.Nullable;
 
 import com.shizhefei.download.entity.DownloadParams;
 import com.shizhefei.download.entity.DownloadInfo;
-import com.shizhefei.download.utils.DownloadLogUtils;
+import com.shizhefei.download.utils.DownloadUtils;
 import com.shizhefei.mvc.ProgressSender;
 import com.shizhefei.task.ITask;
 import com.shizhefei.task.TaskHelper;
@@ -48,7 +48,7 @@ public class DownloadDB {
             downloadMaxId = DOWNLOAD_ID_MIN;
         }
         this.downloadMaxId = new AtomicLong(downloadMaxId);
-        DownloadLogUtils.d("find downloadMaxId={}", downloadMaxId);
+        DownloadUtils.logD("find downloadMaxId={}", downloadMaxId);
     }
 
     @Nullable
@@ -62,7 +62,7 @@ public class DownloadDB {
             }
             cursor.close();
         } catch (Exception e) {
-            DownloadLogUtils.e(e, "find error downloadId={}", downloadId);
+            DownloadUtils.logE(e, "find error downloadId={}", downloadId);
         }
         return downloadInfoAgency;
     }
@@ -78,7 +78,7 @@ public class DownloadDB {
             }
             cursor.close();
         } catch (Exception e) {
-            DownloadLogUtils.e(e, "findAll");
+            DownloadUtils.logE(e, "findAll");
         }
         return list;
     }
