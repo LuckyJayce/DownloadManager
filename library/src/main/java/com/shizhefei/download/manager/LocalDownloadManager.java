@@ -2,8 +2,10 @@ package com.shizhefei.download.manager;
 
 import android.content.Context;
 import android.os.AsyncTask;
+import android.os.Process;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
+import android.util.Log;
 import android.util.LongSparseArray;
 
 import com.shizhefei.download.base.AbsDownloadTask;
@@ -19,6 +21,7 @@ import com.shizhefei.download.idgenerator.DefaultIdGenerator;
 import com.shizhefei.download.taskfactory.DefaultDownloadTaskFactory;
 import com.shizhefei.download.base.DownloadCursor;
 import com.shizhefei.download.task.DownloadListenerProxy;
+import com.shizhefei.download.utils.DownloadUtils;
 import com.shizhefei.mvc.RequestHandle;
 import com.shizhefei.task.TaskHandle;
 import com.shizhefei.task.TaskHelper;
@@ -239,6 +242,7 @@ public class LocalDownloadManager extends DownloadManager {
     @Override
     public void registerDownloadListener(DownloadListener downloadListener) {
         downloadListeners.add(downloadListener);
+        DownloadUtils.logD("registerDownloadListener :" + downloadListener + " pid:" + Process.myPid());
     }
 
     @Override

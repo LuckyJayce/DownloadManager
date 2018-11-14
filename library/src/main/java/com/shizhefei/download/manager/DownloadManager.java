@@ -94,6 +94,8 @@ public abstract class DownloadManager {
     public static final String FIELD_KEY = "id";
     // ----------------------------------- database ---------------------------------------------//
 
+    public static final int INVALID_POSITION = -1;
+
     private static Context context;
     //    private static DownloadTaskFactory staticDownloadTaskFactory;
 //    private static IdGenerator staticIdGenerator;
@@ -103,7 +105,7 @@ public abstract class DownloadManager {
     private static DownloadConfig downloadConfig;
     private static boolean isInit;
 
-    public static void init(Context context, boolean remote, DownloadConfig config) {
+    public static void init(Context context, DownloadConfig config) {
         DownloadConfig.Builder builder = new DownloadConfig.Builder(config);
         if (TextUtils.isEmpty(builder.getDir())) {
             String dir = Environment.getExternalStorageDirectory() + File.separator + context.getPackageName() + File.separator + "download";
@@ -124,9 +126,6 @@ public abstract class DownloadManager {
         downloadConfig = builder.build();
         DownloadManager.context = context.getApplicationContext();
         isInit = true;
-        if (remote) {
-            getRemote().bindService();
-        }
     }
 
     @NonNull
@@ -145,6 +144,9 @@ public abstract class DownloadManager {
 
     @NonNull
     public static DownloadConfig getDownloadConfig() {
+        if (!isInit) {
+            throw new RuntimeException("请先调用init进行初始化");
+        }
         return downloadConfig;
     }
 
