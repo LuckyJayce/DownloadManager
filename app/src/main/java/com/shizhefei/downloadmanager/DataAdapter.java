@@ -86,7 +86,7 @@ public class DataAdapter extends RecyclerView.Adapter {
             progressBar.setProgress(p);
             StringBuilder info = new StringBuilder();
             info.append(Formatter.formatFileSize(context, downloadInfo.getCurrent())).append("/").append(Formatter.formatFileSize(context, downloadInfo.getTotal()));
-            info.append("  %").append(p);
+            info.append("  ").append(p).append("%");
             if (downloadInfo.getStatus() == DownloadManager.STATUS_ERROR) {
                 info.append("\nerror:").append(downloadInfo.getErrorInfo().toJson());
             }
