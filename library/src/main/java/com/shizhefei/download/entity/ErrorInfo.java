@@ -3,6 +3,8 @@ package com.shizhefei.download.entity;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.shizhefei.download.manager.DownloadManager;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -12,6 +14,7 @@ import org.json.JSONObject;
 
 public class ErrorInfo implements Parcelable {
 
+    @DownloadManager.Error
     private int errorCode;
     private String errorMessage;
     private int httpCode;
@@ -27,11 +30,12 @@ public class ErrorInfo implements Parcelable {
         httpMessage = in.readString();
     }
 
-    public int getErrorCode() {
+    public @DownloadManager.Error
+    int getErrorCode() {
         return errorCode;
     }
 
-    private void setErrorCode(int errorCode) {
+    private void setErrorCode(@DownloadManager.Error int errorCode) {
         this.errorCode = errorCode;
     }
 

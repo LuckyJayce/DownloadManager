@@ -3,6 +3,7 @@ package com.shizhefei.downloadmanager;
 import android.app.Application;
 
 import com.shizhefei.download.entity.DownloadConfig;
+import com.shizhefei.download.entity.DownloadInfo;
 import com.shizhefei.download.manager.DownloadManager;
 
 public class AppContext extends Application {

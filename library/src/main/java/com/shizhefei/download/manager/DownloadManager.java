@@ -3,6 +3,7 @@ package com.shizhefei.download.manager;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Environment;
+import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
@@ -101,6 +102,16 @@ public abstract class DownloadManager {
     private static volatile RemoteDownloadManager remoteDownloadManager;
     private static DownloadConfig downloadConfig;
     private static boolean isInit;
+
+    // 自定义一个注解MyState
+    @IntDef({STATUS_PENDING, STATUS_START, STATUS_CONNECTED, STATUS_DOWNLOAD_RESET_BEGIN, STATUS_DOWNLOAD_ING, STATUS_PAUSED, STATUS_FINISHED, STATUS_ERROR})
+    public @interface Status {
+    }
+
+    // 自定义一个注解MyState
+    @IntDef({ERROR_UNKNOW, ERROR_PERMISSION, ERROR_FILENOTFOUNDEXCEPTION, ERROR_IOEXCEPTION, ERROR_HTTP, ERROR_WIFIREQUIRED, ERROR_EMPTY_SIZE, ERROR_MALFORMEDURLEXCEPTION, ERROR_PROTOCOLEXCEPTION, ERROR_SIZE_CHANGE})
+    public @interface Error {
+    }
 
     public static void init(Context context, DownloadConfig config) {
         DownloadConfig.Builder builder = new DownloadConfig.Builder(config);
@@ -227,7 +238,7 @@ public abstract class DownloadManager {
     public abstract void unregisterDownloadListener(DownloadListener downloadListener);
 
     @NonNull
-    public static String getStatusText(int status) {
+    public static String getStatusText(@Status int status) {
         switch (status) {
             case STATUS_PENDING:
                 return "STATUS_PENDING";

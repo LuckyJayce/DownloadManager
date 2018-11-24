@@ -14,6 +14,7 @@ public class DownloadInfo implements Parcelable {
     private String filename;
     private String tempFileName;
     private long startTime;//单位 毫秒
+    @DownloadManager.Status
     private int status = DownloadManager.STATUS_PENDING;
     private long total;
     private long current;
@@ -120,6 +121,7 @@ public class DownloadInfo implements Parcelable {
         this.filename = filename;
     }
 
+    @DownloadManager.Status
     public int getStatus() {
         return status;
     }
