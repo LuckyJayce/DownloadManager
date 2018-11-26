@@ -139,7 +139,7 @@ public class DownloadService extends Service {
             final int n = callbackList.beginBroadcast();
             try {
                 for (int i = 0; i < n; i++) {
-                    callbackList.getBroadcastItem(i).onStart(downloadId);
+                    callbackList.getBroadcastItem(i).onStart(downloadId, current, total);
                 }
             } catch (RemoteException e) {
                 e.printStackTrace();
@@ -167,7 +167,7 @@ public class DownloadService extends Service {
             final int n = callbackList.beginBroadcast();
             try {
                 for (int i = 0; i < n; i++) {
-                    callbackList.getBroadcastItem(i).onDownloadResetBegin(downloadId, reason);
+                    callbackList.getBroadcastItem(i).onDownloadResetBegin(downloadId, reason, current, total);
                 }
             } catch (RemoteException e) {
                 e.printStackTrace();
@@ -181,7 +181,7 @@ public class DownloadService extends Service {
             final int n = callbackList.beginBroadcast();
             try {
                 for (int i = 0; i < n; i++) {
-                    callbackList.getBroadcastItem(i).onConnected(downloadId, httpInfo, saveDir, saveFileName, tempFileName);
+                    callbackList.getBroadcastItem(i).onConnected(downloadId, httpInfo, saveDir, saveFileName, tempFileName, current, total);
                 }
             } catch (RemoteException e) {
                 e.printStackTrace();

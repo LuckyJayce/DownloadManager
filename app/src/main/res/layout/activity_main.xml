@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -16,7 +15,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="http://gyxz.ukdj3d.cn/a3/yx_sms1/hcrssyx2pj.apk" />
+            android:text="http://v.suhebar.com/v2/m_20181030_4690/1/5cc502d6a3d342f63268aeac882a4acc_720P.m3u8" />
 
         <Button
             android:id="@+id/button"

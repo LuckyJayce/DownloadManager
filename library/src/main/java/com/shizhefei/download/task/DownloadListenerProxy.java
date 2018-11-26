@@ -43,12 +43,12 @@ public class DownloadListenerProxy implements ICallback<Void> {
                 downloadListener.onDownloadIng(downloadId, current, total);
                 break;
             case DownloadManager.STATUS_START:
-                downloadListener.onStart(downloadId, , );
+                downloadListener.onStart(downloadId, current, total);
                 break;
             case DownloadManager.STATUS_DOWNLOAD_RESET_BEGIN:
-                if(bundle!=null){
+                if (bundle != null) {
                     int reason = bundle.getInt(DownloadProgressSenderProxy.PARAM_DOWNLOADFROMBEGINREASON);
-                    downloadListener.onDownloadResetBegin(downloadId, reason, , );
+                    downloadListener.onDownloadResetBegin(downloadId, reason, current, total);
                 }
                 break;
             case DownloadManager.STATUS_CONNECTED:
@@ -57,7 +57,7 @@ public class DownloadListenerProxy implements ICallback<Void> {
                     String saveDir = bundle.getString(DownloadProgressSenderProxy.PARAM_SAVEDIR);
                     String saveFileName = bundle.getString(DownloadProgressSenderProxy.PARAM_SAVEFILENAME);
                     String tempFileName = bundle.getString(DownloadProgressSenderProxy.PARAM_TEMPFILENAME);
-                    downloadListener.onConnected(downloadId, httpInfo, saveDir, saveFileName, tempFileName, , );
+                    downloadListener.onConnected(downloadId, httpInfo, saveDir, saveFileName, tempFileName, current, total);
                 }
                 break;
         }

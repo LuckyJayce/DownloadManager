@@ -18,6 +18,7 @@ import com.shizhefei.download.entity.HttpInfo;
 import com.shizhefei.download.manager.DownloadManager;
 import com.shizhefei.download.task.base.DownloadProgressListener;
 import com.shizhefei.download.task.base.DownloadTaskImp;
+import com.shizhefei.download.utils.DownloadUtils;
 import com.shizhefei.download.utils.FileNameUtils;
 import com.shizhefei.mvc.ProgressSender;
 import com.shizhefei.task.ITask;
@@ -28,7 +29,6 @@ import java.io.FileOutputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Executor;
 
 class M3u8DownloadTaskImp implements ITask<Void>, RemoveHandler.OnRemoveListener {
     private final DownloadInfo downloadInfo;
@@ -36,7 +36,6 @@ class M3u8DownloadTaskImp implements ITask<Void>, RemoveHandler.OnRemoveListener
     private DownloadDB downloadDB;
     private ErrorInfo.Agency errorInfoAgency;
     private HttpInfo.Agency httpInfoAgency;
-    private RemoveHandler removeHandler;
     private DownloadInfo.Agency downloadInfoAgency;
     private DownloadParams downloadParams;
     private volatile DownloadTaskImp downloadTask;
@@ -54,7 +53,7 @@ class M3u8DownloadTaskImp implements ITask<Void>, RemoveHandler.OnRemoveListener
         errorInfoAgency = downloadInfoAgency.getErrorInfoAgency();
         httpInfoAgency = downloadInfoAgency.getHttpInfoAgency();
         downloadInfo = downloadInfoAgency.getInfo();
-        this.removeHandler = removeHandler;
+        removeHandler.addRemoveListener(this);
     }
 
     public DownloadInfo getDownloadInfo() {
@@ -73,6 +72,8 @@ class M3u8DownloadTaskImp implements ITask<Void>, RemoveHandler.OnRemoveListener
     @Override
     public Void execute(ProgressSender progressSender) throws Exception {
         final M3u8ExtInfo m3U8ExtInfo = new M3u8ExtInfo(downloadInfo.getExtInfo());
+        DownloadUtils.logD("M3u8DownloadTaskImp downloadId=%d downloadInfo.getExtInfo():%s", downloadId, downloadInfo.getExtInfo());
+
         M3u8ExtInfo.ItemInfo m3u8Info = m3U8ExtInfo.getM3u8Info();
         String dir = downloadInfo.getDir();
         String fileName;
@@ -82,8 +83,10 @@ class M3u8DownloadTaskImp implements ITask<Void>, RemoveHandler.OnRemoveListener
             fileName = downloadId + "_" + downloadInfoAgency.getStartTime() + ".m3u8";
         }
         File m3u8File = new File(dir, fileName);
+        DownloadUtils.logD("M3u8DownloadTaskImp  downloadId=%d fileName=%s m3u8File=%s m3u8Info=%s", downloadId, fileName, m3u8File, m3u8Info);
         if (m3u8Info != null) {
             if (!m3u8File.exists()) {
+                DownloadUtils.logD("M3u8DownloadTaskImp downloadId=%d !m3u8File.exists()", downloadId);
                 downloadTask = buildFromExtInfo(downloadId, dir, downloadParams, m3u8Info);
             }
         } else {
@@ -98,6 +101,7 @@ class M3u8DownloadTaskImp implements ITask<Void>, RemoveHandler.OnRemoveListener
         }
         if (!isCancel) {
             if (downloadTask != null) {
+                DownloadUtils.logD("M3u8DownloadTaskImp  downloadId=%d start download m3u8 file", downloadId);
                 downloadTask.execute(new DownloadProgressListener() {
                     @Override
                     public void onDownloadResetBegin(long downloadId, int reason, long current, long total) {
@@ -139,10 +143,12 @@ class M3u8DownloadTaskImp implements ITask<Void>, RemoveHandler.OnRemoveListener
                 if (currentItemInfo != null) {
                     startIndex = currentItemInfo.getIndex();
                 }
+                DownloadUtils.logD("M3u8DownloadTaskImp downloadId=%d currentItemInfo=%s", downloadId, currentItemInfo);
                 for (int i = startIndex; i < tracks.size() && !isCancel; i++) {
                     if (currentItemInfo == null) {
                         currentItemInfo = buildItemInfo(i, tracks.get(i));
                         m3U8ExtInfo.setCurrentItemInfo(currentItemInfo);
+                        DownloadUtils.logD("M3u8DownloadTaskImp  downloadId=%d currentItemInfo=%s", downloadId, currentItemInfo);
                     }
                     downloadTask = buildFromExtInfo(downloadId, dir, downloadParams, currentItemInfo);
                     final long starCurrent = currentItemInfo.getCurrent();
@@ -175,6 +181,7 @@ class M3u8DownloadTaskImp implements ITask<Void>, RemoveHandler.OnRemoveListener
                     currentItemInfo = null;
                 }
                 if (!isCancel) {
+                    DownloadUtils.logD("M3u8DownloadTaskImp  downloadId=%d write m3u8", downloadId, currentItemInfo);
                     // 修改为ts为相对路径, 因为ts的uri可能是http开头的
                     PlaylistWriter playlistWriter = new PlaylistWriter(new FileOutputStream(m3u8File), Format.EXT_M3U, Encoding.UTF_8);
                     List<TrackData> tracksOutput = new ArrayList<>();

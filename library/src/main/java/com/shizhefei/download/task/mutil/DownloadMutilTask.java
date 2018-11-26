@@ -14,6 +14,11 @@ public class DownloadMutilTask extends AbsDownloadTask {
     }
 
     @Override
+    public String getDownloadTaskName() {
+        return null;
+    }
+
+    @Override
     public RequestHandle execute(ResponseSender<Void> sender) throws Exception {
         return null;
     }

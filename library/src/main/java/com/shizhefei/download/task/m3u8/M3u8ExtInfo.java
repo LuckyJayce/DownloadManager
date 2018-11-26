@@ -143,5 +143,17 @@ public class M3u8ExtInfo {
         public void setTempFileName(String tempFileName) {
             this.tempFileName = tempFileName;
         }
+
+        @Override
+        public String toString() {
+            return "ItemInfo{" +
+                    "url='" + url + '\'' +
+                    ", current=" + current +
+                    ", total=" + total +
+                    ", fileName='" + fileName + '\'' +
+                    ", tempFileName='" + tempFileName + '\'' +
+                    ", index=" + index +
+                    '}';
+        }
     }
 }
