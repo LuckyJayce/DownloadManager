@@ -22,6 +22,7 @@ public class DownloadInfo implements Parcelable {
     private final HttpInfo httpInfo;
     private final ErrorInfo errorInfo;
     private String extInfo;
+    private String downloadTaskName;
 //    //当线程下载为null，多线程下载 DownloadEntity对应多个DownloadItem
 //    private List<DownloadBlockInfo> downloadItems;
 
@@ -45,6 +46,7 @@ public class DownloadInfo implements Parcelable {
         httpInfo = in.readParcelable(HttpInfo.class.getClassLoader());
         errorInfo = in.readParcelable(ErrorInfo.class.getClassLoader());
         extInfo = in.readString();
+        downloadTaskName = in.readString();
     }
 
     public static final Creator<DownloadInfo> CREATOR = new Creator<DownloadInfo>() {
@@ -160,7 +162,15 @@ public class DownloadInfo implements Parcelable {
         return status != DownloadManager.STATUS_ERROR && status != DownloadManager.STATUS_FINISHED && status != DownloadManager.STATUS_CONNECTED;
     }
 
-//    public List<DownloadBlockInfo> getDownloadItems() {
+    public String getDownloadTaskName() {
+        return downloadTaskName;
+    }
+
+    void setDownloadTaskName(String downloadTaskName) {
+        this.downloadTaskName = downloadTaskName;
+    }
+
+    //    public List<DownloadBlockInfo> getDownloadItems() {
 //        return downloadItems;
 //    }
 //
@@ -188,6 +198,7 @@ public class DownloadInfo implements Parcelable {
         dest.writeParcelable(httpInfo, flags);
         dest.writeParcelable(errorInfo, flags);
         dest.writeString(extInfo);
+        dest.writeString(downloadTaskName);
     }
 
     public static class Agency {
@@ -219,6 +230,14 @@ public class DownloadInfo implements Parcelable {
 
         public void setTempFileName(String tempFileName) {
             downloadInfo.setTempFileName(tempFileName);
+        }
+
+        public void setDownloadTaskName(String downloadTaskName){
+            downloadInfo.setDownloadTaskName(downloadTaskName);
+        }
+
+        public String getDownloadTaskName() {
+            return downloadInfo.getDownloadTaskName();
         }
 
         public long getId() {

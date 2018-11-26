@@ -25,6 +25,7 @@ public class SingleThreadDownloadTask extends AbsDownloadTask {
     private HttpInfo.Agency httpInfoAgency;
     private RemoveHandler removeHandler;
     private DownloadInfo.Agency downloadInfoAgency;
+    public static final String DOWNLOAD_TASK_NAME= "SingleThreadDownloadTask";
 
     public SingleThreadDownloadTask(long downloadId, DownloadParams downloadParams, DownloadDB downloadDB, RemoveHandler removeHandler, Executor executor) {
         this.downloadId = downloadId;
@@ -54,6 +55,11 @@ public class SingleThreadDownloadTask extends AbsDownloadTask {
     @Override
     public DownloadInfo getDownloadInfo() {
         return downloadInfoAgency.getInfo();
+    }
+
+    @Override
+    public String getDownloadTaskName() {
+        return DOWNLOAD_TASK_NAME;
     }
 
     private DownloadListener downloadListener = new DownloadListener() {
@@ -121,6 +127,7 @@ public class SingleThreadDownloadTask extends AbsDownloadTask {
         } else {
             downloadInfoAgency.setTotal(0);
         }
+        downloadInfoAgency.setDownloadTaskName(getDownloadTaskName());
         downloadInfoAgency.setStartTime(System.currentTimeMillis());
         downloadInfoAgency.setStatus(DownloadManager.STATUS_PENDING);
         downloadInfoAgency.setFilename(downloadParams.getFileName());

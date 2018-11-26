@@ -24,6 +24,7 @@ public class DownloadDB {
     private static final int DOWNLOAD_ID_INVALID = -1;//非法的id
     private static final int DOWNLOAD_ID_MIN = 1;//最小的id
     private static final String SQL_SELECT = "select * from " + DownloadManager.TABLE_NAME + " where " + DownloadManager.FIELD_KEY + "=?";
+    private static final String SQL_SELECT_DOWNLOAD_TASK_NAME = "select " + DownloadManager.FIELD_DOWNLOAD_TASK_NAME + " from " + DownloadManager.TABLE_NAME + " where " + DownloadManager.FIELD_KEY + "=?";
     private static final String SQL_SELECT_ALL = "select * from " + DownloadManager.TABLE_NAME;
     private final DBHelper dbHelper;
     private TaskHelper taskHelper;
@@ -48,6 +49,21 @@ public class DownloadDB {
             DownloadUtils.logE(e, "find error downloadId=%d", downloadId);
         }
         return downloadInfoAgency;
+    }
+
+    public String findDownloadTaskName(long downloadId) {
+        String downloadTaskName = null;
+        try {
+            SQLiteDatabase database = dbHelper.getReadableDatabase();
+            Cursor cursor = database.rawQuery(SQL_SELECT_DOWNLOAD_TASK_NAME, new String[]{String.valueOf(downloadId)});
+            if (cursor.moveToNext()) {
+                downloadTaskName = cursor.getString(cursor.getColumnIndex(DownloadManager.FIELD_DOWNLOAD_TASK_NAME));
+            }
+            cursor.close();
+        } catch (Exception e) {
+            DownloadUtils.logE(e, "find error downloadId=%d", downloadId);
+        }
+        return downloadTaskName;
     }
 
     @NonNull
@@ -75,6 +91,7 @@ public class DownloadDB {
         String errorInfo = cursor.getString(cursor.getColumnIndex(DownloadManager.FIELD_ERROR_INFO));
         String extInfo = cursor.getString(cursor.getColumnIndex(DownloadManager.FIELD_EXT_INFO));
         String url = cursor.getString(cursor.getColumnIndex(DownloadManager.FIELD_URL));
+        String downloadTaskName = cursor.getString(cursor.getColumnIndex(DownloadManager.FIELD_DOWNLOAD_TASK_NAME));
         int status = cursor.getInt(cursor.getColumnIndex(DownloadManager.FIELD_STATUS));
         long startTime = cursor.getLong(cursor.getColumnIndex(DownloadManager.FIELD_START_TIME));
         long current = cursor.getLong(cursor.getColumnIndex(DownloadManager.FIELD_CURRENT));
@@ -94,6 +111,7 @@ public class DownloadDB {
         agency.getHttpInfoAgency().setByJson(httpInfo);
         agency.getErrorInfoAgency().setByJson(errorInfo);
         agency.setExtInfo(extInfo);
+        agency.setDownloadTaskName(downloadTaskName);
         return agency;
     }
 
@@ -166,6 +184,7 @@ public class DownloadDB {
             contentValues.put(DownloadManager.FIELD_START_TIME, downloadInfo.getStartTime());
             contentValues.put(DownloadManager.FIELD_CURRENT, downloadInfo.getCurrent());
             contentValues.put(DownloadManager.FIELD_TOTAL, downloadInfo.getTotal());
+            contentValues.put(DownloadManager.FIELD_DOWNLOAD_TASK_NAME, downloadInfo.getDownloadTaskName());
             database.update(DownloadManager.TABLE_NAME, contentValues, DownloadManager.FIELD_KEY + " = ?", new String[]{String.valueOf(downloadInfo.getId())});
             return null;
         }
@@ -204,6 +223,7 @@ public class DownloadDB {
             contentValues.put(DownloadManager.FIELD_START_TIME, downloadInfo.getStartTime());
             contentValues.put(DownloadManager.FIELD_CURRENT, downloadInfo.getCurrent());
             contentValues.put(DownloadManager.FIELD_TOTAL, downloadInfo.getTotal());
+            contentValues.put(DownloadManager.FIELD_DOWNLOAD_TASK_NAME, downloadInfo.getDownloadTaskName());
             database.replace(DownloadManager.TABLE_NAME, null, contentValues);
             return null;
         }
