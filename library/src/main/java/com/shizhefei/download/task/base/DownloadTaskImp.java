@@ -265,10 +265,10 @@ public class DownloadTaskImp {
     private void removeFiles() {
         try {
             if (!TextUtils.isEmpty(saveFileName)) {
-                DownloadUtils.forceDelete(new File(dir, saveFileName));
+                new File(dir, saveFileName).delete();
             }
             if (!TextUtils.isEmpty(tempFileName)) {
-                DownloadUtils.forceDelete(new File(dir, tempFileName));
+                new File(dir, tempFileName).delete();
             }
         } catch (Exception e) {
             e.printStackTrace();
