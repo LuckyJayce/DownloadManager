@@ -19,6 +19,7 @@ import java.util.concurrent.Executor;
 
 public class SingleThreadDownloadTask extends AbsDownloadTask {
     private final Executor executor;
+    private final DownloadParams downloadParams;
     private long downloadId;
     private DownloadDB downloadDB;
     private ErrorInfo.Agency errorInfoAgency;
@@ -31,6 +32,7 @@ public class SingleThreadDownloadTask extends AbsDownloadTask {
         this.downloadId = downloadId;
         this.downloadDB = downloadDB;
         this.executor = executor;
+        this.downloadParams = downloadParams;
         downloadInfoAgency = downloadDB.find(downloadId);
         if (downloadInfoAgency == null) {
             downloadInfoAgency = build(downloadParams);
@@ -78,12 +80,20 @@ public class SingleThreadDownloadTask extends AbsDownloadTask {
         }
 
         @Override
+        public void onPending(long downloadId) {
+            super.onPending(downloadId);
+            downloadInfoAgency.setStatus(DownloadManager.STATUS_PENDING);
+            downloadInfoAgency.setStartTime(System.currentTimeMillis());
+            downloadDB.replace(downloadParams, downloadInfoAgency.getInfo());
+        }
+
+        @Override
         public void onDownloadIng(long downloadId, long current, long total) {
             super.onDownloadIng(downloadId, current, total);
             downloadInfoAgency.setStatus(DownloadManager.STATUS_DOWNLOAD_ING);
             downloadInfoAgency.setCurrent(current);
             downloadInfoAgency.setTotal(total);
-            downloadDB.update(downloadId, current, total);
+            downloadDB.updateProgress(downloadId, current, total);
         }
 
         @Override

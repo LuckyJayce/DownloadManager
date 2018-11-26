@@ -9,13 +9,17 @@ public class M3u8ExtInfo {
     private ItemInfo m3u8Info;
     private ItemInfo currentItemInfo;
     private JSONObject jsonObject;
+    private JSONObject m3u8ItemInfoJSONObject;
+    private JSONObject currentItemInfoJSONObject;
 
     public M3u8ExtInfo(String extInfo) {
         if (!TextUtils.isEmpty(extInfo)) {
             try {
                 jsonObject = new JSONObject(extInfo);
-                m3u8Info = toItemInfo(jsonObject.optJSONObject("m3u8ItemInfo"));
-                currentItemInfo = toItemInfo(jsonObject.optJSONObject("currentItemInfo"));
+                m3u8ItemInfoJSONObject = jsonObject.optJSONObject("m3u8ItemInfo");
+                m3u8Info = toItemInfo(m3u8ItemInfoJSONObject);
+                currentItemInfoJSONObject = jsonObject.optJSONObject("currentItemInfo");
+                currentItemInfo = toItemInfo(currentItemInfoJSONObject);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -33,21 +37,20 @@ public class M3u8ExtInfo {
         itemInfo.setFileName(jsonObject.optString("fileName"));
         itemInfo.setTempFileName(jsonObject.optString("tempFileName"));
         itemInfo.setIndex(jsonObject.optInt("index"));
+        itemInfo.setEtag(jsonObject.optString("eTag"));
+        itemInfo.setAcceptRange(jsonObject.optBoolean("isAcceptRange"));
         return itemInfo;
     }
 
-    private JSONObject toJson(ItemInfo itemInfo) throws JSONException {
-        if (itemInfo == null) {
-            return null;
-        }
-        JSONObject jsonObject = new JSONObject();
+    private void fillToJSONObject(JSONObject jsonObject, ItemInfo itemInfo) throws JSONException {
         jsonObject.put("url", itemInfo.getUrl());
         jsonObject.put("current", itemInfo.getCurrent());
         jsonObject.put("total", itemInfo.getTotal());
         jsonObject.put("fileName", itemInfo.getFileName());
         jsonObject.put("tempFileName", itemInfo.getTempFileName());
         jsonObject.put("index", itemInfo.getIndex());
-        return jsonObject;
+        jsonObject.put("isAcceptRange", itemInfo.isAcceptRange());
+        jsonObject.put("eTag", itemInfo.getEtag());
     }
 
     public ItemInfo getM3u8Info() {
@@ -56,15 +59,6 @@ public class M3u8ExtInfo {
 
     public void setM3u8Info(ItemInfo m3u8Info) {
         this.m3u8Info = m3u8Info;
-        try {
-            if (m3u8Info == null) {
-                jsonObject.remove("m3u8ItemInfo");
-            } else {
-                jsonObject.put("m3u8ItemInfo", toJson(m3u8Info));
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
     }
 
     public ItemInfo getCurrentItemInfo() {
@@ -73,18 +67,34 @@ public class M3u8ExtInfo {
 
     public void setCurrentItemInfo(ItemInfo currentItemInfo) {
         this.currentItemInfo = currentItemInfo;
+    }
+
+    public String getJson() {
         try {
+            if (jsonObject == null) {
+                jsonObject = new JSONObject();
+            }
             if (currentItemInfo == null) {
                 jsonObject.remove("currentItemInfo");
             } else {
-                jsonObject.put("currentItemInfo", toJson(currentItemInfo));
+                if (currentItemInfoJSONObject == null) {
+                    currentItemInfoJSONObject = new JSONObject();
+                }
+                fillToJSONObject(currentItemInfoJSONObject, currentItemInfo);
+                jsonObject.put("currentItemInfo", currentItemInfoJSONObject);
+            }
+            if (m3u8Info == null) {
+                jsonObject.remove("m3u8ItemInfo");
+            } else {
+                if (m3u8ItemInfoJSONObject == null) {
+                    m3u8ItemInfoJSONObject = new JSONObject();
+                }
+                fillToJSONObject(m3u8ItemInfoJSONObject, currentItemInfo);
+                jsonObject.put("m3u8ItemInfo", m3u8ItemInfoJSONObject);
             }
         } catch (JSONException e) {
             e.printStackTrace();
         }
-    }
-
-    public String getJson() {
         return jsonObject.toString();
     }
 
@@ -94,7 +104,25 @@ public class M3u8ExtInfo {
         private long total;
         private String fileName;
         private String tempFileName;
+        private boolean isAcceptRange;
+        private String etag;
         private int index;
+
+        public boolean isAcceptRange() {
+            return isAcceptRange;
+        }
+
+        public void setAcceptRange(boolean acceptRange) {
+            isAcceptRange = acceptRange;
+        }
+
+        public String getEtag() {
+            return etag;
+        }
+
+        public void setEtag(String etag) {
+            this.etag = etag;
+        }
 
         public int getIndex() {
             return index;
@@ -152,6 +180,8 @@ public class M3u8ExtInfo {
                     ", total=" + total +
                     ", fileName='" + fileName + '\'' +
                     ", tempFileName='" + tempFileName + '\'' +
+                    ", isAcceptRange=" + isAcceptRange +
+                    ", etag='" + etag + '\'' +
                     ", index=" + index +
                     '}';
         }

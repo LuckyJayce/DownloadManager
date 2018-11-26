@@ -15,7 +15,10 @@ import com.shizhefei.download.entity.DownloadInfo;
 import com.shizhefei.download.entity.DownloadParams;
 import com.shizhefei.download.entity.ErrorInfo;
 import com.shizhefei.download.entity.HttpInfo;
+import com.shizhefei.download.exception.DownloadException;
+import com.shizhefei.download.exception.RemoveException;
 import com.shizhefei.download.manager.DownloadManager;
+import com.shizhefei.download.task.DownloadProgressSenderProxy;
 import com.shizhefei.download.task.base.DownloadProgressListener;
 import com.shizhefei.download.task.base.DownloadTaskImp;
 import com.shizhefei.download.utils.DownloadUtils;
@@ -71,93 +74,54 @@ class M3u8DownloadTaskImp implements ITask<Void>, RemoveHandler.OnRemoveListener
 
     @Override
     public Void execute(ProgressSender progressSender) throws Exception {
-        final M3u8ExtInfo m3U8ExtInfo = new M3u8ExtInfo(downloadInfo.getExtInfo());
-        DownloadUtils.logD("M3u8DownloadTaskImp downloadId=%d downloadInfo.getExtInfo():%s", downloadId, downloadInfo.getExtInfo());
+        try {
+            final DownloadProgressSenderProxy progressSenderProxy = new DownloadProgressSenderProxy(downloadId, progressSender);
 
-        M3u8ExtInfo.ItemInfo m3u8Info = m3U8ExtInfo.getM3u8Info();
-        String dir = downloadInfo.getDir();
-        String fileName;
-        if (!TextUtils.isEmpty(downloadInfo.getFileName())) {
-            fileName = downloadInfo.getFileName();
-        } else {
-            fileName = downloadId + "_" + downloadInfoAgency.getStartTime() + ".m3u8";
-        }
-        File m3u8File = new File(dir, fileName);
-        DownloadUtils.logD("M3u8DownloadTaskImp  downloadId=%d fileName=%s m3u8File=%s m3u8Info=%s", downloadId, fileName, m3u8File, m3u8Info);
-        if (m3u8Info != null) {
-            if (!m3u8File.exists()) {
-                DownloadUtils.logD("M3u8DownloadTaskImp downloadId=%d !m3u8File.exists()", downloadId);
+            progressSenderProxy.sendStart(downloadInfo.getCurrent(), downloadInfo.getTotal());
+            downloadInfoAgency.setStatus(DownloadManager.STATUS_PENDING);
+            downloadInfoAgency.setStartTime(System.currentTimeMillis());
+            downloadDB.replace(downloadParams, downloadInfoAgency.getInfo());
+
+            final M3u8ExtInfo m3U8ExtInfo = new M3u8ExtInfo(downloadInfo.getExtInfo());
+            DownloadUtils.logD("M3u8DownloadTaskImp downloadId=%d downloadInfo.getExtInfo():%s", downloadId, downloadInfo.getExtInfo());
+
+            M3u8ExtInfo.ItemInfo m3u8Info = m3U8ExtInfo.getM3u8Info();
+            String dir = downloadInfo.getDir();
+            String fileName;
+            if (!TextUtils.isEmpty(downloadInfo.getFileName())) {
+                fileName = downloadInfo.getFileName();
+            } else {
+                fileName = downloadId + "_" + downloadInfoAgency.getStartTime() + ".m3u8";
+            }
+            File m3u8File = new File(dir, fileName);
+            DownloadUtils.logD("M3u8DownloadTaskImp  downloadId=%d fileName=%s m3u8File=%s m3u8Info=%s", downloadId, fileName, m3u8File, m3u8Info);
+            if (m3u8Info != null) {
+                if (!m3u8File.exists()) {
+                    DownloadUtils.logD("M3u8DownloadTaskImp downloadId=%d !m3u8File.exists()", downloadId);
+                    downloadTask = buildFromExtInfo(downloadId, dir, downloadParams, m3u8Info);
+                }
+            } else {
+                m3u8Info = new M3u8ExtInfo.ItemInfo();
+                m3u8Info.setCurrent(0);
+                m3u8Info.setTotal(0);
+                m3u8Info.setFileName(m3u8File.getName());
+                m3u8Info.setUrl(downloadParams.getUrl());
+                m3U8ExtInfo.setM3u8Info(m3u8Info);
+                m3U8ExtInfo.setCurrentItemInfo(null);
                 downloadTask = buildFromExtInfo(downloadId, dir, downloadParams, m3u8Info);
             }
-        } else {
-            m3u8Info = new M3u8ExtInfo.ItemInfo();
-            m3u8Info.setCurrent(0);
-            m3u8Info.setTotal(0);
-            m3u8Info.setFileName(m3u8File.getName());
-            m3u8Info.setUrl(downloadParams.getUrl());
-            m3U8ExtInfo.setM3u8Info(m3u8Info);
-            m3U8ExtInfo.setCurrentItemInfo(null);
-            downloadTask = buildFromExtInfo(downloadId, dir, downloadParams, m3u8Info);
-        }
-        if (!isCancel) {
-            if (downloadTask != null) {
-                DownloadUtils.logD("M3u8DownloadTaskImp  downloadId=%d start download m3u8 file", downloadId);
-                downloadTask.execute(new DownloadProgressListener() {
-                    @Override
-                    public void onDownloadResetBegin(long downloadId, int reason, long current, long total) {
-                        downloadInfoAgency.setCurrent(current);
-                        downloadInfoAgency.setExtInfo(m3U8ExtInfo.getJson());
-                        downloadDB.update(downloadInfoAgency.getInfo());
-                    }
-
-                    @Override
-                    public void onConnected(long downloadId, HttpInfo httpInfo, String saveDir, String saveFileName, String tempFileName, long current, long total) {
-                        downloadInfoAgency.setStatus(DownloadManager.STATUS_CONNECTED);
-                        downloadInfoAgency.setFilename(saveFileName);
-                        downloadInfoAgency.setTempFileName(tempFileName);
-                        downloadInfoAgency.setExtInfo(m3U8ExtInfo.getJson());
-
-                        httpInfoAgency.setByInfo(httpInfo);
-                        downloadDB.update(downloadInfoAgency.getInfo());
-                    }
-
-                    @Override
-                    public void onDownloadIng(long downloadId, long current, long total) {
-                        downloadInfoAgency.setStatus(DownloadManager.STATUS_DOWNLOAD_ING);
-                        downloadInfoAgency.setCurrent(current);
-                        downloadInfoAgency.setExtInfo(m3U8ExtInfo.getJson());
-                        downloadDB.update(downloadId, current, total);
-                    }
-                });
-            }
-        }
-        if (!isCancel) {
-            FileInputStream inputStream = new FileInputStream(m3u8File);
-            PlaylistParser parser = new PlaylistParser(inputStream, Format.EXT_M3U, Encoding.UTF_8);
-            Playlist playlist = parser.parse();
-            if (playlist.hasMediaPlaylist()) {
-                MediaPlaylist mediaPlaylist = playlist.getMediaPlaylist();
-                List<TrackData> tracks = mediaPlaylist.getTracks();
-                M3u8ExtInfo.ItemInfo currentItemInfo = m3U8ExtInfo.getCurrentItemInfo();
-                int startIndex = 0;
-                if (currentItemInfo != null) {
-                    startIndex = currentItemInfo.getIndex();
-                }
-                DownloadUtils.logD("M3u8DownloadTaskImp downloadId=%d currentItemInfo=%s", downloadId, currentItemInfo);
-                for (int i = startIndex; i < tracks.size() && !isCancel; i++) {
-                    if (currentItemInfo == null) {
-                        currentItemInfo = buildItemInfo(i, tracks.get(i));
-                        m3U8ExtInfo.setCurrentItemInfo(currentItemInfo);
-                        DownloadUtils.logD("M3u8DownloadTaskImp  downloadId=%d currentItemInfo=%s", downloadId, currentItemInfo);
-                    }
-                    downloadTask = buildFromExtInfo(downloadId, dir, downloadParams, currentItemInfo);
-                    final long starCurrent = currentItemInfo.getCurrent();
+            //下载m3u8文件
+            if (!isCancel) {
+                if (downloadTask != null) {
+                    DownloadUtils.logD("M3u8DownloadTaskImp  downloadId=%d start download m3u8 file", downloadId);
+                    downloadDB.update(downloadInfoAgency.getInfo());
                     downloadTask.execute(new DownloadProgressListener() {
                         @Override
                         public void onDownloadResetBegin(long downloadId, int reason, long current, long total) {
-                            downloadInfoAgency.setCurrent(downloadInfoAgency.getCurrent() - starCurrent + current);
+                            downloadInfoAgency.setCurrent(current);
                             downloadInfoAgency.setExtInfo(m3U8ExtInfo.getJson());
                             downloadDB.update(downloadInfoAgency.getInfo());
+                            progressSenderProxy.sendDownloadFromBegin(current, total, reason);
                         }
 
                         @Override
@@ -166,35 +130,126 @@ class M3u8DownloadTaskImp implements ITask<Void>, RemoveHandler.OnRemoveListener
                             downloadInfoAgency.setFilename(saveFileName);
                             downloadInfoAgency.setTempFileName(tempFileName);
                             downloadInfoAgency.setExtInfo(m3U8ExtInfo.getJson());
+
                             httpInfoAgency.setByInfo(httpInfo);
                             downloadDB.update(downloadInfoAgency.getInfo());
+                            progressSenderProxy.sendConnected(httpInfo, saveDir, saveFileName, tempFileName, current, total);
                         }
 
                         @Override
                         public void onDownloadIng(long downloadId, long current, long total) {
-                            downloadInfoAgency.setStatus(DownloadManager.STATUS_CONNECTED);
-                            downloadInfoAgency.setCurrent(downloadInfoAgency.getCurrent() - starCurrent + current);
+                            downloadInfoAgency.setStatus(DownloadManager.STATUS_DOWNLOAD_ING);
+                            downloadInfoAgency.setCurrent(current);
                             downloadInfoAgency.setExtInfo(m3U8ExtInfo.getJson());
                             downloadDB.update(downloadInfoAgency.getInfo());
+                            progressSenderProxy.sendDownloading(current, total);
                         }
                     });
-                    currentItemInfo = null;
-                }
-                if (!isCancel) {
-                    DownloadUtils.logD("M3u8DownloadTaskImp  downloadId=%d write m3u8", downloadId, currentItemInfo);
-                    // 修改为ts为相对路径, 因为ts的uri可能是http开头的
-                    PlaylistWriter playlistWriter = new PlaylistWriter(new FileOutputStream(m3u8File), Format.EXT_M3U, Encoding.UTF_8);
-                    List<TrackData> tracksOutput = new ArrayList<>();
-                    for (int i = 0; i < tracks.size(); i++) {
-                        TrackData trackData = tracks.get(i);
-                        tracksOutput.add(trackData.buildUpon().withUri(getElementName(trackData.getUri(), i)).build());
-                    }
-                    Playlist playlistOutput = playlist.buildUpon()
-                            .withMediaPlaylist(mediaPlaylist.buildUpon().withTracks(tracksOutput).build())
-                            .build();
-                    playlistWriter.write(playlistOutput);
                 }
             }
+            if (!isCancel) {
+                //解析m3u8文件
+                FileInputStream inputStream = new FileInputStream(m3u8File);
+                PlaylistParser parser = new PlaylistParser(inputStream, Format.EXT_M3U, Encoding.UTF_8);
+                Playlist playlist = parser.parse();
+                if (playlist.hasMediaPlaylist()) {
+                    //循环下载ts文件
+                    MediaPlaylist mediaPlaylist = playlist.getMediaPlaylist();
+                    List<TrackData> tracks = mediaPlaylist.getTracks();
+                    M3u8ExtInfo.ItemInfo currentItemInfo = m3U8ExtInfo.getCurrentItemInfo();
+                    int startIndex = 0;
+                    if (currentItemInfo != null) {
+                        startIndex = currentItemInfo.getIndex();
+                    }
+                    DownloadUtils.logD("M3u8DownloadTaskImp downloadId=%d currentItemInfo=%s", downloadId, currentItemInfo);
+                    for (int i = startIndex; i < tracks.size() && !isCancel; i++) {
+                        if (currentItemInfo == null || currentItemInfo.getCurrent() == 0) {
+                            currentItemInfo = buildItemInfo(i, tracks.get(i));
+                            m3U8ExtInfo.setCurrentItemInfo(currentItemInfo);
+                            downloadInfoAgency.setExtInfo(m3U8ExtInfo.getJson());
+                            downloadDB.update(downloadInfoAgency.getInfo());
+                            DownloadUtils.logD("M3u8DownloadTaskImp  downloadId=%d currentItemInfo=%s", downloadId, currentItemInfo);
+                        }
+                        downloadTask = buildFromExtInfo(downloadId, dir, downloadParams, currentItemInfo);
+                        final long starCurrent = currentItemInfo.getCurrent();
+                        final M3u8ExtInfo.ItemInfo finalCurrentItemInfo = currentItemInfo;
+                        downloadTask.execute(new DownloadProgressListener() {
+                            @Override
+                            public void onDownloadResetBegin(long downloadId, int reason, long current, long total) {
+                                downloadInfoAgency.setCurrent(downloadInfoAgency.getCurrent() - starCurrent + current);
+                                finalCurrentItemInfo.setCurrent(current);
+                                finalCurrentItemInfo.setTotal(total);
+                                downloadInfoAgency.setExtInfo(m3U8ExtInfo.getJson());
+                                downloadDB.update(downloadInfoAgency.getInfo());
+                                progressSenderProxy.sendDownloadFromBegin(downloadInfoAgency.getCurrent(), downloadInfoAgency.getTotal(), reason);
+                            }
+
+                            @Override
+                            public void onConnected(long downloadId, HttpInfo httpInfo, String saveDir, String saveFileName, String tempFileName, long current, long total) {
+                                downloadInfoAgency.setStatus(DownloadManager.STATUS_CONNECTED);
+                                finalCurrentItemInfo.setFileName(saveFileName);
+                                finalCurrentItemInfo.setTempFileName(tempFileName);
+                                finalCurrentItemInfo.setAcceptRange(httpInfo.isAcceptRange());
+                                finalCurrentItemInfo.setEtag(httpInfo.getETag());
+                                downloadInfoAgency.setExtInfo(m3U8ExtInfo.getJson());
+                                httpInfoAgency.setAcceptRange(true);
+                                downloadDB.update(downloadInfoAgency.getInfo());
+                                progressSenderProxy.sendConnected(httpInfo, saveDir, downloadInfoAgency.getFilename(), downloadInfoAgency.getTempFileName(), downloadInfoAgency.getCurrent(), downloadInfoAgency.getTotal());
+                            }
+
+                            @Override
+                            public void onDownloadIng(long downloadId, long current, long total) {
+                                downloadInfoAgency.setStatus(DownloadManager.STATUS_CONNECTED);
+                                downloadInfoAgency.setCurrent(downloadInfoAgency.getCurrent() - starCurrent + current);
+                                finalCurrentItemInfo.setCurrent(current);
+                                finalCurrentItemInfo.setTotal(total);
+                                downloadInfoAgency.setExtInfo(m3U8ExtInfo.getJson());
+                                downloadDB.update(downloadInfoAgency.getInfo());
+                                progressSenderProxy.sendDownloading(downloadInfoAgency.getCurrent(), downloadInfoAgency.getTotal());
+                            }
+                        });
+                        currentItemInfo = null;
+                    }
+                    if (!isCancel) {
+                        DownloadUtils.logD("M3u8DownloadTaskImp  downloadId=%d write m3u8", downloadId, currentItemInfo);
+                        // 修改为ts为相对路径, 因为ts的uri可能是http开头的
+                        PlaylistWriter playlistWriter = new PlaylistWriter(new FileOutputStream(m3u8File), Format.EXT_M3U, Encoding.UTF_8);
+                        List<TrackData> tracksOutput = new ArrayList<>();
+                        for (int i = 0; i < tracks.size(); i++) {
+                            TrackData trackData = tracks.get(i);
+                            tracksOutput.add(trackData.buildUpon().withUri(getElementName(trackData.getUri(), i)).build());
+                        }
+                        Playlist playlistOutput = playlist.buildUpon()
+                                .withMediaPlaylist(mediaPlaylist.buildUpon().withTracks(tracksOutput).build())
+                                .build();
+                        playlistWriter.write(playlistOutput);
+
+                        downloadInfoAgency.setStatus(DownloadManager.STATUS_FINISHED);
+                        downloadDB.update(downloadInfoAgency.getInfo());
+                    } else {
+                        downloadInfoAgency.setStatus(DownloadManager.STATUS_PAUSED);
+                        downloadDB.update(downloadInfoAgency.getInfo());
+                    }
+                }
+            }
+        } catch (Exception exception) {
+            if (exception instanceof RemoveException) {
+                //不处理
+            } else if (exception instanceof DownloadException) {
+                DownloadException downloadException = (DownloadException) exception;
+                downloadInfoAgency.setStatus(DownloadManager.STATUS_ERROR);
+                errorInfoAgency.set(downloadException.getErrorCode(), downloadException.getErrorMessage());
+                downloadDB.update(downloadInfoAgency.getInfo());
+            } else {
+                String message = exception.getMessage();
+                if (TextUtils.isEmpty(message)) {
+                    message = exception.getClass().getName();
+                }
+                downloadInfoAgency.setStatus(DownloadManager.STATUS_ERROR);
+                errorInfoAgency.set(DownloadManager.ERROR_UNKNOW, message);
+                downloadDB.update(downloadInfoAgency.getInfo());
+            }
+            throw exception;
         }
         return null;
     }
@@ -210,7 +265,10 @@ class M3u8DownloadTaskImp implements ITask<Void>, RemoveHandler.OnRemoveListener
     private String getTsUrl(String tsUri) {
         if (tsUri.startsWith("http://") || tsUri.startsWith("https://"))
             return tsUri;
-        return downloadInfo.getUrl() + tsUri;
+        String url = downloadInfo.getUrl();
+        int index = url.lastIndexOf("/");
+        String urlPre = url.substring(0, index + 1);
+        return urlPre + tsUri;
     }
 
     private DownloadInfo.Agency build(DownloadParams downloadParams) {
@@ -226,6 +284,7 @@ class M3u8DownloadTaskImp implements ITask<Void>, RemoveHandler.OnRemoveListener
         downloadInfoAgency.setStatus(DownloadManager.STATUS_PENDING);
         downloadInfoAgency.setFilename(downloadParams.getFileName());
         downloadInfoAgency.setStartTime(System.currentTimeMillis());
+        downloadInfoAgency.setDownloadTaskName(M3u8DownloadTask.DOWNLOAD_TASK_NAME);
         downloadInfoAgency.setDir(downloadParams.getDir() + File.separator + downloadId + "_" + downloadInfoAgency.getStartTime());
         return downloadInfoAgency;
     }
@@ -239,7 +298,6 @@ class M3u8DownloadTaskImp implements ITask<Void>, RemoveHandler.OnRemoveListener
         String elementName = getElementName(trackData.getUri(), index);
         currentItemInfo.setFileName(elementName);
         currentItemInfo.setUrl(url);
-        downloadInfoAgency.setDownloadTaskName(M3u8DownloadTask.DOWNLOAD_TASK_NAME);
         return currentItemInfo;
     }
 

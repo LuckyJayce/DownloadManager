@@ -28,8 +28,8 @@ class DBHelper extends SQLiteOpenHelper {
                 DownloadManager.FIELD_DOWNLOAD_PARAMS + " VARCHAR," +
                 DownloadManager.FIELD_EXT_INFO + " VARCHAR," +
                 DownloadManager.FIELD_CURRENT + " BIGINT," +
+                DownloadManager.FIELD_DOWNLOAD_TASK_NAME + " VARCHAR," +
                 DownloadManager.FIELD_TOTAL + " BIGINT" +
-                DownloadManager.FIELD_DOWNLOAD_TASK_NAME + " VARCHAR" +
                 ")"
         );
     }

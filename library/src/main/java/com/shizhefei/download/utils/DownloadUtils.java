@@ -167,4 +167,8 @@ public class DownloadUtils {
     public static void logE(Throwable e, String msg, Object... args) {
         Log.e(DownloadManager.LIB_NAME, formatString(msg, args), e);
     }
+
+    public static void logE(String msg, Object... args) {
+        Log.e(DownloadManager.LIB_NAME, formatString(msg, args));
+    }
 }

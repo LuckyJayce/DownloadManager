@@ -3,6 +3,7 @@ package com.shizhefei.download.task.base;
 import android.Manifest;
 import android.os.SystemClock;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.shizhefei.download.base.RemoveHandler;
 import com.shizhefei.download.entity.DownloadParams;
@@ -90,6 +91,7 @@ public class DownloadTaskImp implements RemoveHandler.OnRemoveListener {
                 throw new RemoveException(downloadId);
             }
         } else if (exception != null) {//下载时出现异常，下载失败
+            DownloadUtils.logE(exception, "DownloadTask exception");
             throw exception;
         } else {// 下载成功
             if (saveFile.exists()) {
@@ -157,7 +159,7 @@ public class DownloadTaskImp implements RemoveHandler.OnRemoveListener {
             }
 
             if (httpCode != HttpURLConnection.HTTP_PARTIAL && httpCode != HttpURLConnection.HTTP_OK) {
-                String httpMessage = httpURLConnection.getResponseMessage();
+                String httpMessage = "httpCode:" + httpCode + " message:" + httpURLConnection.getResponseMessage() + " url:" + url;
                 throw new DownloadException(downloadId, DownloadManager.ERROR_HTTP, httpMessage);
             }
 
