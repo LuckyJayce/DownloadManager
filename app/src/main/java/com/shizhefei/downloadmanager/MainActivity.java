@@ -26,6 +26,8 @@ public class MainActivity extends AppCompatActivity {
     private DownloadManager downloadManager;
     private PermissionHelper permissionHelper;
     private View pauseAllButton;
+    private View addButton2;
+    private EditText editText2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,12 +39,15 @@ public class MainActivity extends AppCompatActivity {
         recyclerView = findViewById(R.id.recyclerView);
         addButton = findViewById(R.id.button);
         editText = findViewById(R.id.editText);
+        addButton2 = findViewById(R.id.button2);
+        editText2 = findViewById(R.id.editText2);
         pauseAllButton = findViewById(R.id.pause_all_button);
 
         recyclerView.setLayoutManager(new FixLinearLayoutManager(this));
         recyclerView.setAdapter(dataAdapter = new DataAdapter(downloadManager));
 
         addButton.setOnClickListener(onClickListener);
+        addButton2.setOnClickListener(onClickListener);
         pauseAllButton.setOnClickListener(onClickListener);
 
         permissionHelper = new PermissionHelper(this);
@@ -74,6 +79,22 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onSuccess(List<String> successPermissions) {
                         String url = editText.getText().toString();
+                        DownloadParams downloadParams = new DownloadParams.Builder()
+                                .setUrl(url)
+                                .build();
+                        downloadManager.start(downloadParams);
+                    }
+                });
+            } else if (v == addButton2) {
+                permissionHelper.checkAndRequestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, new PermissionHelper.OnCheckCallback() {
+                    @Override
+                    public void onFail(List<String> successPermissions, List<String> failPermissions) {
+                        Toast.makeText(getApplicationContext(), getString(R.string.permission_denied), Toast.LENGTH_LONG).show();
+                    }
+
+                    @Override
+                    public void onSuccess(List<String> successPermissions) {
+                        String url = editText2.getText().toString();
                         DownloadParams downloadParams = new DownloadParams.Builder()
                                 .setUrl(url)
                                 .build();

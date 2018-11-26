@@ -200,7 +200,9 @@ class M3u8DownloadTaskImp implements ITask<Void> {
                         downloadInfoAgency.setCurrent(current);
                         downloadInfoAgency.setExtInfo(m3U8ExtInfo.getJson());
                         downloadDB.update(downloadInfoAgency.getInfo());
-                        progressSenderProxy.sendDownloading(current, total);
+                        if (!isCancel) {
+                            progressSenderProxy.sendDownloading(current, total);
+                        }
                     }
                 });
             }
@@ -276,7 +278,9 @@ class M3u8DownloadTaskImp implements ITask<Void> {
                             finalCurrentItemInfo.setTotal(total);
                             downloadInfoAgency.setExtInfo(m3U8ExtInfo.getJson());
                             downloadDB.update(downloadInfoAgency.getInfo());
-                            progressSenderProxy.sendDownloading(downloadInfoAgency.getCurrent(), downloadInfoAgency.getTotal());
+                            if (!isCancel) {
+                                progressSenderProxy.sendDownloading(downloadInfoAgency.getCurrent(), downloadInfoAgency.getTotal());
+                            }
                         }
                     });
                     DownloadUtils.logD("M3u8DownloadTaskImp onDownloadItem end- startTotalCurrent=%d total=%d", downloadInfoAgency.getCurrent(), currentItemInfo.getTotal());
@@ -325,6 +329,8 @@ class M3u8DownloadTaskImp implements ITask<Void> {
     @Override
     public void cancel() {
         isCancel = true;
+        downloadInfoAgency.setStatus(DownloadManager.STATUS_PAUSED);
+        downloadDB.update(downloadInfoAgency.getInfo());
         if (downloadTask != null) {
             downloadTask.cancel();
         }

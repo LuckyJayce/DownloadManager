@@ -13,7 +13,7 @@ import java.util.concurrent.Executor;
 public class SingleThreadDownloadTask extends AbsDownloadTask {
     private final SingleThreadDownloadImp downloadTask;
     private final Executor executor;
-    public static final String DOWNLOAD_TASK_NAME = "M3u8DownloadTask";
+    public static final String DOWNLOAD_TASK_NAME = "SingleThreadDownloadTask";
 
     public SingleThreadDownloadTask(long downloadId, DownloadParams downloadParams, DownloadDB downloadDB, Executor executor, boolean isOnlyRemove) {
         this.executor = executor;

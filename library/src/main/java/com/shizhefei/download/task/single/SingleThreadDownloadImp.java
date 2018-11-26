@@ -9,6 +9,7 @@ import com.shizhefei.download.entity.HttpInfo;
 import com.shizhefei.download.exception.DownloadException;
 import com.shizhefei.download.exception.RemoveException;
 import com.shizhefei.download.manager.DownloadManager;
+import com.shizhefei.download.task.DownloadProgressSenderProxy;
 import com.shizhefei.download.task.base.DownloadProgressListener;
 import com.shizhefei.download.task.base.DownloadTaskImp;
 import com.shizhefei.mvc.ProgressSender;
@@ -16,6 +17,7 @@ import com.shizhefei.task.ITask;
 
 class SingleThreadDownloadImp implements ITask<Void> {
     private final DownloadTaskImp downloadTask;
+    private final DownloadInfo downloadInfo;
     private long downloadId;
     private DownloadDB downloadDB;
     private ErrorInfo.Agency errorInfoAgency;
@@ -41,7 +43,7 @@ class SingleThreadDownloadImp implements ITask<Void> {
             downloadDB.replace(downloadParams, downloadInfoAgency.getInfo());
         }
 
-        DownloadInfo downloadInfo = downloadInfoAgency.getInfo();
+        downloadInfo = downloadInfoAgency.getInfo();
         downloadTask = new DownloadTaskImp(downloadId, downloadParams, downloadParams.getUrl(), downloadInfo.getDir(), downloadInfo.getCurrent(), downloadInfo.getTotal(), downloadInfo.getFileName(), downloadInfo.getTempFileName(), downloadInfo.getHttpInfo().isAcceptRange(), downloadInfo.getHttpInfo().getETag());
     }
 
@@ -50,12 +52,15 @@ class SingleThreadDownloadImp implements ITask<Void> {
     public Void execute(ProgressSender progressSender) throws Exception {
         isRunning = true;
         try {
+            final DownloadProgressSenderProxy progressSenderProxy = new DownloadProgressSenderProxy(downloadId, progressSender);
+            progressSenderProxy.sendStart(downloadInfo.getCurrent(), downloadInfo.getTotal());
             downloadTask.execute(new DownloadProgressListener() {
                 @Override
                 public void onDownloadResetBegin(long downloadId, int reason, long current, long total) {
                     downloadInfoAgency.setStatus(DownloadManager.STATUS_DOWNLOAD_RESET_BEGIN);
                     downloadInfoAgency.setCurrent(0);
                     downloadDB.update(downloadInfoAgency.getInfo());
+                    progressSenderProxy.sendDownloadFromBegin(current, total, reason);
                 }
 
                 @Override
@@ -66,6 +71,7 @@ class SingleThreadDownloadImp implements ITask<Void> {
 
                     httpInfoAgency.setByInfo(httpInfo);
                     downloadDB.update(downloadInfoAgency.getInfo());
+                    progressSenderProxy.sendConnected(httpInfo, saveDir, saveFileName, tempFileName, current, total);
                 }
 
                 @Override
@@ -74,6 +80,7 @@ class SingleThreadDownloadImp implements ITask<Void> {
                     downloadInfoAgency.setCurrent(current);
                     downloadInfoAgency.setTotal(total);
                     downloadDB.updateProgress(downloadId, current, total);
+                    progressSenderProxy.sendDownloading(current, total);
                 }
             });
         } catch (DownloadException e) {
@@ -102,6 +109,8 @@ class SingleThreadDownloadImp implements ITask<Void> {
     @Override
     public void cancel() {
         isCancel = true;
+        downloadInfoAgency.setStatus(DownloadManager.STATUS_PAUSED);
+        downloadDB.update(downloadInfoAgency.getInfo());
         downloadTask.cancel();
     }
 
