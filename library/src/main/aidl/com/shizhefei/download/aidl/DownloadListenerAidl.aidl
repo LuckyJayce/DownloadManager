@@ -3,15 +3,15 @@ import com.shizhefei.download.entity.HttpInfo;
 
 interface DownloadListenerAidl {
 
-     void onStart(long downloadId);
-   
      void onPending(long downloadId);
-   
-     void onDownloadResetBegin(long downloadId, int reason);
+
+     void onStart(long downloadId, long current, long total);
+
+     void onDownloadResetBegin(long downloadId, int reason, long current, long total);
    
      void onDownloadIng(long downloadId, long current, long total);
    
-     void onConnected(long downloadId, in HttpInfo httpInfo, String saveDir, String saveFileName, String tempFileName);
+     void onConnected(long downloadId, in HttpInfo httpInfo, String saveDir, String saveFileName, String tempFileName, long current, long total);
    
      void onPaused(long downloadId);
    

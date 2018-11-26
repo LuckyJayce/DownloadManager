@@ -232,16 +232,16 @@ public class RemoteDownloadManager extends DownloadManager {
         }
 
         @Override
-        public void onStart(final long downloadId) {
+        public void onStart(final long downloadId, final long current, final long total) {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
                     for (DownloadListener downloadListener : downloadListeners) {
-                        downloadListener.onStart(downloadId);
+                        downloadListener.onStart(downloadId, current, total);
                     }
                     DownloadListener downloadListener = listeners.get(downloadId);
                     if (downloadListener != null) {
-                        downloadListener.onStart(downloadId);
+                        downloadListener.onStart(downloadId, current, total);
                     }
                 }
             });
@@ -264,32 +264,32 @@ public class RemoteDownloadManager extends DownloadManager {
         }
 
         @Override
-        public void onDownloadResetBegin(final long downloadId, final int reason) {
+        public void onDownloadResetBegin(final long downloadId, final int reason, final long current, final long total) {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
                     for (DownloadListener downloadListener : downloadListeners) {
-                        downloadListener.onDownloadResetBegin(downloadId, reason);
+                        downloadListener.onDownloadResetBegin(downloadId, reason, current, total);
                     }
                     DownloadListener downloadListener = listeners.get(downloadId);
                     if (downloadListener != null) {
-                        downloadListener.onDownloadResetBegin(downloadId, reason);
+                        downloadListener.onDownloadResetBegin(downloadId, reason, current, total);
                     }
                 }
             });
         }
 
         @Override
-        public void onConnected(final long downloadId, final HttpInfo httpInfo, final String saveDir, final String saveFileName, final String tempFileName) {
+        public void onConnected(final long downloadId, final HttpInfo httpInfo, final String saveDir, final String saveFileName, final String tempFileName, final long current, final long total) {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
                     for (DownloadListener downloadListener : downloadListeners) {
-                        downloadListener.onConnected(downloadId, httpInfo, saveDir, saveFileName, tempFileName);
+                        downloadListener.onConnected(downloadId, httpInfo, saveDir, saveFileName, tempFileName, current, total);
                     }
                     DownloadListener downloadListener = listeners.get(downloadId);
                     if (downloadListener != null) {
-                        downloadListener.onConnected(downloadId, httpInfo, saveDir, saveFileName, tempFileName);
+                        downloadListener.onConnected(downloadId, httpInfo, saveDir, saveFileName, tempFileName, current, total);
                     }
                 }
             });
@@ -365,6 +365,7 @@ public class RemoteDownloadManager extends DownloadManager {
 
     private DownloadInfoList downloadInfoList = new DownloadInfoList() {
         private DownloadInfo DOWNLOAD_INFO_NONE = new DownloadInfo.Agency(new DownloadParams.Builder().build()).getInfo();
+
         @Override
         public int getCount() {
             try {

@@ -25,11 +25,13 @@ public class DownloadParams implements Parcelable {
     private Map<String, List<String>> headers;
     private int blockSize;
     private boolean isWifiRequired;
+    private long totalSize;
     //额外的一些自定义数据，方便使用者自定义，存储数据库时序列化成json，这里只存基本参数
     private Map<String, String> extData;
 
     private DownloadParams() {
     }
+
 
     protected DownloadParams(Parcel in) {
         url = in.readString();
@@ -38,6 +40,7 @@ public class DownloadParams implements Parcelable {
         override = in.readByte() != 0;
         blockSize = in.readInt();
         isWifiRequired = in.readByte() != 0;
+        totalSize = in.readLong();
         try {
             params = DownloadUtils.parseJson(new JSONObject(in.readString()));
         } catch (JSONException e) {
@@ -62,6 +65,22 @@ public class DownloadParams implements Parcelable {
         if (extData == null) {
             extData = new HashMap<>();
         }
+    }
+
+    public static final Creator<DownloadParams> CREATOR = new Creator<DownloadParams>() {
+        @Override
+        public DownloadParams createFromParcel(Parcel in) {
+            return new DownloadParams(in);
+        }
+
+        @Override
+        public DownloadParams[] newArray(int size) {
+            return new DownloadParams[size];
+        }
+    };
+
+    public long getTotalSize() {
+        return totalSize;
     }
 
     public boolean isWifiRequired() {
@@ -145,6 +164,7 @@ public class DownloadParams implements Parcelable {
             jsonObject.put("override", override);
             jsonObject.put("isWifiRequired", isWifiRequired);
             jsonObject.put("blockSize", blockSize);
+            jsonObject.put("totalSize", totalSize);
             jsonObject.put("params", DownloadUtils.toJsonObject(params));
             jsonObject.put("headers", DownloadUtils.toJsonObject(headers));
             jsonObject.put("extData", DownloadUtils.toJsonObject2(extData));
@@ -159,19 +179,6 @@ public class DownloadParams implements Parcelable {
         return 0;
     }
 
-
-    public static final Creator<DownloadParams> CREATOR = new Creator<DownloadParams>() {
-        @Override
-        public DownloadParams createFromParcel(Parcel in) {
-            return new DownloadParams(in);
-        }
-
-        @Override
-        public DownloadParams[] newArray(int size) {
-            return new DownloadParams[size];
-        }
-    };
-
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(url);
@@ -180,6 +187,7 @@ public class DownloadParams implements Parcelable {
         dest.writeByte((byte) (override ? 1 : 0));
         dest.writeInt(blockSize);
         dest.writeByte((byte) (isWifiRequired ? 1 : 0));
+        dest.writeLong(totalSize);
         dest.writeString(DownloadUtils.toJsonObject(params).toString());
         dest.writeString(DownloadUtils.toJsonObject(headers).toString());
         dest.writeString(DownloadUtils.toJsonObject2(extData).toString());
@@ -194,6 +202,7 @@ public class DownloadParams implements Parcelable {
         private Map<String, List<String>> params;
         private Map<String, List<String>> headers;
         private int blockSize;
+        private long totalSize;
         private boolean isWifiRequired;
         //额外的一些自定义数据，方便使用者自定义，存储数据库时序列化成json，这里只存基本参数
         private Map<String, String> extData;
@@ -219,6 +228,7 @@ public class DownloadParams implements Parcelable {
                 this.override = jsonObject.optBoolean("override");
                 this.isWifiRequired = jsonObject.optBoolean("isWifiRequired");
                 this.blockSize = jsonObject.optInt("blockSize");
+                this.totalSize = jsonObject.optLong("totalSize");
                 this.params = DownloadUtils.parseJson(jsonObject.optJSONObject("params"));
                 this.headers = DownloadUtils.parseJson(jsonObject.optJSONObject("headers"));
                 this.extData = DownloadUtils.parseJson2(jsonObject.optJSONObject("extData"));
@@ -234,6 +244,11 @@ public class DownloadParams implements Parcelable {
             if (this.extData == null) {
                 this.extData = new HashMap<>();
             }
+        }
+
+        public Builder setTotalSize(long totalSize) {
+            this.totalSize = totalSize;
+            return this;
         }
 
         public Builder setUrl(String url) {
@@ -304,6 +319,7 @@ public class DownloadParams implements Parcelable {
             downloadParams.extData = this.extData;
             downloadParams.override = this.override;
             downloadParams.isWifiRequired = this.isWifiRequired;
+            downloadParams.totalSize = totalSize;
             return downloadParams;
         }
     }

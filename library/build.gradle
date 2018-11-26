@@ -29,4 +29,5 @@ dependencies {
     compileOnly 'com.shizhefei:task-core:1.0.2'
     compileOnly 'com.shizhefei:task-tasks:1.0.2'
     compileOnly 'com.android.support:support-v4:28.0.0'
+    compileOnly 'com.iheartradio.m3u8:open-m3u8:0.2.4'
 }

@@ -135,7 +135,7 @@ public class DownloadService extends Service {
         }
 
         @Override
-        public void onStart(long downloadId) {
+        public void onStart(long downloadId, long current, long total) {
             final int n = callbackList.beginBroadcast();
             try {
                 for (int i = 0; i < n; i++) {
@@ -163,7 +163,7 @@ public class DownloadService extends Service {
         }
 
         @Override
-        public void onDownloadResetBegin(long downloadId, int reason) {
+        public void onDownloadResetBegin(long downloadId, int reason, long current, long total) {
             final int n = callbackList.beginBroadcast();
             try {
                 for (int i = 0; i < n; i++) {
@@ -177,7 +177,7 @@ public class DownloadService extends Service {
         }
 
         @Override
-        public void onConnected(long downloadId, HttpInfo httpInfo, String saveDir, String saveFileName, String tempFileName) {
+        public void onConnected(long downloadId, HttpInfo httpInfo, String saveDir, String saveFileName, String tempFileName, long current, long total) {
             final int n = callbackList.beginBroadcast();
             try {
                 for (int i = 0; i < n; i++) {

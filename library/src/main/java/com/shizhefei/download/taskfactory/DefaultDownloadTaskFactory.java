@@ -5,7 +5,7 @@ import com.shizhefei.download.entity.DownloadParams;
 import com.shizhefei.download.base.DownloadTaskFactory;
 import com.shizhefei.download.base.RemoveHandler;
 import com.shizhefei.download.db.DownloadDB;
-import com.shizhefei.download.task.ProxyDownloadTask;
+import com.shizhefei.download.task.single.ProxyDownloadTask;
 
 import java.util.concurrent.Executor;
 

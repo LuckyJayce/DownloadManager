@@ -291,13 +291,13 @@ public class LocalDownloadManager extends DownloadManager {
         }
 
         @Override
-        public void onStart(long downloadId) {
+        public void onStart(long downloadId, long current, long total) {
             for (DownloadListener downloadListener : downloadListeners) {
-                downloadListener.onStart(downloadId);
+                downloadListener.onStart(downloadId, current, total);
             }
             DownloadListener downloadListener = listeners.get(downloadId);
             if (downloadListener != null) {
-                downloadListener.onStart(downloadId);
+                downloadListener.onStart(downloadId, current, total);
             }
         }
 
@@ -313,24 +313,24 @@ public class LocalDownloadManager extends DownloadManager {
         }
 
         @Override
-        public void onDownloadResetBegin(long downloadId, int reason) {
+        public void onDownloadResetBegin(long downloadId, int reason, long current, long total) {
             for (DownloadListener downloadListener : downloadListeners) {
-                downloadListener.onDownloadResetBegin(downloadId, reason);
+                downloadListener.onDownloadResetBegin(downloadId, reason, current, total);
             }
             DownloadListener downloadListener = listeners.get(downloadId);
             if (downloadListener != null) {
-                downloadListener.onDownloadResetBegin(downloadId, reason);
+                downloadListener.onDownloadResetBegin(downloadId, reason, current, total);
             }
         }
 
         @Override
-        public void onConnected(long downloadId, HttpInfo httpInfo, String saveDir, String saveFileName, String tempFileName) {
+        public void onConnected(long downloadId, HttpInfo httpInfo, String saveDir, String saveFileName, String tempFileName, long current, long total) {
             for (DownloadListener downloadListener : downloadListeners) {
-                downloadListener.onConnected(downloadId, httpInfo, saveDir, saveFileName, tempFileName);
+                downloadListener.onConnected(downloadId, httpInfo, saveDir, saveFileName, tempFileName, current, total);
             }
             DownloadListener downloadListener = listeners.get(downloadId);
             if (downloadListener != null) {
-                downloadListener.onConnected(downloadId, httpInfo, saveDir, saveFileName, tempFileName);
+                downloadListener.onConnected(downloadId, httpInfo, saveDir, saveFileName, tempFileName, current, total);
             }
         }
 

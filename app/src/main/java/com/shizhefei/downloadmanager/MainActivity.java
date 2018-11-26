@@ -94,8 +94,8 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        public void onStart(long downloadId) {
-            super.onStart(downloadId);
+        public void onStart(long downloadId, long current, long total) {
+            super.onStart(downloadId, current, total);
             int position = downloadManager.getDownloadInfoList().getPosition(downloadId);
             dataAdapter.notifyItemChanged(position);
         }
@@ -108,8 +108,8 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        public void onConnected(long downloadId, HttpInfo httpInfo, String saveDir, String saveFileName, String tempFileName) {
-            super.onConnected(downloadId, httpInfo, saveDir, saveFileName, tempFileName);
+        public void onConnected(long downloadId, HttpInfo httpInfo, String saveDir, String saveFileName, String tempFileName, long current, long total) {
+            super.onConnected(downloadId, httpInfo, saveDir, saveFileName, tempFileName, current, total);
             int position = downloadManager.getDownloadInfoList().getPosition(downloadId);
             dataAdapter.notifyItemChanged(position);
         }
@@ -134,8 +134,8 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        public void onDownloadResetBegin(long downloadId, int reason) {
-            super.onDownloadResetBegin(downloadId, reason);
+        public void onDownloadResetBegin(long downloadId, int reason, long current, long total) {
+            super.onDownloadResetBegin(downloadId, reason, current, total);
             int position = downloadManager.getDownloadInfoList().getPosition(downloadId);
             dataAdapter.notifyItemChanged(position);
         }

@@ -34,10 +34,10 @@ public class DownloadProgressSenderProxy {
         progressSender.sendProgress(current, total, bundle);
     }
 
-    public void sendDownloadFromBegin(long current, long total, int downloadFrombeginReason) {
+    public void sendDownloadFromBegin(long current, long total, int downloadFromBeginReason) {
         Bundle bundle = new Bundle();
         bundle.putInt(PROGRESS_STATUS, DownloadManager.STATUS_DOWNLOAD_RESET_BEGIN);
-        bundle.putInt(PARAM_DOWNLOADFROMBEGINREASON, downloadFrombeginReason);
+        bundle.putInt(PARAM_DOWNLOADFROMBEGINREASON, downloadFromBeginReason);
         progressSender.sendProgress(current, total, bundle);
     }
 

@@ -1,20 +1,17 @@
-package com.shizhefei.download.task;
+package com.shizhefei.download.task.base;
 
 import android.Manifest;
 import android.os.SystemClock;
 import android.text.TextUtils;
 
 import com.shizhefei.download.base.RemoveHandler;
-import com.shizhefei.download.entity.DownloadInfo;
 import com.shizhefei.download.entity.DownloadParams;
 import com.shizhefei.download.entity.HttpInfo;
 import com.shizhefei.download.exception.DownloadException;
 import com.shizhefei.download.exception.RemoveException;
 import com.shizhefei.download.manager.DownloadManager;
-import com.shizhefei.download.utils.FileNameUtils;
 import com.shizhefei.download.utils.DownloadUtils;
-import com.shizhefei.mvc.ProgressSender;
-import com.shizhefei.task.ITask;
+import com.shizhefei.download.utils.FileNameUtils;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -29,55 +26,53 @@ import java.net.URL;
 import java.util.List;
 import java.util.Map;
 
-public class DownloadTask implements ITask<Void>, RemoveHandler.OnRemoveListener {
+public class DownloadTaskImp implements RemoveHandler.OnRemoveListener {
     private static final int BUFFER_SIZE = 1024 * 4;
     private final long downloadId;
     private final boolean isAcceptRange;
     private final String etag;
+    private final String url;
+    private final String dir;
     private long current;
     private long total;
     private String tempFileName;
     private String saveFileName;
-    private DownloadParams downloadParams;
     private HttpURLConnection httpURLConnection;
     private volatile boolean cancel;
     private volatile boolean remove;
-
+    private DownloadParams downloadParams;
     private File saveFileTemp = null;
     private File saveFile = null;
 
-    public DownloadTask(long downloadId, DownloadParams downloadParams, DownloadInfo downloadInfo) {
+    //    public DownloadTask(long downloadId, String dir, String url, long current, long total, boolean isOverride, String saveFileName, String tempFileName, String eTag, boolean isAcceptRange, boolean isWifiRequired,Map<String, List<String>> headers) {
+    public DownloadTaskImp(long downloadId, DownloadParams downloadParams, String url, String dir, long current, long total, String saveFileName, String tempFileName, boolean isAcceptRange, String etag) {
         this.downloadId = downloadId;
+        this.url = url;
+        this.dir = dir;
+        this.current = current;
+        this.total = total;
+        this.tempFileName = tempFileName;
         this.downloadParams = downloadParams;
-        this.current = downloadInfo.getCurrent();
-        this.total = downloadInfo.getTotal();
-        if (!TextUtils.isEmpty(downloadInfo.getTempFileName())) {
-            this.saveFileName = downloadInfo.getFileName();
-        } else {
-            this.saveFileName = downloadParams.getFileName();
-        }
-        this.isAcceptRange = downloadInfo.getHttpInfo().isAcceptRange();
-        this.etag = downloadInfo.getHttpInfo().getETag();
+        this.saveFileName = saveFileName;
+        this.isAcceptRange = isAcceptRange;
+        this.etag = etag;
     }
 
-    @Override
-    public Void execute(ProgressSender sender) throws Exception {
+    public Void execute(DownloadProgressListener downloadListener) throws Exception {
         Exception exception = null;
-        DownloadProgressSenderProxy senderProxy = new DownloadProgressSenderProxy(downloadId, sender);
-        senderProxy.sendStart(current, total);
         try {
-            executeDownload(senderProxy);
+            executeDownload(downloadListener);
         } catch (FileNotFoundException e) {
-            String errorMessage = DownloadUtils.formatStringE(e, "FileNotFoundException dir=%s saveFileTemp=%s saveFile=%s", downloadParams.getDir(), saveFileTemp, saveFile);
+            String errorMessage = DownloadUtils.formatStringE(e, "FileNotFoundException dir=%s saveFileTemp=%s saveFile=%s", dir, saveFileTemp, saveFile);
             exception = new DownloadException(downloadId, DownloadManager.ERROR_FILENOTFOUNDEXCEPTION, errorMessage, e.getCause());
         } catch (MalformedURLException e) {
-            String errorMessage = DownloadUtils.formatStringE(e, "MalformedURLException url=%s", downloadParams.getUrl());
+            String errorMessage = DownloadUtils.formatStringE(e, "MalformedURLException url=%s", url);
             exception = new DownloadException(downloadId, DownloadManager.ERROR_MALFORMEDURLEXCEPTION, errorMessage, e.getCause());
         } catch (ProtocolException e) {
-            String errorMessage = DownloadUtils.formatStringE(e, "ProtocolException url=%s", downloadParams.getUrl());
+            String errorMessage = DownloadUtils.formatStringE(e, "ProtocolException url=%s", url);
             exception = new DownloadException(downloadId, DownloadManager.ERROR_PROTOCOLEXCEPTION, errorMessage, e.getCause());
         } catch (IOException e) {
-            String errorMessage = DownloadUtils.formatStringE(e, "IOException dir=%s saveFileTemp=%s saveFile=%s", downloadParams.getDir(), saveFileTemp, saveFile);
+            String errorMessage = DownloadUtils.formatStringE(e, "IOException dir=%s saveFileTemp=%s saveFile=%s", dir, saveFileTemp, saveFile);
             exception = new DownloadException(downloadId, DownloadManager.ERROR_IOEXCEPTION, errorMessage, e.getCause());
         } catch (DownloadException e) {
             exception = e;
@@ -106,19 +101,17 @@ public class DownloadTask implements ITask<Void>, RemoveHandler.OnRemoveListener
         return null;
     }
 
-    private void executeDownload(DownloadProgressSenderProxy senderProxy) throws Exception {
+    private void executeDownload(DownloadProgressListener downloadListener) throws Exception {
         InputStream inputStream = null;
         RandomAccessFile randomAccessFile = null;
         try {
-            File saveDir = new File(downloadParams.getDir());
-            String url = downloadParams.getUrl();
-
+            File saveDir = new File(dir);
             checkupWifiConnect();
 
             //添加header
             Map<String, List<String>> headers = downloadParams.getHeaders();
             DownloadUtils.logD("downloadId：%d request header %s", downloadId, headers);
-            httpURLConnection = (HttpURLConnection) new URL(downloadParams.getUrl()).openConnection();
+            httpURLConnection = (HttpURLConnection) new URL(url).openConnection();
             if (headers != null) {
                 for (Map.Entry<String, List<String>> header : headers.entrySet()) {
                     for (String value : header.getValue()) {
@@ -130,7 +123,7 @@ public class DownloadTask implements ITask<Void>, RemoveHandler.OnRemoveListener
             if (!TextUtils.isEmpty(tempFileName)) {
                 File temp = new File(saveDir, tempFileName);
                 if (current > 0 && !temp.exists()) {
-                    senderProxy.sendDownloadFromBegin(current, total, DownloadManager.DOWNLOAD_FROM_BEGIN_REASON_FILE_REMOVE);
+                    downloadListener.onDownloadResetBegin(downloadId, DownloadManager.DOWNLOAD_FROM_BEGIN_REASON_FILE_REMOVE, current, total);
                     current = 0;
                 }
             }
@@ -139,7 +132,7 @@ public class DownloadTask implements ITask<Void>, RemoveHandler.OnRemoveListener
                 if (isAcceptRange) {
                     DownloadUtils.addRangeHeader(httpURLConnection, current, DownloadUtils.RANGE_INFINITE);
                 } else {
-                    senderProxy.sendDownloadFromBegin(current, total, DownloadManager.DOWNLOAD_FROM_BEGIN_UNSUPPORT_RANGE);
+                    downloadListener.onDownloadResetBegin(downloadId, DownloadManager.DOWNLOAD_FROM_BEGIN_UNSUPPORT_RANGE, current, total);
                     current = 0;
                 }
             }
@@ -151,7 +144,7 @@ public class DownloadTask implements ITask<Void>, RemoveHandler.OnRemoveListener
             String newETag = DownloadUtils.findEtag(downloadId, httpURLConnection);
             if (current > 0) {
                 if (oldETag != null && !oldETag.equals(newETag)) {
-                    senderProxy.sendDownloadFromBegin(current, total, DownloadManager.DOWNLOAD_FROM_BEGIN_ETAG_CHANGE);
+                    downloadListener.onDownloadResetBegin(downloadId, DownloadManager.DOWNLOAD_FROM_BEGIN_ETAG_CHANGE, current, total);
                     current = 0;
                 }
             }
@@ -196,7 +189,7 @@ public class DownloadTask implements ITask<Void>, RemoveHandler.OnRemoveListener
             agency.setHttpCode(httpCode);
             agency.setAcceptRange(isAcceptRange);
             HttpInfo info = agency.getInfo();
-            senderProxy.sendConnected(info, saveDir.getPath(), saveFileName, tempFileName, current, total);
+            downloadListener.onConnected(downloadId, info, saveDir.getPath(), saveFileName, tempFileName, current, total);
 
             saveFileTemp = new File(saveDir, tempFileName);
             saveFile = new File(saveDir, saveFileName);
@@ -225,7 +218,7 @@ public class DownloadTask implements ITask<Void>, RemoveHandler.OnRemoveListener
                 long currentTime = SystemClock.elapsedRealtime();
                 if ((time + DownloadManager.getDownloadConfig().getMinDownloadProgressTime() < currentTime) || (current >= total)) {
                     time = currentTime;
-                    senderProxy.sendDownloading(current, total);
+                    downloadListener.onDownloadIng(downloadId, current, total);
                 }
                 checkupWifiConnect();
             }
@@ -257,7 +250,6 @@ public class DownloadTask implements ITask<Void>, RemoveHandler.OnRemoveListener
         }
     }
 
-    @Override
     public void cancel() {
         cancel = true;
     }
