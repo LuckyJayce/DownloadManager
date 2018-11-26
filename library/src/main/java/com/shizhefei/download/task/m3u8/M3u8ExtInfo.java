@@ -89,7 +89,7 @@ public class M3u8ExtInfo {
                 if (m3u8ItemInfoJSONObject == null) {
                     m3u8ItemInfoJSONObject = new JSONObject();
                 }
-                fillToJSONObject(m3u8ItemInfoJSONObject, currentItemInfo);
+                fillToJSONObject(m3u8ItemInfoJSONObject, m3u8Info);
                 jsonObject.put("m3u8ItemInfo", m3u8ItemInfoJSONObject);
             }
         } catch (JSONException e) {

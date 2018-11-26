@@ -1,6 +1,7 @@
 package com.shizhefei.downloadmanager;
 
 import android.Manifest;
+import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -45,6 +46,13 @@ public class MainActivity extends AppCompatActivity {
         pauseAllButton.setOnClickListener(onClickListener);
 
         permissionHelper = new PermissionHelper(this);
+
+        findViewById(R.id.play_button).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(getApplicationContext(), PlayActivity.class));
+            }
+        });
     }
 
     @Override

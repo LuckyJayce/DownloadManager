@@ -28,4 +28,10 @@ dependencies {
     implementation project(':library')
     implementation 'com.google.code.gson:gson:2.8.5'
     implementation 'com.iheartradio.m3u8:open-m3u8:0.2.4'
+
+    //完整版引入
+    implementation('com.shuyu:GSYVideoPlayer:6.0.1') {
+        exclude group: 'com.android.support', module: 'appcompat-v7'
+        exclude group: 'com.android.support', module: 'support-v4'
+    }
 }

@@ -18,7 +18,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="UnusedAttribute">
-        <activity android:name="com.shizhefei.downloadmanager.MainActivity">
+        <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <action android:name="android.intent.action.VIEW" />
@@ -31,6 +31,10 @@
             android:name="com.shizhefei.download.service.DownloadService"
             android:exported="false"
             android:process=":download" />
+
+        <activity
+            android:name=".PlayActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize" />
     </application>
 
 </manifest>
