@@ -8,7 +8,6 @@ import android.text.TextUtils;
 import android.util.LongSparseArray;
 
 import com.shizhefei.download.base.AbsDownloadTask;
-import com.shizhefei.download.base.RemoveHandler;
 import com.shizhefei.download.db.DownloadDB;
 import com.shizhefei.download.entity.DownloadInfo;
 import com.shizhefei.download.base.DownloadListener;
@@ -97,12 +96,11 @@ public class LocalDownloadManager extends DownloadManager {
                     listeners.put(downloadId, downloadListener);
                 }
 
-                RemoveHandler removeHandler = new RemoveHandlerImp();
-                AbsDownloadTask downloadTask = downloadTaskFactory.buildDownloadTask(downloadId, downloadParams, downloadDB, removeHandler, executor);
+                AbsDownloadTask downloadTask = downloadTaskFactory.buildDownloadTask(downloadId, downloadParams, downloadDB, executor);
                 downloadInfoList.set(index, downloadTask.getDownloadInfo());
 
                 TaskHandle taskHandle = taskHelper.execute(downloadTask, new DownloadListenerProxy(downloadId, proxyDownloadListener));
-                tasks.put(downloadId, new DownloadData(taskHandle, downloadTask, removeHandler));
+                tasks.put(downloadId, new DownloadData(taskHandle, downloadTask));
                 return true;
             }
         }
@@ -151,12 +149,11 @@ public class LocalDownloadManager extends DownloadManager {
             listeners.put(downloadId, downloadListener);
         }
 
-        RemoveHandler removeHandler = new RemoveHandlerImp();
-        AbsDownloadTask downloadTask = downloadTaskFactory.buildDownloadTask(downloadId, downloadParams, downloadDB, removeHandler, executor);
+        AbsDownloadTask downloadTask = downloadTaskFactory.buildDownloadTask(downloadId, downloadParams, downloadDB, executor);
         downloadInfoList.add(downloadTask.getDownloadInfo());
 
         TaskHandle taskHandle = taskHelper.execute(downloadTask, new DownloadListenerProxy(downloadId, proxyDownloadListener));
-        tasks.put(downloadId, new DownloadData(taskHandle, downloadTask, removeHandler));
+        tasks.put(downloadId, new DownloadData(taskHandle, downloadTask));
         return downloadId;
     }
 
@@ -194,7 +191,7 @@ public class LocalDownloadManager extends DownloadManager {
 
         DownloadData data = tasks.get(downloadId);
         if (data != null) {
-            data.removeHandler.remove();
+            data.task.remove();
             tasks.remove(downloadId);
             downloadDB.delete(downloadId);
         } else {//没有在执行，直接删除数据库中的
@@ -252,28 +249,10 @@ public class LocalDownloadManager extends DownloadManager {
     private static class DownloadData {
         private RequestHandle requestHandle;
         private AbsDownloadTask task;
-        private RemoveHandler removeHandler;
 
-        public DownloadData(RequestHandle requestHandle, AbsDownloadTask task, RemoveHandler removeHandler) {
+        public DownloadData(RequestHandle requestHandle, AbsDownloadTask task) {
             this.requestHandle = requestHandle;
             this.task = task;
-            this.removeHandler = removeHandler;
-        }
-    }
-
-    private static class RemoveHandlerImp implements RemoveHandler {
-        private List<OnRemoveListener> list = new ArrayList<>();
-
-        @Override
-        public void addRemoveListener(OnRemoveListener onRemoveListener) {
-            list.add(onRemoveListener);
-        }
-
-        @Override
-        public void remove() {
-            for (OnRemoveListener onRemoveListener : list) {
-                onRemoveListener.onRemove();
-            }
         }
     }
 

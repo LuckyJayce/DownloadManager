@@ -1,7 +1,6 @@
 package com.shizhefei.download.task.single;
 
 import com.shizhefei.download.base.AbsDownloadTask;
-import com.shizhefei.download.base.RemoveHandler;
 import com.shizhefei.download.entity.DownloadInfo;
 import com.shizhefei.download.base.DownloadListener;
 import com.shizhefei.download.entity.DownloadParams;
@@ -20,15 +19,15 @@ import java.util.concurrent.Executor;
 public class SingleThreadDownloadTask extends AbsDownloadTask {
     private final Executor executor;
     private final DownloadParams downloadParams;
+    private final DownloadTask downloadTask;
     private long downloadId;
     private DownloadDB downloadDB;
     private ErrorInfo.Agency errorInfoAgency;
     private HttpInfo.Agency httpInfoAgency;
-    private RemoveHandler removeHandler;
     private DownloadInfo.Agency downloadInfoAgency;
-    public static final String DOWNLOAD_TASK_NAME= "SingleThreadDownloadTask";
+    public static final String DOWNLOAD_TASK_NAME = "SingleThreadDownloadTask";
 
-    public SingleThreadDownloadTask(long downloadId, DownloadParams downloadParams, DownloadDB downloadDB, RemoveHandler removeHandler, Executor executor) {
+    public SingleThreadDownloadTask(long downloadId, DownloadParams downloadParams, DownloadDB downloadDB, Executor executor) {
         this.downloadId = downloadId;
         this.downloadDB = downloadDB;
         this.executor = executor;
@@ -39,17 +38,15 @@ public class SingleThreadDownloadTask extends AbsDownloadTask {
         }
         errorInfoAgency = downloadInfoAgency.getErrorInfoAgency();
         httpInfoAgency = downloadInfoAgency.getHttpInfoAgency();
-        this.removeHandler = removeHandler;
 
         downloadInfoAgency.setStatus(DownloadManager.STATUS_PENDING);
         downloadInfoAgency.setStartTime(System.currentTimeMillis());
         downloadDB.replace(downloadParams, downloadInfoAgency.getInfo());
+        downloadTask = new DownloadTask(downloadId, downloadInfoAgency.getInfo());
     }
 
     @Override
     public RequestHandle execute(ResponseSender<Void> sender) throws Exception {
-        DownloadTask downloadTask = new DownloadTask(downloadId, downloadInfoAgency.getInfo());
-        removeHandler.addRemoveListener(downloadTask);
         DownloadListenerProxy callback = new DownloadListenerProxy(downloadId, downloadListener);
         return Tasks.async(downloadTask, executor).doOnCallback(callback).execute(sender);
     }
@@ -62,6 +59,11 @@ public class SingleThreadDownloadTask extends AbsDownloadTask {
     @Override
     public String getDownloadTaskName() {
         return DOWNLOAD_TASK_NAME;
+    }
+
+    @Override
+    public void remove() {
+        downloadTask.onRemove();
     }
 
     private DownloadListener downloadListener = new DownloadListener() {

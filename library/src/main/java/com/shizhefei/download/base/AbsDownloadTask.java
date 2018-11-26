@@ -8,4 +8,6 @@ public abstract class AbsDownloadTask implements IAsyncTask<Void> {
     public abstract DownloadInfo getDownloadInfo();
 
     public abstract String getDownloadTaskName();
+
+    public abstract void remove();
 }

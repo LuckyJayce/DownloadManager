@@ -4,14 +4,11 @@ import android.text.TextUtils;
 
 import com.iheartradio.m3u8.Encoding;
 import com.iheartradio.m3u8.Format;
-import com.iheartradio.m3u8.ParseException;
-import com.iheartradio.m3u8.PlaylistException;
 import com.iheartradio.m3u8.PlaylistParser;
 import com.iheartradio.m3u8.PlaylistWriter;
 import com.iheartradio.m3u8.data.MediaPlaylist;
 import com.iheartradio.m3u8.data.Playlist;
 import com.iheartradio.m3u8.data.TrackData;
-import com.shizhefei.download.base.RemoveHandler;
 import com.shizhefei.download.db.DownloadDB;
 import com.shizhefei.download.entity.DownloadInfo;
 import com.shizhefei.download.entity.DownloadParams;
@@ -36,7 +33,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
-class M3u8DownloadTaskImp implements ITask<Void>, RemoveHandler.OnRemoveListener {
+class M3u8DownloadTaskImp implements ITask<Void> {
     private final DownloadInfo downloadInfo;
     private long downloadId;
     private DownloadDB downloadDB;
@@ -48,7 +45,7 @@ class M3u8DownloadTaskImp implements ITask<Void>, RemoveHandler.OnRemoveListener
     private volatile boolean isRemove;
     private volatile boolean isCancel;
 
-    public M3u8DownloadTaskImp(long downloadId, DownloadParams downloadParams, DownloadDB downloadDB, RemoveHandler removeHandler) {
+    public M3u8DownloadTaskImp(long downloadId, DownloadParams downloadParams, DownloadDB downloadDB) {
         this.downloadId = downloadId;
         this.downloadParams = downloadParams;
         this.downloadDB = downloadDB;
@@ -59,14 +56,12 @@ class M3u8DownloadTaskImp implements ITask<Void>, RemoveHandler.OnRemoveListener
         errorInfoAgency = downloadInfoAgency.getErrorInfoAgency();
         httpInfoAgency = downloadInfoAgency.getHttpInfoAgency();
         downloadInfo = downloadInfoAgency.getInfo();
-        removeHandler.addRemoveListener(this);
     }
 
     public DownloadInfo getDownloadInfo() {
         return downloadInfo;
     }
 
-    @Override
     public void onRemove() {
         isRemove = true;
         isCancel = true;
@@ -189,7 +184,7 @@ class M3u8DownloadTaskImp implements ITask<Void>, RemoveHandler.OnRemoveListener
                         throw new DownloadException(downloadId, DownloadManager.ERROR_M3U8_FILE_PARSE_FAIL, "m38u file parse fail", e);
                     }
                 }
-                if(!playlist.hasMediaPlaylist()){
+                if (!playlist.hasMediaPlaylist()) {
 
                 }
                 if (playlist.hasMediaPlaylist()) {

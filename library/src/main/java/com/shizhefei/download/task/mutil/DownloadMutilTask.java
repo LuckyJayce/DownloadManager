@@ -19,6 +19,11 @@ public class DownloadMutilTask extends AbsDownloadTask {
     }
 
     @Override
+    public void remove() {
+
+    }
+
+    @Override
     public RequestHandle execute(ResponseSender<Void> sender) throws Exception {
         return null;
     }

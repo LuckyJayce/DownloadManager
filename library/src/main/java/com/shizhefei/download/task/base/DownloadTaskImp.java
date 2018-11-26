@@ -3,9 +3,7 @@ package com.shizhefei.download.task.base;
 import android.Manifest;
 import android.os.SystemClock;
 import android.text.TextUtils;
-import android.util.Log;
 
-import com.shizhefei.download.base.RemoveHandler;
 import com.shizhefei.download.entity.DownloadParams;
 import com.shizhefei.download.entity.HttpInfo;
 import com.shizhefei.download.exception.DownloadException;
@@ -27,7 +25,7 @@ import java.net.URL;
 import java.util.List;
 import java.util.Map;
 
-public class DownloadTaskImp implements RemoveHandler.OnRemoveListener {
+public class DownloadTaskImp {
     private static final int BUFFER_SIZE = 1024 * 4;
     private final long downloadId;
     private final boolean isAcceptRange;
@@ -256,7 +254,6 @@ public class DownloadTaskImp implements RemoveHandler.OnRemoveListener {
         cancel = true;
     }
 
-    @Override
     public void onRemove() {
         DownloadUtils.logD("DownloadTask onRemove %d", downloadId);
         remove = true;
