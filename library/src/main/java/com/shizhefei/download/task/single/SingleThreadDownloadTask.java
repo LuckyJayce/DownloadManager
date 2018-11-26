@@ -17,7 +17,7 @@ import com.shizhefei.task.tasks.Tasks;
 
 import java.util.concurrent.Executor;
 
-public class ProxyDownloadTask extends AbsDownloadTask {
+public class SingleThreadDownloadTask extends AbsDownloadTask {
     private final Executor executor;
     private long downloadId;
     private DownloadDB downloadDB;
@@ -25,11 +25,9 @@ public class ProxyDownloadTask extends AbsDownloadTask {
     private HttpInfo.Agency httpInfoAgency;
     private RemoveHandler removeHandler;
     private DownloadInfo.Agency downloadInfoAgency;
-    private DownloadParams downloadParams;
 
-    public ProxyDownloadTask(long downloadId, DownloadParams downloadParams, DownloadDB downloadDB, RemoveHandler removeHandler, Executor executor) {
+    public SingleThreadDownloadTask(long downloadId, DownloadParams downloadParams, DownloadDB downloadDB, RemoveHandler removeHandler, Executor executor) {
         this.downloadId = downloadId;
-        this.downloadParams = downloadParams;
         this.downloadDB = downloadDB;
         this.executor = executor;
         downloadInfoAgency = downloadDB.find(downloadId);
