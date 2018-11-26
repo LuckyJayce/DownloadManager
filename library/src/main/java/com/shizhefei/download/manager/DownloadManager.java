@@ -64,6 +64,10 @@ public abstract class DownloadManager {
      */
     public static final int ERROR_PROTOCOLEXCEPTION = 8;
     public static final int ERROR_SIZE_CHANGE = 9;
+    /**
+     * m3u8文件解析失败
+     */
+    public static final int ERROR_M3U8_FILE_PARSE_FAIL = 10;
     //---------------------     error code---------------------------------------------------------//
 
 
@@ -110,7 +114,7 @@ public abstract class DownloadManager {
     }
 
     // 自定义一个注解MyState
-    @IntDef({ERROR_UNKNOW, ERROR_PERMISSION, ERROR_FILENOTFOUNDEXCEPTION, ERROR_IOEXCEPTION, ERROR_HTTP, ERROR_WIFIREQUIRED, ERROR_EMPTY_SIZE, ERROR_MALFORMEDURLEXCEPTION, ERROR_PROTOCOLEXCEPTION, ERROR_SIZE_CHANGE})
+    @IntDef({ERROR_UNKNOW, ERROR_PERMISSION, ERROR_FILENOTFOUNDEXCEPTION, ERROR_IOEXCEPTION, ERROR_HTTP, ERROR_WIFIREQUIRED, ERROR_EMPTY_SIZE, ERROR_MALFORMEDURLEXCEPTION, ERROR_PROTOCOLEXCEPTION, ERROR_SIZE_CHANGE, ERROR_M3U8_FILE_PARSE_FAIL})
     public @interface Error {
     }
 

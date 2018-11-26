@@ -4,6 +4,8 @@ import android.text.TextUtils;
 
 import com.iheartradio.m3u8.Encoding;
 import com.iheartradio.m3u8.Format;
+import com.iheartradio.m3u8.ParseException;
+import com.iheartradio.m3u8.PlaylistException;
 import com.iheartradio.m3u8.PlaylistParser;
 import com.iheartradio.m3u8.PlaylistWriter;
 import com.iheartradio.m3u8.data.MediaPlaylist;
@@ -29,6 +31,7 @@ import com.shizhefei.task.ITask;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -95,10 +98,38 @@ class M3u8DownloadTaskImp implements ITask<Void>, RemoveHandler.OnRemoveListener
             }
             File m3u8File = new File(dir, fileName);
             DownloadUtils.logD("M3u8DownloadTaskImp  downloadId=%d fileName=%s m3u8File=%s m3u8Info=%s", downloadId, fileName, m3u8File, m3u8Info);
+            Playlist playlist = null;
             if (m3u8Info != null) {
-                if (!m3u8File.exists() && (downloadInfo.getTempFileName() != null && !new File(dir, downloadInfo.getTempFileName()).exists())) {
+                if (!m3u8File.exists()) {
                     DownloadUtils.logD("M3u8DownloadTaskImp downloadId=%d !m3u8File.exists()", downloadId);
                     downloadTask = buildFromExtInfo(downloadId, dir, downloadParams, m3u8Info);
+                } else {
+                    FileInputStream inputStream = null;
+                    try {
+                        //解析m3u8文件
+                        inputStream = new FileInputStream(m3u8File);
+                        PlaylistParser parser = new PlaylistParser(inputStream, Format.EXT_M3U, Encoding.UTF_8);
+                        playlist = parser.parse();
+                    } catch (Exception e) {
+                        DownloadUtils.logD("M3u8DownloadTaskImp m3u8 file parse fail re-download m3u8 file m3u8File", downloadId);
+                        //解析失败重新下载
+                        m3u8Info = new M3u8ExtInfo.ItemInfo();
+                        m3u8Info.setCurrent(0);
+                        m3u8Info.setTotal(0);
+                        m3u8Info.setFileName(m3u8File.getName());
+                        m3u8Info.setUrl(downloadParams.getUrl());
+                        m3U8ExtInfo.setM3u8Info(m3u8Info);
+                        m3U8ExtInfo.setCurrentItemInfo(null);
+                        downloadTask = buildFromExtInfo(downloadId, dir, downloadParams, m3u8Info);
+                    } finally {
+                        try {
+                            if (inputStream != null) {
+                                inputStream.close();
+                            }
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
                 }
             } else {
                 m3u8Info = new M3u8ExtInfo.ItemInfo();
@@ -149,9 +180,18 @@ class M3u8DownloadTaskImp implements ITask<Void>, RemoveHandler.OnRemoveListener
             }
             if (!isCancel) {
                 //解析m3u8文件
-                FileInputStream inputStream = new FileInputStream(m3u8File);
-                PlaylistParser parser = new PlaylistParser(inputStream, Format.EXT_M3U, Encoding.UTF_8);
-                Playlist playlist = parser.parse();//TODO 解析失败重新下载m3u8
+                if (playlist == null) {
+                    try {
+                        FileInputStream inputStream = new FileInputStream(m3u8File);
+                        PlaylistParser parser = new PlaylistParser(inputStream, Format.EXT_M3U, Encoding.UTF_8);
+                        playlist = parser.parse();
+                    } catch (Exception e) {
+                        throw new DownloadException(downloadId, DownloadManager.ERROR_M3U8_FILE_PARSE_FAIL, "m38u file parse fail", e);
+                    }
+                }
+                if(!playlist.hasMediaPlaylist()){
+
+                }
                 if (playlist.hasMediaPlaylist()) {
                     //循环下载ts文件
                     MediaPlaylist mediaPlaylist = playlist.getMediaPlaylist();
