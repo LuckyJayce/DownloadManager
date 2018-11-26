@@ -58,9 +58,9 @@ public class DownloadTaskImp {
         this.etag = etag;
     }
 
-    public Void execute(DownloadProgressListener downloadListener) throws Exception {
+    public Void execute(DownloadProgressListener downloadListener) throws DownloadException {
         isRunning = true;
-        Exception exception = null;
+        DownloadException exception = null;
         try {
             executeDownload(downloadListener);
         } catch (FileNotFoundException e) {
@@ -84,7 +84,6 @@ public class DownloadTaskImp {
         if (cancel) {//停止下载
             if (remove) {//移除下载
                 removeFiles();
-                throw new RemoveException(downloadId);
             }
         } else if (exception != null) {//下载时出现异常，下载失败
             DownloadUtils.logE(exception, "DownloadTask exception");
@@ -255,7 +254,7 @@ public class DownloadTaskImp {
     }
 
     public void onRemove() {
-        DownloadUtils.logD("DownloadTask onRemove %d", downloadId);
+        DownloadUtils.logD("DownloadTask remove %d", downloadId);
         remove = true;
         cancel = true;
         if (!isRunning) {

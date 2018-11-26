@@ -96,7 +96,7 @@ public class LocalDownloadManager extends DownloadManager {
                     listeners.put(downloadId, downloadListener);
                 }
 
-                AbsDownloadTask downloadTask = downloadTaskFactory.buildDownloadTask(downloadId, downloadParams, downloadDB, executor);
+                AbsDownloadTask downloadTask = downloadTaskFactory.buildDownloadTask(downloadId, false, downloadParams, downloadDB, executor);
                 downloadInfoList.set(index, downloadTask.getDownloadInfo());
 
                 TaskHandle taskHandle = taskHelper.execute(downloadTask, new DownloadListenerProxy(downloadId, proxyDownloadListener));
@@ -149,7 +149,7 @@ public class LocalDownloadManager extends DownloadManager {
             listeners.put(downloadId, downloadListener);
         }
 
-        AbsDownloadTask downloadTask = downloadTaskFactory.buildDownloadTask(downloadId, downloadParams, downloadDB, executor);
+        AbsDownloadTask downloadTask = downloadTaskFactory.buildDownloadTask(downloadId, false, downloadParams, downloadDB, executor);
         downloadInfoList.add(downloadTask.getDownloadInfo());
 
         TaskHandle taskHandle = taskHelper.execute(downloadTask, new DownloadListenerProxy(downloadId, proxyDownloadListener));
@@ -196,19 +196,9 @@ public class LocalDownloadManager extends DownloadManager {
             downloadDB.delete(downloadId);
         } else {//没有在执行，直接删除数据库中的
             if (downloadInfo != null) {
-                AbsDownloadTask downloadTask = downloadTaskFactory.buildDownloadTask(downloadId, downloadInfo.getDownloadParams(), downloadDB, executor);
+                AbsDownloadTask downloadTask = downloadTaskFactory.buildDownloadTask(downloadId, true, downloadInfo.getDownloadParams(), downloadDB, executor);
                 downloadTask.remove();
             }
-//            if (downloadInfo != null) {
-//                if (!TextUtils.isEmpty(downloadInfo.getTempFileName())) {
-//                    File file = new File(downloadInfo.getDir(), downloadInfo.getTempFileName());
-//                    if (file.exists()) {
-//                        file.delete();
-//                    }
-//                }
-//                //下载好的 downloadInfo.getFileName() 没做删除处理
-//            }
-//            downloadDB.delete(downloadId);
         }
         //通知移除
         proxyDownloadListener.onRemove(downloadId);

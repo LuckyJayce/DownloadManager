@@ -15,9 +15,9 @@ public class M3u8DownloadTask extends AbsDownloadTask {
     private final Executor executor;
     public static final String DOWNLOAD_TASK_NAME = "M3u8DownloadTask";
 
-    public M3u8DownloadTask(long downloadId, DownloadParams downloadParams, DownloadDB downloadDB, Executor executor) {
+    public M3u8DownloadTask(long downloadId, DownloadParams downloadParams, DownloadDB downloadDB, Executor executor, boolean isOnlyRemove) {
         this.executor = executor;
-        downloadTask = new M3u8DownloadTaskImp(downloadId, downloadParams, downloadDB);
+        downloadTask = new M3u8DownloadTaskImp(downloadId, downloadParams, downloadDB, isOnlyRemove);
     }
 
     @Override
@@ -37,6 +37,6 @@ public class M3u8DownloadTask extends AbsDownloadTask {
 
     @Override
     public void remove() {
-        downloadTask.onRemove();
+        downloadTask.remove();
     }
 }

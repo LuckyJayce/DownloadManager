@@ -10,12 +10,11 @@ import com.shizhefei.download.task.single.SingleThreadDownloadTask;
 import java.util.concurrent.Executor;
 
 public class DefaultDownloadTaskFactory implements DownloadTaskFactory {
-    @Override
-    public AbsDownloadTask buildDownloadTask(long downloadId, DownloadParams downloadParams, DownloadDB downloadDB, Executor executor) {
+    public AbsDownloadTask buildDownloadTask(long downloadId, boolean isOnlyRemove, DownloadParams downloadParams, DownloadDB downloadDB, Executor executor) {
         String downloadTaskName = downloadDB.findDownloadTaskName(downloadId);
         if (M3u8DownloadTask.DOWNLOAD_TASK_NAME.equals(downloadTaskName) || downloadParams.getUrl().endsWith(".m3u8")) {
-            return new M3u8DownloadTask(downloadId, downloadParams, downloadDB, executor);
+            return new M3u8DownloadTask(downloadId, downloadParams, downloadDB, executor, isOnlyRemove);
         }
-        return new SingleThreadDownloadTask(downloadId, downloadParams, downloadDB, executor);
+        return new SingleThreadDownloadTask(downloadId, downloadParams, downloadDB, executor, isOnlyRemove);
     }
 }
