@@ -7,11 +7,14 @@ import com.shizhefei.download.entity.DownloadParams;
 import com.shizhefei.download.db.DownloadDB;
 import com.shizhefei.download.entity.ErrorInfo;
 import com.shizhefei.download.entity.HttpInfo;
+import com.shizhefei.download.exception.RemoveException;
 import com.shizhefei.download.manager.DownloadManager;
 import com.shizhefei.download.task.DownloadListenerProxy;
 import com.shizhefei.download.task.base.DownloadTask;
+import com.shizhefei.mvc.ProgressSender;
 import com.shizhefei.mvc.RequestHandle;
 import com.shizhefei.mvc.ResponseSender;
+import com.shizhefei.task.ITask;
 import com.shizhefei.task.tasks.Tasks;
 
 import java.util.concurrent.Executor;
@@ -26,6 +29,8 @@ public class SingleThreadDownloadTask extends AbsDownloadTask {
     private HttpInfo.Agency httpInfoAgency;
     private DownloadInfo.Agency downloadInfoAgency;
     public static final String DOWNLOAD_TASK_NAME = "SingleThreadDownloadTask";
+    private volatile boolean isRunning;
+    private volatile boolean isRemove;
 
     public SingleThreadDownloadTask(long downloadId, DownloadParams downloadParams, DownloadDB downloadDB, Executor executor) {
         this.downloadId = downloadId;
@@ -48,7 +53,27 @@ public class SingleThreadDownloadTask extends AbsDownloadTask {
     @Override
     public RequestHandle execute(ResponseSender<Void> sender) throws Exception {
         DownloadListenerProxy callback = new DownloadListenerProxy(downloadId, downloadListener);
-        return Tasks.async(downloadTask, executor).doOnCallback(callback).execute(sender);
+        return Tasks.async(new ITask<Void>() {
+            @Override
+            public Void execute(ProgressSender progressSender) throws Exception {
+                isRunning = true;
+                try {
+                    downloadTask.execute(progressSender);
+                } catch (Exception e) {
+                    if (e instanceof RemoveException) {
+                        removeFiles();
+                    }
+                    throw e;
+                }
+                isRunning = false;
+                return null;
+            }
+
+            @Override
+            public void cancel() {
+                downloadTask.cancel();
+            }
+        }, executor).doOnCallback(callback).execute(sender);
     }
 
     @Override
@@ -63,7 +88,16 @@ public class SingleThreadDownloadTask extends AbsDownloadTask {
 
     @Override
     public void remove() {
+        isRemove = true;
         downloadTask.onRemove();
+        if (!isRunning) {
+            removeFiles();
+        }
+    }
+
+    private void removeFiles() {
+        downloadTask.onRemove();
+        downloadDB.delete(downloadId);
     }
 
     private DownloadListener downloadListener = new DownloadListener() {

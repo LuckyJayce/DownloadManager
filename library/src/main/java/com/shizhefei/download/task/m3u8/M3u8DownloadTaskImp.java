@@ -44,6 +44,7 @@ class M3u8DownloadTaskImp implements ITask<Void> {
     private volatile DownloadTaskImp downloadTask;
     private volatile boolean isRemove;
     private volatile boolean isCancel;
+    private volatile boolean isRunning;
 
     public M3u8DownloadTaskImp(long downloadId, DownloadParams downloadParams, DownloadDB downloadDB) {
         this.downloadId = downloadId;
@@ -68,11 +69,26 @@ class M3u8DownloadTaskImp implements ITask<Void> {
         if (downloadTask != null) {
             downloadTask.onRemove();
         }
+        if (!isRunning) {
+            removeFiles();
+        }
+    }
+
+    private void removeFiles() {
+        try {
+            if (!downloadInfo.getDir().equals(DownloadManager.getDownloadConfig().getDir())) {
+                DownloadUtils.deleteDirectory(new File(downloadInfo.getDir()));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        downloadDB.delete(downloadId);
     }
 
     @Override
     public Void execute(ProgressSender progressSender) throws Exception {
         try {
+            isRunning = true;
             final DownloadProgressSenderProxy progressSenderProxy = new DownloadProgressSenderProxy(downloadId, progressSender);
 
             progressSenderProxy.sendStart(downloadInfo.getCurrent(), downloadInfo.getTotal());
@@ -274,7 +290,7 @@ class M3u8DownloadTaskImp implements ITask<Void> {
             }
         } catch (Exception exception) {
             if (exception instanceof RemoveException) {
-                //不处理
+                removeFiles();
             } else if (exception instanceof DownloadException) {
                 DownloadException downloadException = (DownloadException) exception;
                 downloadInfoAgency.setStatus(DownloadManager.STATUS_ERROR);
@@ -289,8 +305,10 @@ class M3u8DownloadTaskImp implements ITask<Void> {
                 errorInfoAgency.set(DownloadManager.ERROR_UNKNOW, message);
                 downloadDB.update(downloadInfoAgency.getInfo());
             }
+            isRunning = false;
             throw exception;
         }
+        isRunning = false;
         return null;
     }
 

@@ -196,15 +196,19 @@ public class LocalDownloadManager extends DownloadManager {
             downloadDB.delete(downloadId);
         } else {//没有在执行，直接删除数据库中的
             if (downloadInfo != null) {
-                if (!TextUtils.isEmpty(downloadInfo.getTempFileName())) {
-                    File file = new File(downloadInfo.getDir(), downloadInfo.getTempFileName());
-                    if (file.exists()) {
-                        file.delete();
-                    }
-                }
-                //下载好的 downloadInfo.getFileName() 没做删除处理
+                AbsDownloadTask downloadTask = downloadTaskFactory.buildDownloadTask(downloadId, downloadInfo.getDownloadParams(), downloadDB, executor);
+                downloadTask.remove();
             }
-            downloadDB.delete(downloadId);
+//            if (downloadInfo != null) {
+//                if (!TextUtils.isEmpty(downloadInfo.getTempFileName())) {
+//                    File file = new File(downloadInfo.getDir(), downloadInfo.getTempFileName());
+//                    if (file.exists()) {
+//                        file.delete();
+//                    }
+//                }
+//                //下载好的 downloadInfo.getFileName() 没做删除处理
+//            }
+//            downloadDB.delete(downloadId);
         }
         //通知移除
         proxyDownloadListener.onRemove(downloadId);

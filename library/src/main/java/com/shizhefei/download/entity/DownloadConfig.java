@@ -1,5 +1,8 @@
 package com.shizhefei.download.entity;
 
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+
 import com.shizhefei.download.base.DownloadTaskFactory;
 
 import java.util.concurrent.Executor;
@@ -17,6 +20,7 @@ public class DownloadConfig {
         return minDownloadProgressTime;
     }
 
+    @NonNull
     public String getUserAgent() {
         return userAgent;
     }
@@ -29,14 +33,17 @@ public class DownloadConfig {
         return isWifiRequired;
     }
 
+    @NonNull
     public String getDir() {
         return dir;
     }
 
+    @NonNull
     public DownloadTaskFactory getDownloadTaskFactory() {
         return downloadTaskFactory;
     }
 
+    @NonNull
     public Executor getExecutor() {
         return executor;
     }

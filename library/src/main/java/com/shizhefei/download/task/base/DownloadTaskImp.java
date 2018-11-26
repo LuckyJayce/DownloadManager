@@ -38,6 +38,7 @@ public class DownloadTaskImp {
     private String saveFileName;
     private HttpURLConnection httpURLConnection;
     private volatile boolean cancel;
+    private volatile boolean isRunning;
     private volatile boolean remove;
     private DownloadParams downloadParams;
     private File saveFileTemp = null;
@@ -58,6 +59,7 @@ public class DownloadTaskImp {
     }
 
     public Void execute(DownloadProgressListener downloadListener) throws Exception {
+        isRunning = true;
         Exception exception = null;
         try {
             executeDownload(downloadListener);
@@ -81,15 +83,12 @@ public class DownloadTaskImp {
         }
         if (cancel) {//停止下载
             if (remove) {//移除下载
-                DownloadUtils.logD("DownloadTask remove ...");
-                if (saveFileTemp != null) {
-                    saveFileTemp.delete();
-                    DownloadUtils.logD("DownloadTask saveFileTemp delete saveFileTemp %s" + saveFileTemp);
-                }
+                removeFiles();
                 throw new RemoveException(downloadId);
             }
         } else if (exception != null) {//下载时出现异常，下载失败
             DownloadUtils.logE(exception, "DownloadTask exception");
+            isRunning = false;
             throw exception;
         } else {// 下载成功
             if (saveFile.exists()) {
@@ -98,6 +97,7 @@ public class DownloadTaskImp {
             boolean success = saveFileTemp.renameTo(saveFile);
             DownloadUtils.logD("DownloadTask renameTo success " + success);
         }
+        isRunning = false;
         return null;
     }
 
@@ -258,5 +258,21 @@ public class DownloadTaskImp {
         DownloadUtils.logD("DownloadTask onRemove %d", downloadId);
         remove = true;
         cancel = true;
+        if (!isRunning) {
+            removeFiles();
+        }
+    }
+
+    private void removeFiles() {
+        try {
+            if (!TextUtils.isEmpty(saveFileName)) {
+                DownloadUtils.forceDelete(new File(dir, saveFileName));
+            }
+            if (!TextUtils.isEmpty(tempFileName)) {
+                DownloadUtils.forceDelete(new File(dir, tempFileName));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
