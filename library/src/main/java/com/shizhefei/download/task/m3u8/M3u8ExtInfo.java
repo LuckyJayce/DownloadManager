@@ -99,6 +99,7 @@ public class M3u8ExtInfo {
     }
 
     public static class ItemInfo {
+        private int index;
         private String url;
         private long current;
         private long total;
@@ -106,7 +107,6 @@ public class M3u8ExtInfo {
         private String tempFileName;
         private boolean isAcceptRange;
         private String etag;
-        private int index;
 
         public boolean isAcceptRange() {
             return isAcceptRange;
@@ -175,14 +175,14 @@ public class M3u8ExtInfo {
         @Override
         public String toString() {
             return "ItemInfo{" +
-                    "url='" + url + '\'' +
+                    "index=" + index +
+                    ", url='" + url + '\'' +
                     ", current=" + current +
                     ", total=" + total +
                     ", fileName='" + fileName + '\'' +
                     ", tempFileName='" + tempFileName + '\'' +
                     ", isAcceptRange=" + isAcceptRange +
                     ", etag='" + etag + '\'' +
-                    ", index=" + index +
                     '}';
         }
     }
