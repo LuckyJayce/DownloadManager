@@ -55,7 +55,11 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.play_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(getApplicationContext(), PlayActivity.class));
+                EditText editText = findViewById(R.id.editText3);
+                long text = Long.parseLong(editText.getText().toString());
+                Intent intent = new Intent(getApplicationContext(), PlayActivity.class);
+                intent.putExtra(PlayActivity.DOWNLOAD_ID, text);
+                startActivity(intent);
             }
         });
     }

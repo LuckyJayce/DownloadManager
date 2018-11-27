@@ -6,6 +6,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.shizhefei.download.entity.DownloadInfo;
 import com.shizhefei.download.manager.DownloadManager;
@@ -19,6 +20,7 @@ public class PlayActivity extends AppCompatActivity {
 
     private StandardGSYVideoPlayer videoPlayer;
     private OrientationUtils orientationUtils;
+    public static final String DOWNLOAD_ID = "download_id";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,9 +28,15 @@ public class PlayActivity extends AppCompatActivity {
         setContentView(R.layout.activity_play);
         videoPlayer = findViewById(R.id.video_player);
 
-        DownloadInfo downloadInfo = DownloadManager.getLocal().getDownloadInfo(12);
-        String source1 = Uri.fromFile(new File(downloadInfo.getDir(), downloadInfo.getFileName())).toString();
-        videoPlayer.setUp(source1, true, "测试视频");
+        long downloadId = getIntent().getLongExtra(DOWNLOAD_ID, -1);
+        DownloadInfo downloadInfo = DownloadManager.getLocal().getDownloadInfo(downloadId);
+        if (downloadInfo != null) {
+            String source1 = Uri.fromFile(new File(downloadInfo.getDir(), downloadInfo.getFileName())).toString();
+            videoPlayer.setUp(source1, true, "测试视频");
+        } else {
+            Toast.makeText(getApplicationContext(), "不存在此id", Toast.LENGTH_LONG).show();
+        }
+
 
         //增加封面
         ImageView imageView = new ImageView(this);

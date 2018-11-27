@@ -6,11 +6,24 @@
     android:orientation="vertical"
     tools:context="com.shizhefei.downloadmanager.MainActivity">
 
-    <Button
-        android:id="@+id/play_button"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Play" />
+        android:layout_height="wrap_content">
+
+        <EditText
+            android:id="@+id/editText3"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="输入下载的id播放"
+            android:text="" />
+
+        <Button
+            android:id="@+id/play_button"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:text="Play" />
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
