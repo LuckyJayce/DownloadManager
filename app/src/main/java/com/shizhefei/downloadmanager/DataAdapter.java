@@ -21,9 +21,9 @@ public class DataAdapter extends RecyclerView.Adapter {
     private final DownloadManager downloadManager;
     private final DownloadInfoList downloadInfoList;
 
-    public DataAdapter(DownloadManager downloadManager) {
+    public DataAdapter(DownloadManager downloadManager, DownloadInfoList downloadInfoList) {
         this.downloadManager = downloadManager;
-        downloadInfoList = downloadManager.getDownloadInfoList();
+        this.downloadInfoList = downloadInfoList;
     }
 
     @NonNull

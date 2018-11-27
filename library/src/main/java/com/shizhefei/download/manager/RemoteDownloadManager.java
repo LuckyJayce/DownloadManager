@@ -164,9 +164,62 @@ public class RemoteDownloadManager extends DownloadManager {
     }
 
     @Override
-    public DownloadInfoList getDownloadInfoList() {
+    public DownloadInfoList createDownloadInfoList() {
         checkHasExecuteBind();
         return downloadInfoList;
+    }
+
+    @Override
+    public DownloadInfoList createDownloadInfoList(int downloadStatus) {
+        checkHasExecuteBind();
+        //TODO 本地和远程维护列表 或者返回一个DownloadInfoList aidl
+        return null;
+//        return new DownloadInfoList() {
+//            @Override
+//            public int getCount() {
+//                int count = 0;
+//                for (DownloadInfo downloadInfo : downloadInfoList) {
+//                    if (isNeed(downloadInfo)) {
+//                        count++;
+//                    }
+//                }
+//                return count;
+//            }
+//
+//            @Override
+//            public DownloadInfo getDownloadInfo(int position) {
+//                int p = 0;
+//                for (DownloadInfo downloadInfo : downloadInfoList) {
+//                    if (isNeed(downloadInfo)) {
+//                        if (p == position) {
+//                            return downloadInfo;
+//                        }
+//                        p++;
+//                    }
+//                }
+//                return null;
+//            }
+//
+//            @Override
+//            public int getPosition(long downloadId) {
+//                int p = 0;
+//                for (DownloadInfo downloadInfo : downloadInfoList) {
+//                    if (isNeed(downloadInfo)) {
+//                        if (downloadInfo.getId() == downloadId) {
+//                            return p;
+//                        }
+//                        p++;
+//                    } else if (downloadInfo.getId() == downloadId) {
+//                        break;
+//                    }
+//                }
+//                return -1;
+//            }
+//
+//            private boolean isNeed(DownloadInfo downloadInfo) {
+//                return (downloadInfo.getStatus() & downloadStatus) != 0;
+//            }
+//        };
     }
 
     @Override

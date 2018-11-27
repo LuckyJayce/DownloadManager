@@ -2,49 +2,55 @@ package com.shizhefei.downloadmanager;
 
 import android.Manifest;
 import android.content.Intent;
+import android.graphics.Color;
 import android.support.annotation.NonNull;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
+import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.shizhefei.download.base.DownloadListener;
 import com.shizhefei.download.entity.DownloadParams;
 import com.shizhefei.download.entity.HttpInfo;
 import com.shizhefei.download.manager.DownloadManager;
+import com.shizhefei.view.indicator.FixedIndicatorView;
+import com.shizhefei.view.indicator.Indicator;
+import com.shizhefei.view.indicator.IndicatorViewPager;
+import com.shizhefei.view.indicator.slidebar.TextWidthColorBar;
 
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    private RecyclerView recyclerView;
     private View addButton;
     private EditText editText;
-    private DataAdapter dataAdapter;
     private DownloadManager downloadManager;
     private PermissionHelper permissionHelper;
     private View pauseAllButton;
     private View addButton2;
     private EditText editText2;
+    private ViewPager viewPager;
+    private Indicator indicatorView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         downloadManager = DownloadManager.getLocal();
-        downloadManager.registerDownloadListener(downloadListener);
 
-        recyclerView = findViewById(R.id.recyclerView);
         addButton = findViewById(R.id.button);
         editText = findViewById(R.id.editText);
         addButton2 = findViewById(R.id.button2);
         editText2 = findViewById(R.id.editText2);
         pauseAllButton = findViewById(R.id.pause_all_button);
-
-        recyclerView.setLayoutManager(new FixLinearLayoutManager(this));
-        recyclerView.setAdapter(dataAdapter = new DataAdapter(downloadManager));
 
         addButton.setOnClickListener(onClickListener);
         addButton2.setOnClickListener(onClickListener);
@@ -62,12 +68,12 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
-    }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        downloadManager.unregisterDownloadListener(downloadListener);
+        viewPager = findViewById(R.id.viewPager);
+        indicatorView = findViewById(R.id.indicator);
+        indicatorView.setScrollBar(new TextWidthColorBar(this, indicatorView, Color.RED, 5));
+        IndicatorViewPager indicatorViewPager = new IndicatorViewPager(indicatorView, viewPager);
+        indicatorViewPager.setAdapter(new PAdapter(getSupportFragmentManager()));
     }
 
     private View.OnClickListener onClickListener = new View.OnClickListener() {
@@ -118,65 +124,44 @@ public class MainActivity extends AppCompatActivity {
         permissionHelper.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
-    private DownloadListener downloadListener = new DownloadListener() {
+    private class PAdapter extends IndicatorViewPager.IndicatorFragmentPagerAdapter {
+        private String[] tabNames = {"下载中", "已完成"};
 
-        @Override
-        public void onPending(long downloadId) {
-            super.onPending(downloadId);
-            dataAdapter.notifyDataSetChanged();
+        public PAdapter(FragmentManager fragmentManager) {
+            super(fragmentManager);
         }
 
         @Override
-        public void onStart(long downloadId, long current, long total) {
-            super.onStart(downloadId, current, total);
-            int position = downloadManager.getDownloadInfoList().getPosition(downloadId);
-            dataAdapter.notifyItemChanged(position);
+        public int getCount() {
+            return tabNames.length;
         }
 
         @Override
-        public void onDownloadIng(long downloadId, long current, long total) {
-            super.onDownloadIng(downloadId, current, total);
-            int position = downloadManager.getDownloadInfoList().getPosition(downloadId);
-            dataAdapter.notifyItemChanged(position);
+        public View getViewForTab(int position, View convertView, ViewGroup container) {
+            if (convertView == null) {
+                convertView = new TextView(MainActivity.this);
+            }
+            TextView textView = (TextView) convertView;
+            textView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+            textView.setGravity(Gravity.CENTER);
+            textView.setText(tabNames[position]);
+            return convertView;
         }
 
         @Override
-        public void onConnected(long downloadId, HttpInfo httpInfo, String saveDir, String saveFileName, String tempFileName, long current, long total) {
-            super.onConnected(downloadId, httpInfo, saveDir, saveFileName, tempFileName, current, total);
-            int position = downloadManager.getDownloadInfoList().getPosition(downloadId);
-            dataAdapter.notifyItemChanged(position);
+        public Fragment getFragmentForPage(int position) {
+            Bundle bundle = new Bundle();
+            switch (position) {
+                case 0:
+                    bundle.putInt(DownloadListFragment.EXTRA_INT_DOWNLOAD_STATUS, ~DownloadManager.STATUS_FINISHED);
+                    break;
+                case 1:
+                    bundle.putInt(DownloadListFragment.EXTRA_INT_DOWNLOAD_STATUS, DownloadManager.STATUS_FINISHED);
+                    break;
+            }
+            DownloadListFragment fragment = new DownloadListFragment();
+            fragment.setArguments(bundle);
+            return fragment;
         }
-
-        @Override
-        public void onError(long downloadId, int errorCode, String errorMessage) {
-            int position = downloadManager.getDownloadInfoList().getPosition(downloadId);
-            dataAdapter.notifyItemChanged(position);
-        }
-
-        @Override
-        public void onComplete(long downloadId) {
-            int position = downloadManager.getDownloadInfoList().getPosition(downloadId);
-            dataAdapter.notifyItemChanged(position);
-        }
-
-        @Override
-        public void onPaused(long downloadId) {
-            super.onPaused(downloadId);
-            int position = downloadManager.getDownloadInfoList().getPosition(downloadId);
-            dataAdapter.notifyItemChanged(position);
-        }
-
-        @Override
-        public void onDownloadResetBegin(long downloadId, int reason, long current, long total) {
-            super.onDownloadResetBegin(downloadId, reason, current, total);
-            int position = downloadManager.getDownloadInfoList().getPosition(downloadId);
-            dataAdapter.notifyItemChanged(position);
-        }
-
-        @Override
-        public void onRemove(long downloadId) {
-            super.onRemove(downloadId);
-            dataAdapter.notifyDataSetChanged();
-        }
-    };
+    }
 }

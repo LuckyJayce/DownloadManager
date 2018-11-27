@@ -72,14 +72,14 @@ public abstract class DownloadManager {
 
 
     //----------------------   status ------------------------------------------------------------//
-    public static final int STATUS_PENDING = 0;//在队列中，还没开始
-    public static final int STATUS_START = 1;//开始
-    public static final int STATUS_CONNECTED = 2;//连接上服务器
-    public static final int STATUS_DOWNLOAD_RESET_BEGIN = 3;//连接上服务器
-    public static final int STATUS_DOWNLOAD_ING = 4;
-    public static final int STATUS_PAUSED = 5;//连接上服务器
-    public static final int STATUS_FINISHED = 6;
-    public static final int STATUS_ERROR = 7;
+    public static final int STATUS_PENDING = 1;//在队列中，还没开始
+    public static final int STATUS_START = 1 << 1;//开始
+    public static final int STATUS_CONNECTED = 1 << 2;//连接上服务器
+    public static final int STATUS_DOWNLOAD_RESET_BEGIN = 1 << 3;//连接上服务器
+    public static final int STATUS_DOWNLOAD_ING = 1 << 4;
+    public static final int STATUS_PAUSED = 1 << 5;//连接上服务器
+    public static final int STATUS_FINISHED = 1 << 6;
+    public static final int STATUS_ERROR = 1 << 7;
     //----------------------   status ------------------------------------------------------------//
 
     // ----------------------------------- database ---------------------------------------------//
@@ -237,7 +237,9 @@ public abstract class DownloadManager {
 
     public abstract DownloadParams getDownloadParams(long downloadId);
 
-    public abstract DownloadInfoList getDownloadInfoList();
+    public abstract DownloadInfoList createDownloadInfoList();
+
+    public abstract DownloadInfoList createDownloadInfoList(final int downloadStatus);
 
     public abstract void registerDownloadListener(DownloadListener downloadListener);
 

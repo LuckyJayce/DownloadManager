@@ -28,6 +28,7 @@ dependencies {
     implementation project(':library')
     implementation 'com.google.code.gson:gson:2.8.5'
     implementation 'com.iheartradio.m3u8:open-m3u8:0.2.4'
+    implementation 'com.shizhefei:ViewPagerIndicator:1.1.7'
 
     //完整版引入
     implementation('com.shuyu:GSYVideoPlayer:6.0.1') {
