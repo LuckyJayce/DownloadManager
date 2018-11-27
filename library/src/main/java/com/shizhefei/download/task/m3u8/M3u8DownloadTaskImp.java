@@ -356,7 +356,7 @@ class M3u8DownloadTaskImp implements ITask<Void> {
             requestTotalTask.cancel();
         }
         if (downloadTask != null) {
-            downloadTask.onRemove();
+            downloadTask.remove();
         }
         if (!isRunning) {
             removeFiles();

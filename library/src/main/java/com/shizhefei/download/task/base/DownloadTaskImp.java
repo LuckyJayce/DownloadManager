@@ -265,7 +265,7 @@ public class DownloadTaskImp {
         cancel = true;
     }
 
-    public void onRemove() {
+    public void remove() {
         DownloadUtils.logD("DownloadTask remove %d", downloadId);
         remove = true;
         cancel = true;

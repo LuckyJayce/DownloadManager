@@ -116,7 +116,7 @@ class SingleThreadDownloadImp implements ITask<Void> {
 
     public void remove() {
         isRemove = true;
-        downloadTask.onRemove();
+        downloadTask.remove();
         if (!isRunning) {
             removeFiles();
         }

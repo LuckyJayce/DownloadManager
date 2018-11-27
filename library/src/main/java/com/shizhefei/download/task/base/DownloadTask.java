@@ -22,7 +22,7 @@ public class DownloadTask implements ITask<Void> {
     }
 
     public void onRemove() {
-        taskImp.onRemove();
+        taskImp.remove();
     }
 
     @Override
@@ -49,6 +49,6 @@ public class DownloadTask implements ITask<Void> {
 
     @Override
     public void cancel() {
-        taskImp.cancel();
+        taskImp.remove();
     }
 }
