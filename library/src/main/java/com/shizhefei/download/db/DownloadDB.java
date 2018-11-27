@@ -97,6 +97,7 @@ public class DownloadDB {
         long current = cursor.getLong(cursor.getColumnIndex(DownloadManager.FIELD_CURRENT));
         long total = cursor.getLong(cursor.getColumnIndex(DownloadManager.FIELD_TOTAL));
         long downloadId = cursor.getLong(cursor.getColumnIndex(DownloadManager.FIELD_KEY));
+        long estimateTotal = cursor.getLong(cursor.getColumnIndex(DownloadManager.FIELD_ESTIMATE_TOTAL));
 
         DownloadInfo.Agency agency = new DownloadInfo.Agency(new DownloadParams.Builder(downloadParams).build());
         agency.setId(downloadId);
@@ -112,9 +113,11 @@ public class DownloadDB {
         agency.getErrorInfoAgency().setByJson(errorInfo);
         agency.setExtInfo(extInfo);
         agency.setDownloadTaskName(downloadTaskName);
+        agency.setEstimateTotal(estimateTotal);
         return agency;
     }
 
+    //TODO 优化相同的downloadId，以最后一个为准，前面可以不执行
     public void update(DownloadInfo downloadInfo) {
         taskHelper.execute(new UpdateTask(dbHelper, downloadInfo), null);
     }
@@ -188,6 +191,7 @@ public class DownloadDB {
             contentValues.put(DownloadManager.FIELD_CURRENT, downloadInfo.getCurrent());
             contentValues.put(DownloadManager.FIELD_TOTAL, downloadInfo.getTotal());
             contentValues.put(DownloadManager.FIELD_DOWNLOAD_TASK_NAME, downloadInfo.getDownloadTaskName());
+            contentValues.put(DownloadManager.FIELD_ESTIMATE_TOTAL, downloadInfo.getEstimateTotal());
             int result = database.update(DownloadManager.TABLE_NAME, contentValues, DownloadManager.FIELD_KEY + " = ?", new String[]{String.valueOf(downloadInfo.getId())});
             if (result <= 0) {
                 DownloadUtils.logE("db update downloadId=%d result=%d", downloadInfo.getId(), result);
@@ -230,6 +234,7 @@ public class DownloadDB {
             contentValues.put(DownloadManager.FIELD_CURRENT, downloadInfo.getCurrent());
             contentValues.put(DownloadManager.FIELD_TOTAL, downloadInfo.getTotal());
             contentValues.put(DownloadManager.FIELD_DOWNLOAD_TASK_NAME, downloadInfo.getDownloadTaskName());
+            contentValues.put(DownloadManager.FIELD_ESTIMATE_TOTAL, downloadInfo.getEstimateTotal());
             long result = database.replace(DownloadManager.TABLE_NAME, null, contentValues);
             if (result <= 0) {
                 DownloadUtils.logE("db replace downloadId=%d result=%d", downloadInfo.getId(), result);

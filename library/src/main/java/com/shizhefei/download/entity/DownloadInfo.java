@@ -17,6 +17,8 @@ public class DownloadInfo implements Parcelable {
     @DownloadManager.Status
     private int status = DownloadManager.STATUS_PENDING;
     private long total;
+    //估算的总大小
+    private long estimateTotal;
     private long current;
     private final DownloadParams downloadParams;
     private final HttpInfo httpInfo;
@@ -47,6 +49,7 @@ public class DownloadInfo implements Parcelable {
         errorInfo = in.readParcelable(ErrorInfo.class.getClassLoader());
         extInfo = in.readString();
         downloadTaskName = in.readString();
+        estimateTotal = in.readLong();
     }
 
     public static final Creator<DownloadInfo> CREATOR = new Creator<DownloadInfo>() {
@@ -60,6 +63,14 @@ public class DownloadInfo implements Parcelable {
             return new DownloadInfo[size];
         }
     };
+
+    public long getEstimateTotal() {
+        return estimateTotal;
+    }
+
+    void setEstimateTotal(long estimateTotal) {
+        this.estimateTotal = estimateTotal;
+    }
 
     public DownloadParams getDownloadParams() {
         return downloadParams;
@@ -199,6 +210,7 @@ public class DownloadInfo implements Parcelable {
         dest.writeParcelable(errorInfo, flags);
         dest.writeString(extInfo);
         dest.writeString(downloadTaskName);
+        dest.writeLong(estimateTotal);
     }
 
     public static class Agency {
@@ -210,6 +222,14 @@ public class DownloadInfo implements Parcelable {
             httpInfoAgency = new HttpInfo.Agency();
             errorInfoAgency = new ErrorInfo.Agency();
             this.downloadInfo = new DownloadInfo(downloadParams, httpInfoAgency.getInfo(), errorInfoAgency.getInfo());
+        }
+
+        public long getEstimateTotal() {
+            return downloadInfo.getEstimateTotal();
+        }
+
+        public void setEstimateTotal(long estimateTotal) {
+            downloadInfo.setEstimateTotal(estimateTotal);
         }
 
         public DownloadInfo getInfo() {
@@ -232,7 +252,7 @@ public class DownloadInfo implements Parcelable {
             downloadInfo.setTempFileName(tempFileName);
         }
 
-        public void setDownloadTaskName(String downloadTaskName){
+        public void setDownloadTaskName(String downloadTaskName) {
             downloadInfo.setDownloadTaskName(downloadTaskName);
         }
 

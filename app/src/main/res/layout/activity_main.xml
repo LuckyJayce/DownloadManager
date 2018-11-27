@@ -39,7 +39,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="http://v.suhebar.com/v2/m_20181030_4690/1/5cc502d6a3d342f63268aeac882a4acc_720P.m3u8" />
+            android:text="https://video-dev.github.io/streams/x36xhzz/url_4/193039199_mp4_h264_aac_7.m3u8" />
 
         <Button
             android:id="@+id/button2"

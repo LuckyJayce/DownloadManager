@@ -98,6 +98,7 @@ public abstract class DownloadManager {
     public static final String FIELD_TOTAL = "total";
     public static final String FIELD_KEY = "id";
     public static final String FIELD_DOWNLOAD_TASK_NAME = "downloadTaskName";
+    public static final String FIELD_ESTIMATE_TOTAL = "estimateTotal";
     // ----------------------------------- database ---------------------------------------------//
 
     public static final int INVALID_POSITION = -1;

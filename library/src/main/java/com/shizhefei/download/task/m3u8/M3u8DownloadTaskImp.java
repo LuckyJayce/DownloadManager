@@ -1,6 +1,7 @@
 package com.shizhefei.download.task.m3u8;
 
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.iheartradio.m3u8.Encoding;
 import com.iheartradio.m3u8.Format;
@@ -9,6 +10,7 @@ import com.iheartradio.m3u8.PlaylistWriter;
 import com.iheartradio.m3u8.data.MediaPlaylist;
 import com.iheartradio.m3u8.data.Playlist;
 import com.iheartradio.m3u8.data.TrackData;
+import com.iheartradio.m3u8.data.TrackInfo;
 import com.shizhefei.download.db.DownloadDB;
 import com.shizhefei.download.entity.DownloadInfo;
 import com.shizhefei.download.entity.DownloadParams;
@@ -124,7 +126,7 @@ class M3u8DownloadTaskImp implements ITask<Void> {
         } else {
             fileName = downloadId + "_" + downloadInfoAgency.getStartTime() + ".m3u8";
         }
-        File m3u8File = new File(dir, fileName);
+        final File m3u8File = new File(dir, fileName);
         DownloadUtils.logD("M3u8DownloadTaskImp  downloadId=%d fileName=%s m3u8File=%s m3u8Info=%s", downloadId, fileName, m3u8File, m3u8Info);
         Playlist playlist = null;
         if (m3u8Info != null) {
@@ -222,19 +224,20 @@ class M3u8DownloadTaskImp implements ITask<Void> {
             if (playlist.hasMediaPlaylist()) {
                 //循环下载ts文件
                 MediaPlaylist mediaPlaylist = playlist.getMediaPlaylist();
-                List<TrackData> tracks = mediaPlaylist.getTracks();
+                final List<TrackData> tracks = mediaPlaylist.getTracks();
 
-                if (downloadInfoAgency.getTotal() <= 0) {
-                    requestTotalTask = M38uSizeUtils.totalSize(downloadId, downloadInfo.getUrl(), tracks, downloadParams);
-                    Long totalSize = requestTotalTask.execute(null);
-                    if (totalSize > 0) {
-                        //加上m3u8文件大小
-                        totalSize += downloadInfoAgency.getCurrent();
-                        downloadInfoAgency.setTotal(totalSize);
-                        downloadDB.update(downloadInfoAgency.getInfo());
-                        progressSenderProxy.sendDownloading(downloadInfoAgency.getCurrent(), totalSize);
-                    }
-                }
+//                 通过head method的方式主逐一请求获取ts大小，但是时间太长不可取
+//                if (downloadInfoAgency.getTotal() <= 0) {
+//                    requestTotalTask = M38uSizeUtils.totalSize(downloadId, downloadInfo.getUrl(), tracks, downloadParams);
+//                    Long totalSize = requestTotalTask.execute(null);
+//                    if (totalSize > 0) {
+//                        //加上m3u8文件大小
+//                        totalSize += downloadInfoAgency.getCurrent();
+//                        downloadInfoAgency.setTotal(totalSize);
+//                        downloadDB.update(downloadInfoAgency.getInfo());
+//                        progressSenderProxy.sendDownloading(downloadInfoAgency.getCurrent(), totalSize);
+//                    }
+//                }
 
                 M3u8ExtInfo.ItemInfo currentItemInfo = m3U8ExtInfo.getCurrentItemInfo();
                 int startIndex = 0;
@@ -242,9 +245,11 @@ class M3u8DownloadTaskImp implements ITask<Void> {
                     startIndex = currentItemInfo.getIndex();
                 }
                 DownloadUtils.logD("M3u8DownloadTaskImp downloadId=%d currentItemInfo=%s", downloadId, currentItemInfo);
-                for (int i = startIndex; i < tracks.size() && !isCancel; i++) {
+                final int tracksSize = tracks.size();
+                for (int i = startIndex; i < tracksSize && !isCancel; i++) {
+                    final TrackData trackData = tracks.get(i);
                     if (currentItemInfo == null || currentItemInfo.getCurrent() == 0) {
-                        currentItemInfo = buildItemInfo(i, tracks.get(i));
+                        currentItemInfo = buildItemInfo(i, trackData);
                         m3U8ExtInfo.setCurrentItemInfo(currentItemInfo);
                         downloadInfoAgency.setExtInfo(m3U8ExtInfo.getJson());
                         downloadDB.update(downloadInfoAgency.getInfo());
@@ -255,6 +260,7 @@ class M3u8DownloadTaskImp implements ITask<Void> {
                     final long startItemCurrent = currentItemInfo.getCurrent();
                     final long startItemOffset = startTotalCurrent - startItemCurrent;
                     final M3u8ExtInfo.ItemInfo finalCurrentItemInfo = currentItemInfo;
+                    final int index = i;
                     DownloadUtils.logD("M3u8DownloadTaskImp onDownloadItem star startTotalCurrent=%d startItemCurrent=%d startItemOffset=%d index=%d  ------------", startTotalCurrent, startItemCurrent, startItemOffset, i);
                     downloadTask.execute(new DownloadProgressListener() {
                         @Override
@@ -275,6 +281,35 @@ class M3u8DownloadTaskImp implements ITask<Void> {
                             finalCurrentItemInfo.setTempFileName(tempFileName);
                             finalCurrentItemInfo.setAcceptRange(httpInfo.isAcceptRange());
                             finalCurrentItemInfo.setEtag(httpInfo.getETag());
+
+                            //根据已经知道大小的ts文件大小和时长估算文件总大小
+                            if (downloadInfoAgency.getTotal() <= 0) {
+                                TrackInfo trackInfo = trackData.getTrackInfo();
+                                if (trackInfo.duration != 0) {
+                                    if (index == tracks.size() - 1) {//已经下载最后一个ts，所以不需要估算已经是精确值
+                                        long estimateTotal = startItemOffset + total;
+                                        downloadInfoAgency.setTotal(estimateTotal);
+                                        downloadInfoAgency.setEstimateTotal(estimateTotal);
+                                    } else {
+                                        //TODO 可以考虑加上每个item的平均值采样，优化更准确
+                                        int totalD = 0;
+                                        int currentTotalD = 0;
+                                        for (int i = 0; i < tracksSize; i++) {
+                                            totalD += tracks.get(i).getTrackInfo().duration;
+                                        }
+                                        for (int i = 0; i <= index; i++) {
+                                            currentTotalD += tracks.get(i).getTrackInfo().duration;
+                                        }
+                                        long endItemOffset = startItemOffset + total;
+                                        long estimateTotal = (long) (1.0 * totalD / currentTotalD * endItemOffset + m3u8File.length());
+                                        if (downloadInfoAgency.getEstimateTotal() == 0 || Math.abs(downloadInfoAgency.getEstimateTotal() - estimateTotal) > 5 * 1024 * 1024) {//如果估算范围在5M以内就不更新估算的值
+                                            downloadInfoAgency.setEstimateTotal(estimateTotal);
+                                        }
+                                        DownloadUtils.logD("testTotal=%d totalD=%d currentTotalD=%d endItemOffset=%d", estimateTotal, totalD, currentTotalD, endItemOffset);
+                                    }
+                                }
+                            }
+
                             downloadInfoAgency.setExtInfo(m3U8ExtInfo.getJson());
                             httpInfoAgency.setAcceptRange(true);
                             downloadDB.update(downloadInfoAgency.getInfo());

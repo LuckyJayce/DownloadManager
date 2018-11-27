@@ -77,15 +77,26 @@ public class DataAdapter extends RecyclerView.Adapter {
             name.append("downloadId:").append(downloadInfo.getId()).append("  status:").append(DownloadManager.getStatusText(downloadInfo.getStatus())).append("\n");
             name.append("file:").append(tempPath).append(" / ").append(downloadInfo.getFileName()).append("\n").append(downloadInfo.getUrl());
             fileNameTextView.setText(name);
+
+            StringBuilder info = new StringBuilder();
+            String totalText;
+            long total ;
+            if (downloadInfo.getTotal() != 0) {
+                total = downloadInfo.getTotal();
+                totalText = Formatter.formatFileSize(context, downloadInfo.getTotal());
+            } else {
+                total = downloadInfo.getEstimateTotal();
+                totalText = "估算大小" + Formatter.formatFileSize(context, downloadInfo.getEstimateTotal());
+            }
             int p;
-            if (downloadInfo.getTotal() <= 0) {
+            if (total <= 0) {
                 p = 0;
             } else {
-                p = (int) (1.0 * downloadInfo.getCurrent() / downloadInfo.getTotal() * 100);
+                p = (int) (1.0 * downloadInfo.getCurrent() / total * 100);
             }
             progressBar.setProgress(p);
-            StringBuilder info = new StringBuilder();
-            info.append(Formatter.formatFileSize(context, downloadInfo.getCurrent())).append("/").append(Formatter.formatFileSize(context, downloadInfo.getTotal()));
+
+            info.append(Formatter.formatFileSize(context, downloadInfo.getCurrent())).append("/").append(totalText);
             info.append("  ").append(p).append("%");
             if (downloadInfo.getStatus() == DownloadManager.STATUS_ERROR) {
                 info.append("\nerror:").append(downloadInfo.getErrorInfo().toJson());
