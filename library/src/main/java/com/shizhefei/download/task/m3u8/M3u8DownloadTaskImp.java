@@ -45,6 +45,7 @@ class M3u8DownloadTaskImp implements ITask<Void> {
     private volatile boolean isRemove;
     private volatile boolean isCancel;
     private volatile boolean isRunning;
+    private ITask<Long> requestTotalTask;
 
     public M3u8DownloadTaskImp(long downloadId, DownloadParams downloadParams, DownloadDB downloadDB, boolean isOnlyRemove) {
         this.downloadId = downloadId;
@@ -218,20 +219,30 @@ class M3u8DownloadTaskImp implements ITask<Void> {
                     throw new DownloadException(downloadId, DownloadManager.ERROR_M3U8_FILE_PARSE_FAIL, "m38u file parse fail", e);
                 }
             }
-            if (!playlist.hasMediaPlaylist()) {
-
-            }
             if (playlist.hasMediaPlaylist()) {
                 //循环下载ts文件
                 MediaPlaylist mediaPlaylist = playlist.getMediaPlaylist();
                 List<TrackData> tracks = mediaPlaylist.getTracks();
+
+                if (downloadInfoAgency.getTotal() <= 0) {
+                    requestTotalTask = M38uSizeUtils.totalSize(downloadId, downloadInfo.getUrl(), tracks, downloadParams);
+                    Long totalSize = requestTotalTask.execute(null);
+                    if (totalSize > 0) {
+                        //加上m3u8文件大小
+                        totalSize += downloadInfoAgency.getCurrent();
+                        downloadInfoAgency.setTotal(totalSize);
+                        downloadDB.update(downloadInfoAgency.getInfo());
+                        progressSenderProxy.sendDownloading(downloadInfoAgency.getCurrent(), totalSize);
+                    }
+                }
+
                 M3u8ExtInfo.ItemInfo currentItemInfo = m3U8ExtInfo.getCurrentItemInfo();
                 int startIndex = 0;
                 if (currentItemInfo != null) {
                     startIndex = currentItemInfo.getIndex();
                 }
                 DownloadUtils.logD("M3u8DownloadTaskImp downloadId=%d currentItemInfo=%s", downloadId, currentItemInfo);
-                for (int i = startIndex; i < 20 && !isCancel; i++) {
+                for (int i = startIndex; i < tracks.size() && !isCancel; i++) {
                     if (currentItemInfo == null || currentItemInfo.getCurrent() == 0) {
                         currentItemInfo = buildItemInfo(i, tracks.get(i));
                         m3U8ExtInfo.setCurrentItemInfo(currentItemInfo);
@@ -307,6 +318,9 @@ class M3u8DownloadTaskImp implements ITask<Void> {
     public void remove() {
         isRemove = true;
         isCancel = true;
+        if (requestTotalTask != null) {
+            requestTotalTask.cancel();
+        }
         if (downloadTask != null) {
             downloadTask.onRemove();
         }
@@ -329,6 +343,9 @@ class M3u8DownloadTaskImp implements ITask<Void> {
     @Override
     public void cancel() {
         isCancel = true;
+        if (requestTotalTask != null) {
+            requestTotalTask.cancel();
+        }
         downloadInfoAgency.setStatus(DownloadManager.STATUS_PAUSED);
         downloadDB.update(downloadInfoAgency.getInfo());
         if (downloadTask != null) {
@@ -336,12 +353,11 @@ class M3u8DownloadTaskImp implements ITask<Void> {
         }
     }
 
-    private String getTsUrl(String tsUri) {
+    static String getTsUrl(String m38uUrl, String tsUri) {
         if (tsUri.startsWith("http://") || tsUri.startsWith("https://"))
             return tsUri;
-        String url = downloadInfo.getUrl();
-        int index = url.lastIndexOf("/");
-        String urlPre = url.substring(0, index + 1);
+        int index = m38uUrl.lastIndexOf("/");
+        String urlPre = m38uUrl.substring(0, index + 1);
         return urlPre + tsUri;
     }
 
@@ -364,7 +380,7 @@ class M3u8DownloadTaskImp implements ITask<Void> {
     }
 
     private M3u8ExtInfo.ItemInfo buildItemInfo(int index, TrackData trackData) {
-        String url = getTsUrl(trackData.getUri());
+        String url = getTsUrl(downloadInfo.getUrl(), trackData.getUri());
         M3u8ExtInfo.ItemInfo currentItemInfo = new M3u8ExtInfo.ItemInfo();
         currentItemInfo.setCurrent(0);
         currentItemInfo.setTotal(0);

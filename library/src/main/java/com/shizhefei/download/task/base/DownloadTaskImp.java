@@ -11,6 +11,7 @@ import com.shizhefei.download.exception.RemoveException;
 import com.shizhefei.download.manager.DownloadManager;
 import com.shizhefei.download.utils.DownloadUtils;
 import com.shizhefei.download.utils.FileNameUtils;
+import com.shizhefei.download.utils.UrlBuilder;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -110,7 +111,19 @@ public class DownloadTaskImp {
             //添加header
             Map<String, List<String>> headers = downloadParams.getHeaders();
             DownloadUtils.logD("downloadId：%d request header %s", downloadId, headers);
-            httpURLConnection = (HttpURLConnection) new URL(url).openConnection();
+            Map<String, List<String>> params = downloadParams.getParams();
+            String finalUrl;
+            if (params != null) {
+                UrlBuilder urlBuilder = new UrlBuilder(url);
+                for (Map.Entry<String, List<String>> stringListEntry : params.entrySet()) {
+                    urlBuilder.param(stringListEntry.getKey(), stringListEntry.getValue());
+                }
+                finalUrl = urlBuilder.build();
+            } else {
+                finalUrl = url;
+            }
+
+            httpURLConnection = (HttpURLConnection) new URL(finalUrl).openConnection();
             if (headers != null) {
                 for (Map.Entry<String, List<String>> header : headers.entrySet()) {
                     for (String value : header.getValue()) {
