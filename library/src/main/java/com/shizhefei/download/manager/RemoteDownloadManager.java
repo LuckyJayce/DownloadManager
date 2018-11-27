@@ -326,11 +326,11 @@ public class RemoteDownloadManager extends DownloadManager {
                 @Override
                 public void run() {
                     for (DownloadListener downloadListener : downloadListeners) {
-                        downloadListener.onDownloadResetBegin(downloadId, reason, current, total);
+                        downloadListener.onDownloadResetSchedule(downloadId, reason, current, total);
                     }
                     DownloadListener downloadListener = listeners.get(downloadId);
                     if (downloadListener != null) {
-                        downloadListener.onDownloadResetBegin(downloadId, reason, current, total);
+                        downloadListener.onDownloadResetSchedule(downloadId, reason, current, total);
                     }
                 }
             });

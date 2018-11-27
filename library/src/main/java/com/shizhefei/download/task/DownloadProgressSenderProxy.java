@@ -14,7 +14,7 @@ public class DownloadProgressSenderProxy {
     public static final String PARAM_SAVEDIR = "saveDir";
     public static final String PARAM_SAVEFILENAME = "saveFileName";
     public static final String PARAM_TEMPFILENAME = "tempFileName";
-    public static final String PARAM_DOWNLOADFROMBEGINREASON = "downloadFrombeginReason";
+    public static final String PARAM_DOWNLOADFR_RESET_SCHEDULE = "downloadFrombeginReason";
     public static final String PROGRESS_STATUS = "status";
     private static Pools.SynchronizedPool<Bundle> bundleSynchronizedPool = new Pools.SynchronizedPool<>(10);
 
@@ -34,10 +34,10 @@ public class DownloadProgressSenderProxy {
         progressSender.sendProgress(current, total, bundle);
     }
 
-    public void sendDownloadFromBegin(long current, long total, int downloadFromBeginReason) {
+    public void sendDownloadResetSchedule(long current, long total, int downloadFromBeginReason) {
         Bundle bundle = new Bundle();
-        bundle.putInt(PROGRESS_STATUS, DownloadManager.STATUS_DOWNLOAD_RESET_BEGIN);
-        bundle.putInt(PARAM_DOWNLOADFROMBEGINREASON, downloadFromBeginReason);
+        bundle.putInt(PROGRESS_STATUS, DownloadManager.STATUS_DOWNLOAD_RESET_SCHEDULE);
+        bundle.putInt(PARAM_DOWNLOADFR_RESET_SCHEDULE, downloadFromBeginReason);
         progressSender.sendProgress(current, total, bundle);
     }
 

@@ -186,7 +186,7 @@ public class DownloadService extends Service {
         }
 
         @Override
-        public void onDownloadResetBegin(long downloadId, int reason, long current, long total) {
+        public void onDownloadResetSchedule(long downloadId, int reason, long current, long total) {
             final int n = callbackList.beginBroadcast();
             try {
                 for (int i = 0; i < n; i++) {

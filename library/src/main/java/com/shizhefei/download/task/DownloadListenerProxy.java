@@ -45,10 +45,10 @@ public class DownloadListenerProxy implements ICallback<Void> {
             case DownloadManager.STATUS_START:
                 downloadListener.onStart(downloadId, current, total);
                 break;
-            case DownloadManager.STATUS_DOWNLOAD_RESET_BEGIN:
+            case DownloadManager.STATUS_DOWNLOAD_RESET_SCHEDULE:
                 if (bundle != null) {
-                    int reason = bundle.getInt(DownloadProgressSenderProxy.PARAM_DOWNLOADFROMBEGINREASON);
-                    downloadListener.onDownloadResetBegin(downloadId, reason, current, total);
+                    int reason = bundle.getInt(DownloadProgressSenderProxy.PARAM_DOWNLOADFR_RESET_SCHEDULE);
+                    downloadListener.onDownloadResetSchedule(downloadId, reason, current, total);
                 }
                 break;
             case DownloadManager.STATUS_CONNECTED:

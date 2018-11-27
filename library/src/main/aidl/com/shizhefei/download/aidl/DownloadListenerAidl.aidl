@@ -7,7 +7,7 @@ interface DownloadListenerAidl {
 
      void onStart(long downloadId, long current, long total);
 
-     void onDownloadResetBegin(long downloadId, int reason, long current, long total);
+     void onDownloadResetSchedule(long downloadId, int reason, long current, long total);
    
      void onDownloadIng(long downloadId, long current, long total);
    

@@ -31,8 +31,8 @@ public class DownloadTask implements ITask<Void> {
         downloadProgressSenderProxy.sendStart(current, total);
         return taskImp.execute(new DownloadProgressListener() {
             @Override
-            public void onDownloadResetBegin(long downloadId, int reason, long current, long total) {
-                downloadProgressSenderProxy.sendDownloadFromBegin(current, total, reason);
+            public void onDownloadResetSchedule(long downloadId, int reason, long current, long total) {
+                downloadProgressSenderProxy.sendDownloadResetSchedule(current, total, reason);
             }
 
             @Override

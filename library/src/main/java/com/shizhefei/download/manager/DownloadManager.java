@@ -25,9 +25,10 @@ import java.util.List;
  */
 public abstract class DownloadManager {
     public static final String LIB_NAME = "DownloadManager";
-    public static final int DOWNLOAD_FROM_BEGIN_REASON_FILE_REMOVE = 0;//文件被移除
-    public static final int DOWNLOAD_FROM_BEGIN_UNSUPPORT_RANGE = 1;//url的服务器不接受range要重新下载
-    public static final int DOWNLOAD_FROM_BEGIN_ETAG_CHANGE = 2;//etag改变，表示内容变化
+    //下载进度被重置原因
+    public static final int DOWNLOAD_RESET_SCHEDULE_REASON_FILE_REMOVE = 0;//文件被移除
+    public static final int DOWNLOAD_RESET_SCHEDULE_REASON_UNSUPPORT_RANGE = 1;//url的服务器不接受range要重新下载
+    public static final int DOWNLOAD_RESET_SCHEDULE_REASON_ETAG_CHANGE = 2;//etag改变，表示内容变化
 
     //---------------------     error code  -------------------------------------------------------------//
     /**
@@ -74,12 +75,12 @@ public abstract class DownloadManager {
     //----------------------   status ------------------------------------------------------------//
     public static final int STATUS_PENDING = 1;//在队列中，还没开始
     public static final int STATUS_START = 1 << 1;//开始
-    public static final int STATUS_CONNECTED = 1 << 2;//连接上服务器
-    public static final int STATUS_DOWNLOAD_RESET_BEGIN = 1 << 3;//连接上服务器
-    public static final int STATUS_DOWNLOAD_ING = 1 << 4;
-    public static final int STATUS_PAUSED = 1 << 5;//连接上服务器
-    public static final int STATUS_FINISHED = 1 << 6;
-    public static final int STATUS_ERROR = 1 << 7;
+    public static final int STATUS_CONNECTED = 1 << 2;//连接上服务器，可能会出现多次
+    public static final int STATUS_DOWNLOAD_RESET_SCHEDULE = 1 << 3;//下载进度被重置， 可能会出现多次
+    public static final int STATUS_DOWNLOAD_ING = 1 << 4;//下载中 更新进度
+    public static final int STATUS_PAUSED = 1 << 5;//执行了停止，可以start继续下载
+    public static final int STATUS_FINISHED = 1 << 6;//下载完成
+    public static final int STATUS_ERROR = 1 << 7;//下载失败出现异常
     //----------------------   status ------------------------------------------------------------//
 
     // ----------------------------------- database ---------------------------------------------//
@@ -110,7 +111,7 @@ public abstract class DownloadManager {
     private static boolean isInit;
 
     // 自定义一个注解MyState
-    @IntDef({STATUS_PENDING, STATUS_START, STATUS_CONNECTED, STATUS_DOWNLOAD_RESET_BEGIN, STATUS_DOWNLOAD_ING, STATUS_PAUSED, STATUS_FINISHED, STATUS_ERROR})
+    @IntDef({STATUS_PENDING, STATUS_START, STATUS_CONNECTED, STATUS_DOWNLOAD_RESET_SCHEDULE, STATUS_DOWNLOAD_ING, STATUS_PAUSED, STATUS_FINISHED, STATUS_ERROR})
     public @interface Status {
     }
 
@@ -254,8 +255,8 @@ public abstract class DownloadManager {
                 return "STATUS_START";
             case STATUS_CONNECTED:
                 return "STATUS_CONNECTED";
-            case STATUS_DOWNLOAD_RESET_BEGIN:
-                return "STATUS_DOWNLOAD_RESET_BEGIN";
+            case STATUS_DOWNLOAD_RESET_SCHEDULE:
+                return "STATUS_DOWNLOAD_RESET_SCHEDULE";
             case STATUS_DOWNLOAD_ING:
                 return "STATUS_DOWNLOAD_ING";
             case STATUS_PAUSED:

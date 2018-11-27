@@ -111,8 +111,8 @@ public class DownloadListFragment extends LazyFragment {
         }
 
         @Override
-        public void onDownloadResetBegin(long downloadId, int reason, long current, long total) {
-            super.onDownloadResetBegin(downloadId, reason, current, total);
+        public void onDownloadResetSchedule(long downloadId, int reason, long current, long total) {
+            super.onDownloadResetSchedule(downloadId, reason, current, total);
             int position = downloadInfoList.getPosition(downloadId);
             if (position >= 0) {
                 dataAdapter.notifyItemChanged(position);

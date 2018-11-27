@@ -1,7 +1,6 @@
 package com.shizhefei.download.task.m3u8;
 
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.iheartradio.m3u8.Encoding;
 import com.iheartradio.m3u8.Format;
@@ -178,11 +177,11 @@ class M3u8DownloadTaskImp implements ITask<Void> {
                 downloadDB.update(downloadInfoAgency.getInfo());
                 downloadTask.execute(new DownloadProgressListener() {
                     @Override
-                    public void onDownloadResetBegin(long downloadId, int reason, long current, long total) {
+                    public void onDownloadResetSchedule(long downloadId, int reason, long current, long total) {
                         downloadInfoAgency.setCurrent(current);
                         downloadInfoAgency.setExtInfo(m3U8ExtInfo.getJson());
                         downloadDB.update(downloadInfoAgency.getInfo());
-                        progressSenderProxy.sendDownloadFromBegin(current, total, reason);
+                        progressSenderProxy.sendDownloadResetSchedule(current, total, reason);
                     }
 
                     @Override
@@ -264,14 +263,14 @@ class M3u8DownloadTaskImp implements ITask<Void> {
                     DownloadUtils.logD("M3u8DownloadTaskImp onDownloadItem star startTotalCurrent=%d startItemCurrent=%d startItemOffset=%d index=%d  ------------", startTotalCurrent, startItemCurrent, startItemOffset, i);
                     downloadTask.execute(new DownloadProgressListener() {
                         @Override
-                        public void onDownloadResetBegin(long downloadId, int reason, long current, long total) {
-                            DownloadUtils.logD("M3u8DownloadTaskImp onDownloadItem onDownloadResetBegin-- startItemOffset=%d current=%d resultCurrent=%d", startItemOffset, current, (startItemOffset + current));
+                        public void onDownloadResetSchedule(long downloadId, int reason, long current, long total) {
+                            DownloadUtils.logD("M3u8DownloadTaskImp onDownloadItem onDownloadResetSchedule-- startItemOffset=%d current=%d resultCurrent=%d", startItemOffset, current, (startItemOffset + current));
                             downloadInfoAgency.setCurrent(startItemOffset);
                             finalCurrentItemInfo.setCurrent(current);
                             finalCurrentItemInfo.setTotal(total);
                             downloadInfoAgency.setExtInfo(m3U8ExtInfo.getJson());
                             downloadDB.update(downloadInfoAgency.getInfo());
-                            progressSenderProxy.sendDownloadFromBegin(downloadInfoAgency.getCurrent(), downloadInfoAgency.getTotal(), reason);
+                            progressSenderProxy.sendDownloadResetSchedule(downloadInfoAgency.getCurrent(), downloadInfoAgency.getTotal(), reason);
                         }
 
                         @Override

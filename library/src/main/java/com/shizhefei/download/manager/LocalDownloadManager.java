@@ -1,11 +1,9 @@
 package com.shizhefei.download.manager;
 
 import android.content.Context;
-import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Process;
 import android.support.annotation.NonNull;
-import android.text.TextUtils;
 import android.util.LongSparseArray;
 
 import com.shizhefei.download.base.AbsDownloadTask;
@@ -25,7 +23,6 @@ import com.shizhefei.mvc.RequestHandle;
 import com.shizhefei.task.TaskHandle;
 import com.shizhefei.task.TaskHelper;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -61,7 +58,7 @@ public class LocalDownloadManager extends DownloadManager {
                 case DownloadManager.STATUS_DOWNLOAD_ING:
                 case DownloadManager.STATUS_PENDING:
                 case DownloadManager.STATUS_START:
-                case DownloadManager.STATUS_DOWNLOAD_RESET_BEGIN:
+                case DownloadManager.STATUS_DOWNLOAD_RESET_SCHEDULE:
                     info.setStatus(DownloadManager.STATUS_PAUSED);
                     break;
             }
@@ -337,13 +334,13 @@ public class LocalDownloadManager extends DownloadManager {
         }
 
         @Override
-        public void onDownloadResetBegin(long downloadId, int reason, long current, long total) {
+        public void onDownloadResetSchedule(long downloadId, int reason, long current, long total) {
             for (DownloadListener downloadListener : downloadListeners) {
-                downloadListener.onDownloadResetBegin(downloadId, reason, current, total);
+                downloadListener.onDownloadResetSchedule(downloadId, reason, current, total);
             }
             DownloadListener downloadListener = listeners.get(downloadId);
             if (downloadListener != null) {
-                downloadListener.onDownloadResetBegin(downloadId, reason, current, total);
+                downloadListener.onDownloadResetSchedule(downloadId, reason, current, total);
             }
         }
 

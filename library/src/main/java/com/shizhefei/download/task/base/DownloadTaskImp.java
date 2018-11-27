@@ -7,7 +7,6 @@ import android.text.TextUtils;
 import com.shizhefei.download.entity.DownloadParams;
 import com.shizhefei.download.entity.HttpInfo;
 import com.shizhefei.download.exception.DownloadException;
-import com.shizhefei.download.exception.RemoveException;
 import com.shizhefei.download.manager.DownloadManager;
 import com.shizhefei.download.utils.DownloadUtils;
 import com.shizhefei.download.utils.FileNameUtils;
@@ -135,7 +134,7 @@ public class DownloadTaskImp {
             if (!TextUtils.isEmpty(tempFileName)) {
                 File temp = new File(saveDir, tempFileName);
                 if (current > 0 && !temp.exists()) {
-                    downloadListener.onDownloadResetBegin(downloadId, DownloadManager.DOWNLOAD_FROM_BEGIN_REASON_FILE_REMOVE, current, total);
+                    downloadListener.onDownloadResetSchedule(downloadId, DownloadManager.DOWNLOAD_RESET_SCHEDULE_REASON_FILE_REMOVE, current, total);
                     current = 0;
                 }
             }
@@ -144,7 +143,7 @@ public class DownloadTaskImp {
                 if (isAcceptRange) {
                     DownloadUtils.addRangeHeader(httpURLConnection, current, DownloadUtils.RANGE_INFINITE);
                 } else {
-                    downloadListener.onDownloadResetBegin(downloadId, DownloadManager.DOWNLOAD_FROM_BEGIN_UNSUPPORT_RANGE, current, total);
+                    downloadListener.onDownloadResetSchedule(downloadId, DownloadManager.DOWNLOAD_RESET_SCHEDULE_REASON_UNSUPPORT_RANGE, current, total);
                     current = 0;
                 }
             }
@@ -156,7 +155,7 @@ public class DownloadTaskImp {
             String newETag = DownloadUtils.findEtag(downloadId, httpURLConnection);
             if (current > 0) {
                 if (oldETag != null && !oldETag.equals(newETag)) {
-                    downloadListener.onDownloadResetBegin(downloadId, DownloadManager.DOWNLOAD_FROM_BEGIN_ETAG_CHANGE, current, total);
+                    downloadListener.onDownloadResetSchedule(downloadId, DownloadManager.DOWNLOAD_RESET_SCHEDULE_REASON_ETAG_CHANGE, current, total);
                     current = 0;
                 }
             }

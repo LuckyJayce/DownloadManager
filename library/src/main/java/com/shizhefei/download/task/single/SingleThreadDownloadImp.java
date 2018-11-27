@@ -56,11 +56,11 @@ class SingleThreadDownloadImp implements ITask<Void> {
             progressSenderProxy.sendStart(downloadInfo.getCurrent(), downloadInfo.getTotal());
             downloadTask.execute(new DownloadProgressListener() {
                 @Override
-                public void onDownloadResetBegin(long downloadId, int reason, long current, long total) {
-                    downloadInfoAgency.setStatus(DownloadManager.STATUS_DOWNLOAD_RESET_BEGIN);
+                public void onDownloadResetSchedule(long downloadId, int reason, long current, long total) {
+                    downloadInfoAgency.setStatus(DownloadManager.STATUS_DOWNLOAD_RESET_SCHEDULE);
                     downloadInfoAgency.setCurrent(0);
                     downloadDB.update(downloadInfoAgency.getInfo());
-                    progressSenderProxy.sendDownloadFromBegin(current, total, reason);
+                    progressSenderProxy.sendDownloadResetSchedule(current, total, reason);
                 }
 
                 @Override
