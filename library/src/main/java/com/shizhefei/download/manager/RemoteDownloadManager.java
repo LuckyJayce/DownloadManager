@@ -321,7 +321,7 @@ public class RemoteDownloadManager extends DownloadManager {
         }
 
         @Override
-        public void onDownloadResetBegin(final long downloadId, final int reason, final long current, final long total) {
+        public void onDownloadResetSchedule(final long downloadId, final int reason, final long current, final long total) {
             handler.post(new Runnable() {
                 @Override
                 public void run() {

@@ -190,7 +190,7 @@ public class DownloadService extends Service {
             final int n = callbackList.beginBroadcast();
             try {
                 for (int i = 0; i < n; i++) {
-                    callbackList.getBroadcastItem(i).onDownloadResetBegin(downloadId, reason, current, total);
+                    callbackList.getBroadcastItem(i).onDownloadResetSchedule(downloadId, reason, current, total);
                 }
             } catch (RemoteException e) {
                 e.printStackTrace();
