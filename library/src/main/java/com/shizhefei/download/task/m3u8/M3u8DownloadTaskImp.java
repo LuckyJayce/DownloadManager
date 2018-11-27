@@ -301,7 +301,7 @@ class M3u8DownloadTaskImp implements ITask<Void> {
                                         }
                                         long endItemOffset = startItemOffset + total;
                                         long estimateTotal = (long) (1.0 * totalD / currentTotalD * endItemOffset + m3u8File.length());
-                                        if (downloadInfoAgency.getEstimateTotal() == 0 || Math.abs(downloadInfoAgency.getEstimateTotal() - estimateTotal) > 5 * 1024 * 1024) {//如果估算范围在5M以内就不更新估算的值
+                                        if (downloadInfoAgency.getEstimateTotal() == 0 || downloadInfo.getCurrent() >= estimateTotal || Math.abs(downloadInfoAgency.getEstimateTotal() - estimateTotal) > 5 * 1024 * 1024) {//如果估算范围在5M以内就不更新估算的值
                                             downloadInfoAgency.setEstimateTotal(estimateTotal);
                                         }
                                         DownloadUtils.logD("testTotal=%d totalD=%d currentTotalD=%d endItemOffset=%d", estimateTotal, totalD, currentTotalD, endItemOffset);
