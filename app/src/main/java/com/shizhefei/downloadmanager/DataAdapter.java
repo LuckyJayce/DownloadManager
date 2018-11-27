@@ -80,13 +80,16 @@ public class DataAdapter extends RecyclerView.Adapter {
 
             StringBuilder info = new StringBuilder();
             String totalText;
-            long total ;
+            long total;
             if (downloadInfo.getTotal() != 0) {
                 total = downloadInfo.getTotal();
                 totalText = Formatter.formatFileSize(context, downloadInfo.getTotal());
+            } else if (downloadInfo.getEstimateTotal() != 0) {
+                total = downloadInfo.getEstimateTotal();
+                totalText = "预计大小" + Formatter.formatFileSize(context, downloadInfo.getEstimateTotal());
             } else {
                 total = downloadInfo.getEstimateTotal();
-                totalText = "估算大小" + Formatter.formatFileSize(context, downloadInfo.getEstimateTotal());
+                totalText = "正在估算大小";
             }
             int p;
             if (total <= 0) {
