@@ -254,8 +254,10 @@ public class DownloadUtils {
             throw exception;
         }
     }
+
     /**
      * Lists files in a directory, asserting that the supplied directory satisfies exists and is a directory
+     *
      * @param directory The directory to list
      * @return The files in the directory, never null.
      * @throws IOException if an I/O error occurs
@@ -280,6 +282,7 @@ public class DownloadUtils {
 
 
     //-----------------------------------------------------------------------
+
     /**
      * Deletes a file. If file is a directory, delete it and all sub-directories.
      * <p>

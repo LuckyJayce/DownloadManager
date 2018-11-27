@@ -213,6 +213,27 @@ public class DownloadInfo implements Parcelable {
         dest.writeLong(estimateTotal);
     }
 
+    @Override
+    public String toString() {
+        return "DownloadInfo{" +
+                "id=" + id +
+                ", url='" + url + '\'' +
+                ", dir='" + dir + '\'' +
+                ", filename='" + filename + '\'' +
+                ", tempFileName='" + tempFileName + '\'' +
+                ", startTime=" + startTime +
+                ", status=" + status +
+                ", total=" + total +
+                ", estimateTotal=" + estimateTotal +
+                ", current=" + current +
+                ", downloadParams=" + downloadParams +
+                ", httpInfo=" + httpInfo +
+                ", errorInfo=" + errorInfo +
+                ", extInfo='" + extInfo + '\'' +
+                ", downloadTaskName='" + downloadTaskName + '\'' +
+                '}';
+    }
+
     public static class Agency {
         private final HttpInfo.Agency httpInfoAgency;
         private final ErrorInfo.Agency errorInfoAgency;
@@ -342,7 +363,12 @@ public class DownloadInfo implements Parcelable {
             return downloadInfo.getErrorInfo();
         }
 
-//        public List<DownloadBlockInfo> getDownloadItems() {
+        @Override
+        public String toString() {
+            return downloadInfo.toString();
+        }
+
+        //        public List<DownloadBlockInfo> getDownloadItems() {
 //            return downloadInfo.getDownloadItems();
 //        }
 //

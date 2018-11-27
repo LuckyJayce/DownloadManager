@@ -193,6 +193,21 @@ public class DownloadParams implements Parcelable {
         dest.writeString(DownloadUtils.toJsonObject2(extData).toString());
     }
 
+    @Override
+    public String toString() {
+        return "DownloadParams{" +
+                "url='" + url + '\'' +
+                ", dir='" + dir + '\'' +
+                ", fileName='" + fileName + '\'' +
+                ", override=" + override +
+                ", params=" + params +
+                ", headers=" + headers +
+                ", blockSize=" + blockSize +
+                ", isWifiRequired=" + isWifiRequired +
+                ", totalSize=" + totalSize +
+                ", extData=" + extData +
+                '}';
+    }
 
     public static final class Builder {
         private String url;

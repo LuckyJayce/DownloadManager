@@ -2,6 +2,7 @@ package com.shizhefei.download.aidl;
 import com.shizhefei.download.entity.DownloadInfo;
 import com.shizhefei.download.entity.DownloadParams;
 import com.shizhefei.download.aidl.DownloadListenerAidl;
+import com.shizhefei.download.aidl.DownloadInfoListAidl;
 
 interface DownloadServerAidl {
 
@@ -10,6 +11,8 @@ interface DownloadServerAidl {
        List<DownloadInfo> findByUrl(String url);
 
        DownloadInfo findFirstByUrlAndFileName(String url, String dir, String fileName);
+
+       DownloadInfoListAidl createDownloadInfoList(int statusFlags);
 
        /**
         * @param downloadParams

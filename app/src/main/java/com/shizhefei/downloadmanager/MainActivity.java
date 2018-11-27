@@ -44,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        downloadManager = DownloadManager.getLocal();
+        downloadManager = DownloadManager.getRemote();
 
         addButton = findViewById(R.id.button);
         editText = findViewById(R.id.editText);

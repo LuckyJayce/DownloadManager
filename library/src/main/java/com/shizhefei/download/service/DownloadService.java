@@ -6,8 +6,10 @@ import android.os.IBinder;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
 
+import com.shizhefei.download.aidl.DownloadInfoListAidl;
 import com.shizhefei.download.aidl.DownloadListenerAidl;
 import com.shizhefei.download.aidl.DownloadServerAidl;
+import com.shizhefei.download.base.DownloadInfoList;
 import com.shizhefei.download.base.DownloadListener;
 import com.shizhefei.download.entity.DownloadInfo;
 import com.shizhefei.download.entity.DownloadParams;
@@ -55,6 +57,27 @@ public class DownloadService extends Service {
         @Override
         public DownloadInfo findFirstByUrlAndFileName(String url, String dir, String fileName) throws RemoteException {
             return downloadManager.findFirst(url, dir, fileName);
+        }
+
+        @Override
+        public DownloadInfoListAidl createDownloadInfoList(int statusFlags) throws RemoteException {
+            final DownloadInfoList downloadInfoList = downloadManager.createDownloadInfoList(statusFlags);
+            return new DownloadInfoListAidl.Stub() {
+                @Override
+                public int getCount() throws RemoteException {
+                    return downloadInfoList.getCount();
+                }
+
+                @Override
+                public DownloadInfo getDownloadInfo(int position) throws RemoteException {
+                    return downloadInfoList.getDownloadInfo(position);
+                }
+
+                @Override
+                public int getPosition(long downloadId) throws RemoteException {
+                    return downloadInfoList.getPosition(downloadId);
+                }
+            };
         }
 
         @Override

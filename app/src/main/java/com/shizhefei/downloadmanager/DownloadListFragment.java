@@ -1,6 +1,7 @@
 package com.shizhefei.downloadmanager;
 
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 
@@ -8,28 +9,34 @@ import com.shizhefei.download.base.DownloadInfoList;
 import com.shizhefei.download.base.DownloadListener;
 import com.shizhefei.download.entity.HttpInfo;
 import com.shizhefei.download.manager.DownloadManager;
-import com.shizhefei.download.manager.LocalDownloadManager;
 import com.shizhefei.fragment.LazyFragment;
 
 public class DownloadListFragment extends LazyFragment {
-    private LocalDownloadManager downloadManager;
+    private DownloadManager downloadManager;
     private DataAdapter dataAdapter;
     public static final String EXTRA_INT_DOWNLOAD_STATUS = "extra_int_download_status";
     private int status;
     private DownloadInfoList downloadInfoList;
+    private RecyclerView recyclerView;
 
     @Override
     protected void onCreateViewLazy(Bundle savedInstanceState) {
         super.onCreateViewLazy(savedInstanceState);
         setContentView(R.layout.fragment_downloadlist);
-        downloadManager = DownloadManager.getLocal();
+        downloadManager = DownloadManager.getRemote();
 
         status = getArguments().getInt(EXTRA_INT_DOWNLOAD_STATUS);
 
-        RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
+        recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
         downloadInfoList = downloadManager.createDownloadInfoList(status);
-        recyclerView.setAdapter(dataAdapter = new DataAdapter(downloadManager, downloadInfoList));
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+       new Handler().postDelayed(new Runnable() {
+           @Override
+           public void run() {
+               recyclerView.setAdapter(dataAdapter = new DataAdapter(downloadManager, downloadInfoList));
+           }
+       },300);
+
 
         downloadManager.registerDownloadListener(downloadListener);
     }

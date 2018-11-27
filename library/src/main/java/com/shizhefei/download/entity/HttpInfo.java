@@ -107,6 +107,16 @@ public class HttpInfo implements Parcelable {
         dest.writeByte((byte) (acceptRange ? 1 : 0));
     }
 
+    @Override
+    public String toString() {
+        return "HttpInfo{" +
+                "httpCode=" + httpCode +
+                ", contentType='" + contentType + '\'' +
+                ", contentLength=" + contentLength +
+                ", eTag='" + eTag + '\'' +
+                ", acceptRange=" + acceptRange +
+                '}';
+    }
 
     public static class Agency {
         private HttpInfo httpInfo;

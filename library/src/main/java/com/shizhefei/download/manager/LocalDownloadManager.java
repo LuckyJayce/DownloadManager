@@ -69,6 +69,7 @@ public class LocalDownloadManager extends DownloadManager {
                 info.setCurrent(0);
             }
             downloadInfoList.add(info.getInfo());
+            DownloadUtils.logD("LocalDownloadManager :%s", info);
         }
     }
 
@@ -270,7 +271,7 @@ public class LocalDownloadManager extends DownloadManager {
                         break;
                     }
                 }
-                return -1;
+                return DownloadManager.INVALID_POSITION;
             }
 
             private boolean isNeed(DownloadInfo downloadInfo) {
@@ -428,7 +429,7 @@ public class LocalDownloadManager extends DownloadManager {
                     return i;
                 }
             }
-            return -1;
+            return DownloadManager.INVALID_POSITION;
         }
     };
 }

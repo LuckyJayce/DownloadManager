@@ -101,6 +101,16 @@ public class ErrorInfo implements Parcelable {
         dest.writeString(httpMessage);
     }
 
+    @Override
+    public String toString() {
+        return "ErrorInfo{" +
+                "errorCode=" + errorCode +
+                ", errorMessage='" + errorMessage + '\'' +
+                ", httpCode=" + httpCode +
+                ", httpMessage='" + httpMessage + '\'' +
+                '}';
+    }
+
     public static class Agency {
         private ErrorInfo errorInfo;
 

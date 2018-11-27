@@ -7,11 +7,11 @@ import android.content.ServiceConnection;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
-import android.os.RemoteException;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.LongSparseArray;
 
+import com.shizhefei.download.aidl.DownloadInfoListAidl;
 import com.shizhefei.download.aidl.DownloadListenerAidl;
 import com.shizhefei.download.aidl.DownloadServerAidl;
 import com.shizhefei.download.entity.DownloadInfo;
@@ -20,6 +20,7 @@ import com.shizhefei.download.entity.DownloadParams;
 import com.shizhefei.download.base.DownloadInfoList;
 import com.shizhefei.download.entity.HttpInfo;
 import com.shizhefei.download.service.DownloadService;
+import com.shizhefei.download.utils.DownloadUtils;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -31,7 +32,7 @@ public class RemoteDownloadManager extends DownloadManager {
     private LongSparseArray<DownloadListener> listeners = new LongSparseArray<>();
     private Set<DownloadListener> downloadListeners = new HashSet<>();
     private Handler handler;
-    private boolean hasExecuteBind;
+    private boolean executeBind;
 
     public RemoteDownloadManager() {
         this.handler = new Handler(Looper.getMainLooper());
@@ -43,8 +44,8 @@ public class RemoteDownloadManager extends DownloadManager {
         checkHasExecuteBind();
         try {
             return eventServiceExecutor.findFirstByUrl(url);
-        } catch (RemoteException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            DownloadUtils.logE(e, "RemoteDownloadManager error");
         }
         return null;
     }
@@ -55,8 +56,8 @@ public class RemoteDownloadManager extends DownloadManager {
         checkHasExecuteBind();
         try {
             return eventServiceExecutor.findByUrl(url);
-        } catch (RemoteException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            DownloadUtils.logE(e, "RemoteDownloadManager error");
         }
         return new ArrayList<>(0);
     }
@@ -67,8 +68,8 @@ public class RemoteDownloadManager extends DownloadManager {
         checkHasExecuteBind();
         try {
             return eventServiceExecutor.findFirstByUrlAndFileName(url, dir, fileName);
-        } catch (RemoteException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            DownloadUtils.logE(e, "RemoteDownloadManager error");
         }
         return null;
     }
@@ -80,8 +81,8 @@ public class RemoteDownloadManager extends DownloadManager {
             long downloadId = eventServiceExecutor.start(downloadParams);
             listeners.put(downloadId, downloadListener);
             return downloadId;
-        } catch (RemoteException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            DownloadUtils.logE(e, "RemoteDownloadManager error");
         }
         return -1;
     }
@@ -91,8 +92,8 @@ public class RemoteDownloadManager extends DownloadManager {
         checkHasExecuteBind();
         try {
             return eventServiceExecutor.start(downloadParams);
-        } catch (RemoteException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            DownloadUtils.logE(e, "RemoteDownloadManager error");
         }
         return -1;
     }
@@ -105,8 +106,8 @@ public class RemoteDownloadManager extends DownloadManager {
                 listeners.put(downloadId, downloadListener);
                 return true;
             }
-        } catch (RemoteException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            DownloadUtils.logE(e, "RemoteDownloadManager error");
         }
         return false;
     }
@@ -116,8 +117,8 @@ public class RemoteDownloadManager extends DownloadManager {
         checkHasExecuteBind();
         try {
             eventServiceExecutor.pause(downloadId);
-        } catch (RemoteException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            DownloadUtils.logE(e, "RemoteDownloadManager error");
         }
     }
 
@@ -126,8 +127,8 @@ public class RemoteDownloadManager extends DownloadManager {
         checkHasExecuteBind();
         try {
             eventServiceExecutor.pauseAll();
-        } catch (RemoteException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            DownloadUtils.logE(e, "RemoteDownloadManager error");
         }
     }
 
@@ -136,8 +137,8 @@ public class RemoteDownloadManager extends DownloadManager {
         checkHasExecuteBind();
         try {
             eventServiceExecutor.remove(downloadId);
-        } catch (RemoteException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            DownloadUtils.logE(e, "RemoteDownloadManager error");
         }
     }
 
@@ -146,8 +147,8 @@ public class RemoteDownloadManager extends DownloadManager {
         checkHasExecuteBind();
         try {
             return eventServiceExecutor.getDownloadInfo(id);
-        } catch (RemoteException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            DownloadUtils.logE(e, "RemoteDownloadManager error");
         }
         return null;
     }
@@ -157,8 +158,8 @@ public class RemoteDownloadManager extends DownloadManager {
         checkHasExecuteBind();
         try {
             return eventServiceExecutor.getDownloadParams(id);
-        } catch (RemoteException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            DownloadUtils.logE(e, "RemoteDownloadManager error");
         }
         return null;
     }
@@ -170,56 +171,55 @@ public class RemoteDownloadManager extends DownloadManager {
     }
 
     @Override
-    public DownloadInfoList createDownloadInfoList(int downloadStatus) {
+    public DownloadInfoList createDownloadInfoList(final int statusFlags) {
         checkHasExecuteBind();
-        //TODO 本地和远程维护列表 或者返回一个DownloadInfoList aidl
-        return null;
-//        return new DownloadInfoList() {
-//            @Override
-//            public int getCount() {
-//                int count = 0;
-//                for (DownloadInfo downloadInfo : downloadInfoList) {
-//                    if (isNeed(downloadInfo)) {
-//                        count++;
-//                    }
-//                }
-//                return count;
-//            }
-//
-//            @Override
-//            public DownloadInfo getDownloadInfo(int position) {
-//                int p = 0;
-//                for (DownloadInfo downloadInfo : downloadInfoList) {
-//                    if (isNeed(downloadInfo)) {
-//                        if (p == position) {
-//                            return downloadInfo;
-//                        }
-//                        p++;
-//                    }
-//                }
-//                return null;
-//            }
-//
-//            @Override
-//            public int getPosition(long downloadId) {
-//                int p = 0;
-//                for (DownloadInfo downloadInfo : downloadInfoList) {
-//                    if (isNeed(downloadInfo)) {
-//                        if (downloadInfo.getId() == downloadId) {
-//                            return p;
-//                        }
-//                        p++;
-//                    } else if (downloadInfo.getId() == downloadId) {
-//                        break;
-//                    }
-//                }
-//                return -1;
-//            }
-//
-//            private boolean isNeed(DownloadInfo downloadInfo) {
-//                return (downloadInfo.getStatus() & downloadStatus) != 0;
-//            }
-//        };
+        return new DownloadInfoList() {
+            private DownloadInfoListAidl downloadInfoList;
+
+            @Override
+            public int getCount() {
+                try {
+                    return get().getCount();
+                } catch (Exception e) {
+                    DownloadUtils.logE(e, "RemoteDownloadManager error");
+                    downloadInfoList = null;
+                }
+                return 0;
+            }
+
+            @Override
+            public DownloadInfo getDownloadInfo(int position) {
+                try {
+                    return get().getDownloadInfo(position);
+                } catch (Exception e) {
+                    DownloadUtils.logE(e, "RemoteDownloadManager error");
+                    downloadInfoList = null;
+                }
+                return null;
+            }
+
+            @Override
+            public int getPosition(long downloadId) {
+                try {
+                    return get().getPosition(downloadId);
+                } catch (Exception e) {
+                    DownloadUtils.logE(e, "RemoteDownloadManager error");
+                    downloadInfoList = null;
+                }
+                return DownloadManager.INVALID_POSITION;
+            }
+
+            private DownloadInfoListAidl get() {
+                if (downloadInfoList == null) {
+                    try {
+                        downloadInfoList = eventServiceExecutor.createDownloadInfoList(statusFlags);
+                    } catch (Exception e) {
+                        DownloadUtils.logE(e, "RemoteDownloadManager error");
+                    }
+                }
+                return downloadInfoList;
+            }
+        };
     }
 
     @Override
@@ -237,7 +237,7 @@ public class RemoteDownloadManager extends DownloadManager {
     }
 
     public void bindService() {
-        hasExecuteBind = true;
+        executeBind = true;
         if (!isConnected()) {
             Intent intent = new Intent(DownloadManager.getApplicationContext(), DownloadService.class);
             DownloadManager.getApplicationContext().bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
@@ -245,6 +245,7 @@ public class RemoteDownloadManager extends DownloadManager {
     }
 
     public void unBindService() {
+        executeBind = false;
         if (!isConnected()) {
             DownloadManager.getApplicationContext().unbindService(serviceConnection);
         }
@@ -256,14 +257,17 @@ public class RemoteDownloadManager extends DownloadManager {
             eventServiceExecutor = DownloadServerAidl.Stub.asInterface(service);
             try {
                 eventServiceExecutor.registerDownloadListener(downloadListenerProxy);
-            } catch (RemoteException e) {
-                e.printStackTrace();
+            } catch (Exception e) {
+                DownloadUtils.logE(e, "RemoteDownloadManager error");
             }
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
             eventServiceExecutor = null;
+            if (executeBind) {
+                bindService();
+            }
         }
     };
 
@@ -423,8 +427,8 @@ public class RemoteDownloadManager extends DownloadManager {
         public int getCount() {
             try {
                 return eventServiceExecutor.getCount();
-            } catch (RemoteException e) {
-                e.printStackTrace();
+            } catch (Exception e) {
+                DownloadUtils.logE(e, "RemoteDownloadManager error");
             }
             return 0;
         }
@@ -433,8 +437,8 @@ public class RemoteDownloadManager extends DownloadManager {
         public DownloadInfo getDownloadInfo(int position) {
             try {
                 return eventServiceExecutor.getDownloadInfo(position);
-            } catch (RemoteException e) {
-                e.printStackTrace();
+            } catch (Exception e) {
+                DownloadUtils.logE(e, "RemoteDownloadManager error");
             }
             return DOWNLOAD_INFO_NONE;
         }
@@ -443,16 +447,19 @@ public class RemoteDownloadManager extends DownloadManager {
         public int getPosition(long downloadId) {
             try {
                 return eventServiceExecutor.getPosition(downloadId);
-            } catch (RemoteException e) {
-                e.printStackTrace();
+            } catch (Exception e) {
+                DownloadUtils.logE(e, "RemoteDownloadManager error");
             }
             return DownloadManager.INVALID_POSITION;
         }
     };
 
     private void checkHasExecuteBind() {
-        if (!hasExecuteBind) {
+        if (!executeBind) {
             throw new RuntimeException("请先调用bind，建议在Application的onCreate调用，需要调用DownloadManager.getRemote()的进程调用，其它进程可以不必调用");
+        }
+        if (eventServiceExecutor == null) {
+            bindService();
         }
     }
 }
