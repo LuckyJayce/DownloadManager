@@ -72,10 +72,9 @@ public class DataAdapter extends RecyclerView.Adapter {
 
         public void setData(DownloadInfo downloadInfo) {
             this.downloadInfo = downloadInfo;
-            String tempPath = downloadInfo.getDir() + File.separator + downloadInfo.getTempFileName();
             StringBuilder name = new StringBuilder();
-            name.append("downloadId:").append(downloadInfo.getId()).append("  status:").append(DownloadManager.getStatusText(downloadInfo.getStatus())).append("\n");
-            name.append("file:").append(tempPath).append(" / ").append(downloadInfo.getFileName()).append("\n").append(downloadInfo.getUrl());
+            name.append("downloadId:").append(downloadInfo.getId()).append("\tstatus:").append(DownloadManager.getStatusText(downloadInfo.getStatus())).append("\n");
+            name.append("file:").append(downloadInfo.getFileName()).append("\nurl:").append(downloadInfo.getUrl());
             fileNameTextView.setText(name);
 
             StringBuilder info = new StringBuilder();
@@ -97,10 +96,14 @@ public class DataAdapter extends RecyclerView.Adapter {
             } else {
                 p = (int) (1.0 * downloadInfo.getCurrent() / total * 100);
             }
+            long speed = downloadManager.getSpeedMonitor().getSpeed(downloadInfo.getId());
             progressBar.setProgress(p);
 
-            info.append(Formatter.formatFileSize(context, downloadInfo.getCurrent())).append("/").append(totalText);
-            info.append("  ").append(p).append("%");
+            info.append("progress:").append(p).append("%").append("\n")
+                    .append(Formatter.formatFileSize(context, downloadInfo.getCurrent()))
+                    .append("/").append(totalText)
+                    .append(" speed:").append(Formatter.formatFileSize(context, speed)).append("/s");
+
             if (downloadInfo.getStatus() == DownloadManager.STATUS_ERROR) {
                 info.append("\nerror:").append(downloadInfo.getErrorInfo().toJson());
             }

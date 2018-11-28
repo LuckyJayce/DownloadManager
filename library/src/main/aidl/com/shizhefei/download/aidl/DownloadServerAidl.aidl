@@ -3,6 +3,7 @@ import com.shizhefei.download.entity.DownloadInfo;
 import com.shizhefei.download.entity.DownloadParams;
 import com.shizhefei.download.aidl.DownloadListenerAidl;
 import com.shizhefei.download.aidl.DownloadInfoListAidl;
+import com.shizhefei.download.aidl.SpeedMonitorAidl;
 
 interface DownloadServerAidl {
 
@@ -53,6 +54,8 @@ interface DownloadServerAidl {
        DownloadInfo getDownloadInfo(long downloadId);
 
        DownloadParams getDownloadParams(long downloadId);
+
+       SpeedMonitorAidl getSpeedMonitor();
 
        oneway void registerDownloadListener(in DownloadListenerAidl downloadListener);
 

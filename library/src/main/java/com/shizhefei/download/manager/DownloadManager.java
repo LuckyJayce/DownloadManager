@@ -9,6 +9,7 @@ import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
 import com.shizhefei.download.BuildConfig;
+import com.shizhefei.download.base.SpeedMonitor;
 import com.shizhefei.download.entity.DownloadInfo;
 import com.shizhefei.download.base.DownloadListener;
 import com.shizhefei.download.entity.DownloadParams;
@@ -256,6 +257,11 @@ public abstract class DownloadManager {
      * @return
      */
     public abstract DownloadParams getDownloadParams(long downloadId);
+
+    /**
+     * @return
+     */
+    public abstract SpeedMonitor getSpeedMonitor();
 
     /**
      * 创建下载列表信息查询者

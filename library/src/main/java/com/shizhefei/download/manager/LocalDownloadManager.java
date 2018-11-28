@@ -3,10 +3,12 @@ package com.shizhefei.download.manager;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Process;
+import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.util.LongSparseArray;
 
 import com.shizhefei.download.base.AbsDownloadTask;
+import com.shizhefei.download.base.SpeedMonitor;
 import com.shizhefei.download.db.DownloadDB;
 import com.shizhefei.download.entity.DownloadInfo;
 import com.shizhefei.download.base.DownloadListener;
@@ -39,9 +41,11 @@ public class LocalDownloadManager extends DownloadManager {
     private Set<DownloadListener> downloadListeners = new HashSet<>();
     private List<DownloadInfo> downloadInfoList;
     private Executor executor;
+    private SpeedMonitorImp speedMonitor;
 
     public LocalDownloadManager(Context context, DownloadTaskFactory downloadTaskFactory, Executor executor) {
         this.downloadDB = new DownloadDB(context, AsyncTask.SERIAL_EXECUTOR);
+        this.speedMonitor = new SpeedMonitorImp();
         if (downloadTaskFactory == null) {
             this.downloadTaskFactory = new DefaultDownloadTaskFactory();
         } else {
@@ -220,6 +224,11 @@ public class LocalDownloadManager extends DownloadManager {
     }
 
     @Override
+    public SpeedMonitor getSpeedMonitor() {
+        return speedMonitor;
+    }
+
+    @Override
     public DownloadInfoList createDownloadInfoList() {
         return downloadInfoListProxy;
     }
@@ -305,6 +314,7 @@ public class LocalDownloadManager extends DownloadManager {
 
         @Override
         public void onStart(long downloadId, long current, long total) {
+            speedMonitor.setProgress(downloadId, current, total);
             for (DownloadListener downloadListener : downloadListeners) {
                 downloadListener.onStart(downloadId, current, total);
             }
@@ -312,6 +322,7 @@ public class LocalDownloadManager extends DownloadManager {
 
         @Override
         public void onDownloadIng(long downloadId, long current, long total) {
+            speedMonitor.setProgress(downloadId, current, total);
             for (DownloadListener downloadListener : downloadListeners) {
                 downloadListener.onDownloadIng(downloadId, current, total);
             }
@@ -319,6 +330,7 @@ public class LocalDownloadManager extends DownloadManager {
 
         @Override
         public void onDownloadResetSchedule(long downloadId, int reason, long current, long total) {
+            speedMonitor.setProgress(downloadId, current, total);
             for (DownloadListener downloadListener : downloadListeners) {
                 downloadListener.onDownloadResetSchedule(downloadId, reason, current, total);
             }
@@ -326,6 +338,7 @@ public class LocalDownloadManager extends DownloadManager {
 
         @Override
         public void onConnected(long downloadId, HttpInfo httpInfo, String saveDir, String saveFileName, String tempFileName, long current, long total) {
+            speedMonitor.setProgress(downloadId, current, total);
             for (DownloadListener downloadListener : downloadListeners) {
                 downloadListener.onConnected(downloadId, httpInfo, saveDir, saveFileName, tempFileName, current, total);
             }
@@ -333,6 +346,7 @@ public class LocalDownloadManager extends DownloadManager {
 
         @Override
         public void onPaused(long downloadId) {
+            speedMonitor.stop(downloadId);
             for (DownloadListener downloadListener : downloadListeners) {
                 downloadListener.onPaused(downloadId);
             }
@@ -341,6 +355,7 @@ public class LocalDownloadManager extends DownloadManager {
 
         @Override
         public void onComplete(long downloadId) {
+            speedMonitor.stop(downloadId);
             for (DownloadListener downloadListener : downloadListeners) {
                 downloadListener.onComplete(downloadId);
             }
@@ -349,6 +364,7 @@ public class LocalDownloadManager extends DownloadManager {
 
         @Override
         public void onError(long downloadId, int errorCode, String errorMessage) {
+            speedMonitor.stop(downloadId);
             for (DownloadListener downloadListener : downloadListeners) {
                 downloadListener.onError(downloadId, errorCode, errorMessage);
             }
@@ -357,6 +373,7 @@ public class LocalDownloadManager extends DownloadManager {
 
         @Override
         public void onRemove(long downloadId) {
+            speedMonitor.stop(downloadId);
             for (DownloadListener downloadListener : downloadListeners) {
                 downloadListener.onRemove(downloadId);
             }
@@ -386,4 +403,68 @@ public class LocalDownloadManager extends DownloadManager {
             return DownloadManager.INVALID_POSITION;
         }
     };
+
+    private static class SpeedMonitorImp implements SpeedMonitor {
+        private int mMinIntervalUpdateSpeed = 1000;
+
+        private LongSparseArray<SpeedData> speedDataArray = new LongSparseArray<>();
+
+        @Override
+        public long getTotalSpeed() {
+            int size = speedDataArray.size();
+            long speed = 0;
+            for (int i = 0; i < size; i++) {
+                speed += speedDataArray.valueAt(i).speed;
+            }
+            return speed;
+        }
+
+        @Override
+        public long getSpeed(long downloadId) {
+            SpeedData speedData = speedDataArray.get(downloadId);
+            if (speedData != null) {
+                return speedData.speed;
+            }
+            return 0;
+        }
+
+        void setProgress(long downloadId, long current, long total) {
+            SpeedData speedData = speedDataArray.get(downloadId);
+            if (speedData == null) {
+                speedData = new SpeedData();
+                speedDataArray.put(downloadId, speedData);
+            }
+            if (mMinIntervalUpdateSpeed <= 0) {
+                return;
+            }
+            boolean isUpdateData = false;
+
+            if (speedData.lastRefreshTime == 0) {
+                isUpdateData = true;
+            } else {
+                long interval = SystemClock.uptimeMillis() - speedData.lastRefreshTime;
+                if (interval >= mMinIntervalUpdateSpeed || (speedData.speed == 0 && interval > 0)) {
+                    long speed = (int) ((current - speedData.current) / interval * 1000);//因为单位是毫秒所以 interval要乘以1000
+                    speed = Math.max(0, speed);
+                    speedData.speed = speed;
+                    isUpdateData = true;
+                }
+            }
+
+            if (isUpdateData) {
+                speedData.current = current;
+                speedData.lastRefreshTime = SystemClock.uptimeMillis();
+            }
+        }
+
+        void stop(long downloadId) {
+            speedDataArray.remove(downloadId);
+        }
+
+        private class SpeedData {
+            private long current;
+            private long speed;
+            private long lastRefreshTime;
+        }
+    }
 }

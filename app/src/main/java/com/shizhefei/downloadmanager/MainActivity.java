@@ -39,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
     private EditText editText2;
     private ViewPager viewPager;
     private Indicator indicatorView;
+    private View resumeAllButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,10 +52,12 @@ public class MainActivity extends AppCompatActivity {
         addButton2 = findViewById(R.id.button2);
         editText2 = findViewById(R.id.editText2);
         pauseAllButton = findViewById(R.id.pause_all_button);
+        resumeAllButton = findViewById(R.id.resume_all_button);
 
         addButton.setOnClickListener(onClickListener);
         addButton2.setOnClickListener(onClickListener);
         pauseAllButton.setOnClickListener(onClickListener);
+        resumeAllButton.setOnClickListener(onClickListener);
 
         permissionHelper = new PermissionHelper(this);
 
@@ -113,6 +116,8 @@ public class MainActivity extends AppCompatActivity {
                 });
             } else if (v == pauseAllButton) {
                 downloadManager.pauseAll();
+            } else if (v == resumeAllButton) {
+                downloadManager.resumeAll();
             }
         }
     };

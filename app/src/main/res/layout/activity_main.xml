@@ -63,13 +63,26 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:gravity="right">
 
         <Button
             android:id="@+id/pause_all_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="停止所有下载" />
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:background="@drawable/button_bg"
+            android:text="全部停止" />
+
+        <Button
+            android:id="@+id/resume_all_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:background="@drawable/button_bg"
+            android:text="全部开始" />
     </LinearLayout>
 
     <com.shizhefei.view.indicator.FixedIndicatorView

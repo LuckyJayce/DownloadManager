@@ -13,6 +13,8 @@ import android.support.annotation.Nullable;
 import com.shizhefei.download.aidl.DownloadInfoListAidl;
 import com.shizhefei.download.aidl.DownloadListenerAidl;
 import com.shizhefei.download.aidl.DownloadServerAidl;
+import com.shizhefei.download.aidl.SpeedMonitorAidl;
+import com.shizhefei.download.base.SpeedMonitor;
 import com.shizhefei.download.entity.DownloadInfo;
 import com.shizhefei.download.base.DownloadListener;
 import com.shizhefei.download.entity.DownloadParams;
@@ -43,7 +45,7 @@ public class RemoteDownloadManager extends DownloadManager {
         try {
             return eventServiceExecutor.findFirstByUrl(url);
         } catch (Exception e) {
-            DownloadUtils.logE(e, "RemoteDownloadManager error");
+            DownloadUtils.logE(e, "RemoteDownloadManager findFirst error");
         }
         return null;
     }
@@ -55,7 +57,7 @@ public class RemoteDownloadManager extends DownloadManager {
         try {
             return eventServiceExecutor.findByUrl(url);
         } catch (Exception e) {
-            DownloadUtils.logE(e, "RemoteDownloadManager error");
+            DownloadUtils.logE(e, "RemoteDownloadManager find error");
         }
         return new ArrayList<>(0);
     }
@@ -67,7 +69,7 @@ public class RemoteDownloadManager extends DownloadManager {
         try {
             return eventServiceExecutor.findFirstByUrlAndFileName(url, dir, fileName);
         } catch (Exception e) {
-            DownloadUtils.logE(e, "RemoteDownloadManager error");
+            DownloadUtils.logE(e, "RemoteDownloadManager findFirst error");
         }
         return null;
     }
@@ -78,7 +80,7 @@ public class RemoteDownloadManager extends DownloadManager {
         try {
             return eventServiceExecutor.start(downloadParams);
         } catch (Exception e) {
-            DownloadUtils.logE(e, "RemoteDownloadManager error");
+            DownloadUtils.logE(e, "RemoteDownloadManager start error");
         }
         return -1;
     }
@@ -89,7 +91,7 @@ public class RemoteDownloadManager extends DownloadManager {
         try {
             eventServiceExecutor.pause(downloadId);
         } catch (Exception e) {
-            DownloadUtils.logE(e, "RemoteDownloadManager error");
+            DownloadUtils.logE(e, "RemoteDownloadManager pause error");
         }
     }
 
@@ -99,7 +101,7 @@ public class RemoteDownloadManager extends DownloadManager {
         try {
             eventServiceExecutor.pauseAll();
         } catch (Exception e) {
-            DownloadUtils.logE(e, "RemoteDownloadManager error");
+            DownloadUtils.logE(e, "RemoteDownloadManager pauseAll error");
         }
     }
 
@@ -111,14 +113,19 @@ public class RemoteDownloadManager extends DownloadManager {
                 return true;
             }
         } catch (Exception e) {
-            DownloadUtils.logE(e, "RemoteDownloadManager error");
+            DownloadUtils.logE(e, "RemoteDownloadManager resume error");
         }
         return false;
     }
 
     @Override
     public void resumeAll() {
-
+        checkHasExecuteBind();
+        try {
+            eventServiceExecutor.resumeAll();
+        } catch (Exception e) {
+            DownloadUtils.logE(e, "RemoteDownloadManager resume error");
+        }
     }
 
     @Override
@@ -127,7 +134,7 @@ public class RemoteDownloadManager extends DownloadManager {
         try {
             eventServiceExecutor.remove(downloadId);
         } catch (Exception e) {
-            DownloadUtils.logE(e, "RemoteDownloadManager error");
+            DownloadUtils.logE(e, "RemoteDownloadManager remove error");
         }
     }
 
@@ -137,7 +144,7 @@ public class RemoteDownloadManager extends DownloadManager {
         try {
             return eventServiceExecutor.getDownloadInfo(id);
         } catch (Exception e) {
-            DownloadUtils.logE(e, "RemoteDownloadManager error");
+            DownloadUtils.logE(e, "RemoteDownloadManager getDownloadInfo error");
         }
         return null;
     }
@@ -148,9 +155,47 @@ public class RemoteDownloadManager extends DownloadManager {
         try {
             return eventServiceExecutor.getDownloadParams(id);
         } catch (Exception e) {
-            DownloadUtils.logE(e, "RemoteDownloadManager error");
+            DownloadUtils.logE(e, "RemoteDownloadManager getDownloadParams error");
         }
         return null;
+    }
+
+    @Override
+    public SpeedMonitor getSpeedMonitor() {
+        return new SpeedMonitor() {
+            private SpeedMonitorAidl speedMonitorAidl;
+
+            @Override
+            public long getTotalSpeed() {
+                try {
+                    return get().getTotalSpeed();
+                } catch (Exception e) {
+                    DownloadUtils.logE(e, "RemoteDownloadManager SpeedMonitorAidl getTotalSpeed error");
+                }
+                return 0;
+            }
+
+            @Override
+            public long getSpeed(long downloadId) {
+                try {
+                    return get().getSpeed(downloadId);
+                } catch (Exception e) {
+                    DownloadUtils.logE(e, "RemoteDownloadManager SpeedMonitorAidl  getSpeed error");
+                }
+                return 0;
+            }
+
+            private SpeedMonitorAidl get() {
+                if (speedMonitorAidl == null) {
+                    try {
+                        speedMonitorAidl = eventServiceExecutor.getSpeedMonitor();
+                    } catch (Exception e) {
+                        DownloadUtils.logE(e, "RemoteDownloadManager SpeedMonitorAidl get error");
+                    }
+                }
+                return speedMonitorAidl;
+            }
+        };
     }
 
     @Override
@@ -164,7 +209,7 @@ public class RemoteDownloadManager extends DownloadManager {
                 try {
                     return get().getCount();
                 } catch (Exception e) {
-                    DownloadUtils.logE(e, "RemoteDownloadManager error");
+                    DownloadUtils.logE(e, "RemoteDownloadManager DownloadInfoList getCount error");
                     downloadInfoList = null;
                 }
                 return 0;
@@ -175,7 +220,7 @@ public class RemoteDownloadManager extends DownloadManager {
                 try {
                     return get().getDownloadInfo(position);
                 } catch (Exception e) {
-                    DownloadUtils.logE(e, "RemoteDownloadManager error");
+                    DownloadUtils.logE(e, "RemoteDownloadManager DownloadInfoList getDownloadInfo error");
                     downloadInfoList = null;
                 }
                 return null;
@@ -186,7 +231,7 @@ public class RemoteDownloadManager extends DownloadManager {
                 try {
                     return get().getPosition(downloadId);
                 } catch (Exception e) {
-                    DownloadUtils.logE(e, "RemoteDownloadManager error");
+                    DownloadUtils.logE(e, "RemoteDownloadManager DownloadInfoList getPosition error");
                     downloadInfoList = null;
                 }
                 return DownloadManager.INVALID_POSITION;
@@ -197,7 +242,7 @@ public class RemoteDownloadManager extends DownloadManager {
                     try {
                         downloadInfoList = eventServiceExecutor.createDownloadInfoList();
                     } catch (Exception e) {
-                        DownloadUtils.logE(e, "RemoteDownloadManager error");
+                        DownloadUtils.logE(e, "RemoteDownloadManager get DownloadInfoList error");
                     }
                 }
                 return downloadInfoList;
@@ -216,7 +261,7 @@ public class RemoteDownloadManager extends DownloadManager {
                 try {
                     return get().getCount();
                 } catch (Exception e) {
-                    DownloadUtils.logE(e, "RemoteDownloadManager error");
+                    DownloadUtils.logE(e, "RemoteDownloadManager DownloadInfoList getCount error");
                     downloadInfoList = null;
                 }
                 return 0;
@@ -227,7 +272,7 @@ public class RemoteDownloadManager extends DownloadManager {
                 try {
                     return get().getDownloadInfo(position);
                 } catch (Exception e) {
-                    DownloadUtils.logE(e, "RemoteDownloadManager error");
+                    DownloadUtils.logE(e, "RemoteDownloadManager DownloadInfoList getDownloadInfo error");
                     downloadInfoList = null;
                 }
                 return null;
@@ -238,7 +283,7 @@ public class RemoteDownloadManager extends DownloadManager {
                 try {
                     return get().getPosition(downloadId);
                 } catch (Exception e) {
-                    DownloadUtils.logE(e, "RemoteDownloadManager error");
+                    DownloadUtils.logE(e, "RemoteDownloadManager DownloadInfoList getPosition error");
                     downloadInfoList = null;
                 }
                 return DownloadManager.INVALID_POSITION;
@@ -249,7 +294,7 @@ public class RemoteDownloadManager extends DownloadManager {
                     try {
                         downloadInfoList = eventServiceExecutor.createDownloadInfoListByStatus(statusFlags);
                     } catch (Exception e) {
-                        DownloadUtils.logE(e, "RemoteDownloadManager error");
+                        DownloadUtils.logE(e, "RemoteDownloadManager get DownloadInfoListAidl error");
                     }
                 }
                 return downloadInfoList;
@@ -293,7 +338,7 @@ public class RemoteDownloadManager extends DownloadManager {
             try {
                 eventServiceExecutor.registerDownloadListener(downloadListenerProxy);
             } catch (Exception e) {
-                DownloadUtils.logE(e, "RemoteDownloadManager error");
+                DownloadUtils.logE(e, "RemoteDownloadManager onServiceConnected registerDownloadListener error");
             }
         }
 

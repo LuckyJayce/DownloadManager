@@ -9,6 +9,7 @@ import android.os.RemoteException;
 import com.shizhefei.download.aidl.DownloadInfoListAidl;
 import com.shizhefei.download.aidl.DownloadListenerAidl;
 import com.shizhefei.download.aidl.DownloadServerAidl;
+import com.shizhefei.download.aidl.SpeedMonitorAidl;
 import com.shizhefei.download.base.DownloadInfoList;
 import com.shizhefei.download.base.DownloadListener;
 import com.shizhefei.download.entity.DownloadInfo;
@@ -139,6 +140,21 @@ public class DownloadService extends Service {
         @Override
         public DownloadParams getDownloadParams(long downloadId) throws RemoteException {
             return downloadManager.getDownloadParams(downloadId);
+        }
+
+        @Override
+        public SpeedMonitorAidl getSpeedMonitor() throws RemoteException {
+            return new SpeedMonitorAidl.Stub() {
+                @Override
+                public long getTotalSpeed() throws RemoteException {
+                    return downloadManager.getSpeedMonitor().getTotalSpeed();
+                }
+
+                @Override
+                public long getSpeed(long downloadId) throws RemoteException {
+                    return downloadManager.getSpeedMonitor().getSpeed(downloadId);
+                }
+            };
         }
 
         @Override

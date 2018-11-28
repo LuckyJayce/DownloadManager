@@ -95,10 +95,7 @@ public class DownloadListFragment extends LazyFragment {
 
         @Override
         public void onComplete(long downloadId) {
-            int position = downloadInfoList.getPosition(downloadId);
-            if (position >= 0) {
-                dataAdapter.notifyItemChanged(position);
-            }
+            dataAdapter.notifyDataSetChanged();
         }
 
         @Override
