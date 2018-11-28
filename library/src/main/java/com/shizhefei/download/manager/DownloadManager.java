@@ -78,7 +78,7 @@ public abstract class DownloadManager {
     public static final int STATUS_START = 1 << 1;//开始
     public static final int STATUS_CONNECTED = 1 << 2;//连接上服务器，可能会出现多次
     public static final int STATUS_DOWNLOAD_RESET_SCHEDULE = 1 << 3;//下载进度被重置， 可能会出现多次
-    public static final int STATUS_DOWNLOAD_ING = 1 << 4;//下载中 更新进度
+    public static final int STATUS_PROGRESS = 1 << 4;//下载中 更新进度
     public static final int STATUS_PAUSED = 1 << 5;//执行了停止，可以start继续下载
     public static final int STATUS_FINISHED = 1 << 6;//下载完成
     public static final int STATUS_ERROR = 1 << 7;//下载失败出现异常
@@ -112,7 +112,7 @@ public abstract class DownloadManager {
     private static boolean isInit;
 
     // 自定义一个注解MyState
-    @IntDef({STATUS_PENDING, STATUS_START, STATUS_CONNECTED, STATUS_DOWNLOAD_RESET_SCHEDULE, STATUS_DOWNLOAD_ING, STATUS_PAUSED, STATUS_FINISHED, STATUS_ERROR})
+    @IntDef({STATUS_PENDING, STATUS_START, STATUS_CONNECTED, STATUS_DOWNLOAD_RESET_SCHEDULE, STATUS_PROGRESS, STATUS_PAUSED, STATUS_FINISHED, STATUS_ERROR})
     public @interface Status {
     }
 
@@ -303,8 +303,8 @@ public abstract class DownloadManager {
                 return "STATUS_CONNECTED";
             case STATUS_DOWNLOAD_RESET_SCHEDULE:
                 return "STATUS_DOWNLOAD_RESET_SCHEDULE";
-            case STATUS_DOWNLOAD_ING:
-                return "STATUS_DOWNLOAD_ING";
+            case STATUS_PROGRESS:
+                return "STATUS_PROGRESS";
             case STATUS_PAUSED:
                 return "STATUS_PAUSED";
             case STATUS_FINISHED:

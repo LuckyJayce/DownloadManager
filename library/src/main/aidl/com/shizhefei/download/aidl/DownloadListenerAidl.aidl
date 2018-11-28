@@ -9,7 +9,7 @@ interface DownloadListenerAidl {
 
      oneway void onDownloadResetSchedule(long downloadId, int reason, long current, long total);
    
-     oneway void onDownloadIng(long downloadId, long current, long total);
+     oneway void onProgressUpdate(long downloadId, long current, long total);
    
      oneway void onConnected(long downloadId, in HttpInfo httpInfo, String saveDir, String saveFileName, String tempFileName, long current, long total);
    

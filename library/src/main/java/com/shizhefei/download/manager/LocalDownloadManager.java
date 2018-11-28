@@ -58,7 +58,7 @@ public class LocalDownloadManager extends DownloadManager {
         for (DownloadInfo.Agency info : infoList) {
             switch (info.getStatus()) {
                 case DownloadManager.STATUS_CONNECTED:
-                case DownloadManager.STATUS_DOWNLOAD_ING:
+                case DownloadManager.STATUS_PROGRESS:
                 case DownloadManager.STATUS_PENDING:
                 case DownloadManager.STATUS_START:
                 case DownloadManager.STATUS_DOWNLOAD_RESET_SCHEDULE:
@@ -321,10 +321,10 @@ public class LocalDownloadManager extends DownloadManager {
         }
 
         @Override
-        public void onDownloadIng(long downloadId, long current, long total) {
+        public void onProgressUpdate(long downloadId, long current, long total) {
             speedMonitor.setProgress(downloadId, current, total);
             for (DownloadListener downloadListener : downloadListeners) {
-                downloadListener.onDownloadIng(downloadId, current, total);
+                downloadListener.onProgressUpdate(downloadId, current, total);
             }
         }
 

@@ -198,7 +198,7 @@ class M3u8DownloadTaskImp implements ITask<Void> {
 
                     @Override
                     public void onDownloadIng(long downloadId, long current, long total) {
-                        downloadInfoAgency.setStatus(DownloadManager.STATUS_DOWNLOAD_ING);
+                        downloadInfoAgency.setStatus(DownloadManager.STATUS_PROGRESS);
                         downloadInfoAgency.setCurrent(current);
                         downloadInfoAgency.setExtInfo(m3U8ExtInfo.getJson());
                         downloadDB.update(downloadInfoAgency.getInfo());
@@ -317,7 +317,7 @@ class M3u8DownloadTaskImp implements ITask<Void> {
 
                         @Override
                         public void onDownloadIng(long downloadId, long current, long total) {
-                            downloadInfoAgency.setStatus(DownloadManager.STATUS_DOWNLOAD_ING);
+                            downloadInfoAgency.setStatus(DownloadManager.STATUS_PROGRESS);
                             downloadInfoAgency.setCurrent(startItemOffset + current);
                             finalCurrentItemInfo.setCurrent(current);
                             finalCurrentItemInfo.setTotal(total);

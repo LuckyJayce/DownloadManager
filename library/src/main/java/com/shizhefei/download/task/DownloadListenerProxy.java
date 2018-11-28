@@ -39,8 +39,8 @@ public class DownloadListenerProxy implements ICallback<Void> {
             case DownloadManager.STATUS_PAUSED:
                 downloadListener.onPaused(downloadId);
                 break;
-            case DownloadManager.STATUS_DOWNLOAD_ING:
-                downloadListener.onDownloadIng(downloadId, current, total);
+            case DownloadManager.STATUS_PROGRESS:
+                downloadListener.onProgressUpdate(downloadId, current, total);
                 break;
             case DownloadManager.STATUS_START:
                 downloadListener.onStart(downloadId, current, total);

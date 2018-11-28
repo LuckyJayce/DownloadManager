@@ -7,6 +7,7 @@ import android.content.ServiceConnection;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.os.RemoteException;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
@@ -377,24 +378,24 @@ public class RemoteDownloadManager extends DownloadManager {
         }
 
         @Override
-        public void onDownloadIng(final long downloadId, final long current, final long total) {
-            handler.post(new Runnable() {
-                @Override
-                public void run() {
-                    for (DownloadListener downloadListener : downloadListeners) {
-                        downloadListener.onDownloadIng(downloadId, current, total);
-                    }
-                }
-            });
-        }
-
-        @Override
         public void onDownloadResetSchedule(final long downloadId, final int reason, final long current, final long total) {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
                     for (DownloadListener downloadListener : downloadListeners) {
                         downloadListener.onDownloadResetSchedule(downloadId, reason, current, total);
+                    }
+                }
+            });
+        }
+
+        @Override
+        public void onProgressUpdate(final long downloadId, final long current, final long total) throws RemoteException {
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    for (DownloadListener downloadListener : downloadListeners) {
+                        downloadListener.onProgressUpdate(downloadId, current, total);
                     }
                 }
             });

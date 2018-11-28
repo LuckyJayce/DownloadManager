@@ -199,11 +199,11 @@ public class DownloadService extends Service {
         }
 
         @Override
-        public void onDownloadIng(long downloadId, long current, long total) {
+        public void onProgressUpdate(long downloadId, long current, long total) {
             final int n = callbackList.beginBroadcast();
             try {
                 for (int i = 0; i < n; i++) {
-                    callbackList.getBroadcastItem(i).onDownloadIng(downloadId, current, total);
+                    callbackList.getBroadcastItem(i).onProgressUpdate(downloadId, current, total);
                 }
             } catch (RemoteException e) {
                 e.printStackTrace();

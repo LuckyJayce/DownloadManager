@@ -76,7 +76,7 @@ class SingleThreadDownloadImp implements ITask<Void> {
 
                 @Override
                 public void onDownloadIng(long downloadId, long current, long total) {
-                    downloadInfoAgency.setStatus(DownloadManager.STATUS_DOWNLOAD_ING);
+                    downloadInfoAgency.setStatus(DownloadManager.STATUS_PROGRESS);
                     downloadInfoAgency.setCurrent(current);
                     downloadInfoAgency.setTotal(total);
                     downloadDB.updateProgress(downloadId, current, total);

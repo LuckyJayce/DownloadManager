@@ -16,6 +16,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * TODO url.openConnection(proxy)
+ */
 public class DownloadParams implements Parcelable {
     private String url;
     private String dir;

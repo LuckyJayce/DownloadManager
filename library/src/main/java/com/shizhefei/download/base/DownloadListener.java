@@ -15,7 +15,7 @@ public abstract class DownloadListener {
 
     }
 
-    public void onDownloadIng(long downloadId, long current, long total) {
+    public void onProgressUpdate(long downloadId, long current, long total) {
 
     }
 

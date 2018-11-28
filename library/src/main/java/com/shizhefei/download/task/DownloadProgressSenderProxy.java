@@ -46,7 +46,7 @@ public class DownloadProgressSenderProxy {
     }
 
     public void sendDownloading(long current, long total) {
-        progressSender.sendProgress(current, total, DownloadManager.STATUS_DOWNLOAD_ING);
+        progressSender.sendProgress(current, total, DownloadManager.STATUS_PROGRESS);
     }
 
     public static void release(Bundle bundle) {
