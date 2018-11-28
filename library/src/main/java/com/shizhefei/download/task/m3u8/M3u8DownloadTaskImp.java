@@ -80,7 +80,7 @@ class M3u8DownloadTaskImp implements ITask<Void> {
                 DownloadException downloadException = (DownloadException) exception;
                 downloadInfoAgency.setStatus(DownloadManager.STATUS_ERROR);
                 errorInfoAgency.set(downloadException.getErrorCode(), downloadException.getErrorMessage());
-                downloadDB.update(downloadInfoAgency.getInfo());
+                downloadDB.updateError(downloadInfoAgency.getId(), errorInfoAgency.getInfo());
             } else {
                 String message = exception.getMessage();
                 if (TextUtils.isEmpty(message)) {
@@ -88,7 +88,7 @@ class M3u8DownloadTaskImp implements ITask<Void> {
                 }
                 downloadInfoAgency.setStatus(DownloadManager.STATUS_ERROR);
                 errorInfoAgency.set(DownloadManager.ERROR_UNKNOW, message);
-                downloadDB.update(downloadInfoAgency.getInfo());
+                downloadDB.updateError(downloadInfoAgency.getId(), errorInfoAgency.getInfo());
             }
             isRunning = false;
             throw exception;
@@ -100,10 +100,10 @@ class M3u8DownloadTaskImp implements ITask<Void> {
         }
         if (isCancel) {
             downloadInfoAgency.setStatus(DownloadManager.STATUS_PAUSED);
-            downloadDB.update(downloadInfoAgency.getInfo());
+            downloadDB.updateStatus(downloadInfoAgency.getId(), DownloadManager.STATUS_PAUSED);
         } else {
             downloadInfoAgency.setStatus(DownloadManager.STATUS_FINISHED);
-            downloadDB.update(downloadInfoAgency.getInfo());
+            downloadDB.updateStatus(downloadInfoAgency.getId(), DownloadManager.STATUS_FINISHED);
         }
         isRunning = false;
         return null;
@@ -180,7 +180,7 @@ class M3u8DownloadTaskImp implements ITask<Void> {
                     public void onDownloadResetSchedule(long downloadId, int reason, long current, long total) {
                         downloadInfoAgency.setCurrent(current);
                         downloadInfoAgency.setExtInfo(m3U8ExtInfo.getJson());
-                        downloadDB.update(downloadInfoAgency.getInfo());
+                        downloadDB.updateDownloadResetSchedule(downloadInfoAgency.getId(), downloadInfoAgency.getCurrent(), downloadInfoAgency.getTotal(), downloadInfoAgency.getExtInfo());
                         progressSenderProxy.sendDownloadResetSchedule(current, total, reason);
                     }
 
@@ -201,7 +201,7 @@ class M3u8DownloadTaskImp implements ITask<Void> {
                         downloadInfoAgency.setStatus(DownloadManager.STATUS_PROGRESS);
                         downloadInfoAgency.setCurrent(current);
                         downloadInfoAgency.setExtInfo(m3U8ExtInfo.getJson());
-                        downloadDB.update(downloadInfoAgency.getInfo());
+                        downloadDB.updateProgress(downloadInfoAgency.getId(), current, downloadInfoAgency.getTotal(), downloadInfoAgency.getExtInfo());
                         if (!isCancel) {
                             progressSenderProxy.sendDownloading(current, total);
                         }
@@ -251,7 +251,7 @@ class M3u8DownloadTaskImp implements ITask<Void> {
                         currentItemInfo = buildItemInfo(i, trackData);
                         m3U8ExtInfo.setCurrentItemInfo(currentItemInfo);
                         downloadInfoAgency.setExtInfo(m3U8ExtInfo.getJson());
-                        downloadDB.update(downloadInfoAgency.getInfo());
+                        downloadDB.updateExtInfo(downloadInfoAgency.getId(), downloadInfoAgency.getExtInfo());
                         DownloadUtils.logD("M3u8DownloadTaskImp  downloadId=%d currentItemInfo=%s", downloadId, currentItemInfo);
                     }
                     downloadTask = buildFromExtInfo(downloadId, dir, downloadParams, currentItemInfo);
@@ -265,11 +265,12 @@ class M3u8DownloadTaskImp implements ITask<Void> {
                         @Override
                         public void onDownloadResetSchedule(long downloadId, int reason, long current, long total) {
                             DownloadUtils.logD("M3u8DownloadTaskImp onDownloadItem onDownloadResetSchedule-- startItemOffset=%d current=%d resultCurrent=%d", startItemOffset, current, (startItemOffset + current));
+                            downloadInfoAgency.setStatus(DownloadManager.STATUS_DOWNLOAD_RESET_SCHEDULE);
                             downloadInfoAgency.setCurrent(startItemOffset);
                             finalCurrentItemInfo.setCurrent(current);
                             finalCurrentItemInfo.setTotal(total);
                             downloadInfoAgency.setExtInfo(m3U8ExtInfo.getJson());
-                            downloadDB.update(downloadInfoAgency.getInfo());
+                            downloadDB.updateDownloadResetSchedule(downloadInfoAgency.getId(), downloadInfoAgency.getCurrent(), downloadInfoAgency.getTotal(), downloadInfoAgency.getExtInfo());
                             progressSenderProxy.sendDownloadResetSchedule(downloadInfoAgency.getCurrent(), downloadInfoAgency.getTotal(), reason);
                         }
 
@@ -322,7 +323,7 @@ class M3u8DownloadTaskImp implements ITask<Void> {
                             finalCurrentItemInfo.setCurrent(current);
                             finalCurrentItemInfo.setTotal(total);
                             downloadInfoAgency.setExtInfo(m3U8ExtInfo.getJson());
-                            downloadDB.update(downloadInfoAgency.getInfo());
+                            downloadDB.updateProgress(downloadInfoAgency.getId(), downloadInfoAgency.getCurrent(), downloadInfoAgency.getTotal(), downloadInfoAgency.getExtInfo());
                             if (!isCancel) {
                                 progressSenderProxy.sendDownloading(downloadInfoAgency.getCurrent(), downloadInfoAgency.getTotal());
                             }
@@ -381,7 +382,7 @@ class M3u8DownloadTaskImp implements ITask<Void> {
             requestTotalTask.cancel();
         }
         downloadInfoAgency.setStatus(DownloadManager.STATUS_PAUSED);
-        downloadDB.update(downloadInfoAgency.getInfo());
+        downloadDB.updateStatus(downloadInfoAgency.getId(), DownloadManager.STATUS_PAUSED);
         if (downloadTask != null) {
             downloadTask.cancel();
         }

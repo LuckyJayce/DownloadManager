@@ -9,6 +9,7 @@ import android.support.annotation.Nullable;
 
 import com.shizhefei.download.entity.DownloadParams;
 import com.shizhefei.download.entity.DownloadInfo;
+import com.shizhefei.download.entity.ErrorInfo;
 import com.shizhefei.download.manager.DownloadManager;
 import com.shizhefei.download.utils.DownloadUtils;
 import com.shizhefei.mvc.ProgressSender;
@@ -117,13 +118,57 @@ public class DownloadDB {
         return agency;
     }
 
-    //TODO 优化相同的downloadId，以最后一个为准，前面可以不执行
-    public void update(DownloadInfo downloadInfo) {
-        taskHelper.execute(new UpdateTask(dbHelper, downloadInfo), null);
+    public void updateError(long downloadId, ErrorInfo downloadInfo) {
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(DownloadManager.FIELD_ERROR_INFO, downloadInfo.toJson());
+        contentValues.put(DownloadManager.FIELD_STATUS, DownloadManager.STATUS_ERROR);
+        updateContent(downloadId, contentValues);
     }
 
     public void updateProgress(long downloadId, long current, long total) {
-        taskHelper.execute(new UpdateProgressTask(dbHelper, downloadId, current, total), null);
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(DownloadManager.FIELD_STATUS, DownloadManager.STATUS_PROGRESS);
+        contentValues.put(DownloadManager.FIELD_CURRENT, current);
+        contentValues.put(DownloadManager.FIELD_TOTAL, total);
+        updateContent(downloadId, contentValues);
+    }
+
+    public void updateProgress(long downloadId, long current, long total, String extInfo) {
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(DownloadManager.FIELD_STATUS, DownloadManager.STATUS_PROGRESS);
+        contentValues.put(DownloadManager.FIELD_CURRENT, current);
+        contentValues.put(DownloadManager.FIELD_TOTAL, total);
+        contentValues.put(DownloadManager.FIELD_ERROR_INFO, extInfo);
+        updateContent(downloadId, contentValues);
+    }
+
+    public void updateDownloadResetSchedule(long downloadId, long current, long total, String extInfo) {
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(DownloadManager.FIELD_STATUS, DownloadManager.STATUS_DOWNLOAD_RESET_SCHEDULE);
+        contentValues.put(DownloadManager.FIELD_CURRENT, current);
+        contentValues.put(DownloadManager.FIELD_TOTAL, total);
+        contentValues.put(DownloadManager.FIELD_ERROR_INFO, extInfo);
+        updateContent(downloadId, contentValues);
+    }
+
+    public void updateExtInfo(long downloadId, String extInfo) {
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(DownloadManager.FIELD_ERROR_INFO, extInfo);
+        updateContent(downloadId, contentValues);
+    }
+
+    public void updateStatus(long downloadId, int status) {
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(DownloadManager.FIELD_STATUS, status);
+        taskHelper.execute(new UpdateContentTask(dbHelper, downloadId, contentValues), null);
+    }
+
+    public void updateContent(long downloadId, ContentValues contentValues) {
+        taskHelper.execute(new UpdateContentTask(dbHelper, downloadId, contentValues), null);
+    }
+
+    public void update(DownloadInfo downloadInfo) {
+        taskHelper.execute(new UpdateTask(dbHelper, downloadInfo), null);
     }
 
     public void replace(DownloadParams downloadParams, DownloadInfo downloadInfo) {
@@ -134,25 +179,20 @@ public class DownloadDB {
         taskHelper.execute(new DeleteTask(dbHelper, downloadId), null);
     }
 
-    private static class UpdateProgressTask implements ITask<Void> {
-        private final long current;
-        private final long total;
+    private static class UpdateContentTask implements ITask<Void> {
         private final long downloadId;
+        private final ContentValues contentValues;
         private DBHelper dbHelper;
 
-        public UpdateProgressTask(DBHelper dbHelper, long downloadId, long current, long total) {
+        public UpdateContentTask(DBHelper dbHelper, long downloadId, ContentValues contentValues) {
             this.dbHelper = dbHelper;
             this.downloadId = downloadId;
-            this.current = current;
-            this.total = total;
+            this.contentValues = contentValues;
         }
 
         @Override
         public Void execute(ProgressSender progressSender) throws Exception {
             SQLiteDatabase database = dbHelper.getWritableDatabase();
-            ContentValues contentValues = new ContentValues();
-            contentValues.put(DownloadManager.FIELD_CURRENT, current);
-            contentValues.put(DownloadManager.FIELD_TOTAL, total);
             long result = database.update(DownloadManager.TABLE_NAME, contentValues, DownloadManager.FIELD_KEY + " = ?", new String[]{String.valueOf(downloadId)});
             if (result <= 0) {
                 DownloadUtils.logE("db update downloadId=%d result=%d", downloadId, result);

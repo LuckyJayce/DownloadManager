@@ -59,7 +59,7 @@ class SingleThreadDownloadImp implements ITask<Void> {
                 public void onDownloadResetSchedule(long downloadId, int reason, long current, long total) {
                     downloadInfoAgency.setStatus(DownloadManager.STATUS_DOWNLOAD_RESET_SCHEDULE);
                     downloadInfoAgency.setCurrent(0);
-                    downloadDB.update(downloadInfoAgency.getInfo());
+                    downloadDB.updateDownloadResetSchedule(downloadInfoAgency.getId(), downloadInfoAgency.getCurrent(), downloadInfoAgency.getTotal(), downloadInfoAgency.getExtInfo());
                     progressSenderProxy.sendDownloadResetSchedule(current, total, reason);
                 }
 
@@ -86,7 +86,7 @@ class SingleThreadDownloadImp implements ITask<Void> {
         } catch (DownloadException e) {
             errorInfoAgency.set(e.getErrorCode(), e.getErrorMessage());
             downloadInfoAgency.setStatus(DownloadManager.STATUS_ERROR);
-            downloadDB.update(downloadInfoAgency.getInfo());
+            downloadDB.updateError(downloadInfoAgency.getId(), errorInfoAgency.getInfo());
             isRunning = false;
             throw e;
         }
@@ -97,10 +97,10 @@ class SingleThreadDownloadImp implements ITask<Void> {
         }
         if (isCancel) {
             downloadInfoAgency.setStatus(DownloadManager.STATUS_PAUSED);
-            downloadDB.update(downloadInfoAgency.getInfo());
+            downloadDB.updateStatus(downloadInfoAgency.getId(), DownloadManager.STATUS_PAUSED);
         } else {
             downloadInfoAgency.setStatus(DownloadManager.STATUS_FINISHED);
-            downloadDB.update(downloadInfoAgency.getInfo());
+            downloadDB.updateStatus(downloadInfoAgency.getId(), DownloadManager.STATUS_FINISHED);
         }
         isRunning = false;
         return null;
@@ -110,7 +110,7 @@ class SingleThreadDownloadImp implements ITask<Void> {
     public void cancel() {
         isCancel = true;
         downloadInfoAgency.setStatus(DownloadManager.STATUS_PAUSED);
-        downloadDB.update(downloadInfoAgency.getInfo());
+        downloadDB.updateStatus(downloadInfoAgency.getId(), DownloadManager.STATUS_PAUSED);
         downloadTask.cancel();
     }
 

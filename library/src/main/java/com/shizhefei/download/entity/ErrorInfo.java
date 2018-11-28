@@ -167,10 +167,6 @@ public class ErrorInfo implements Parcelable {
             errorInfo.setHttpMessage(httpMessage);
         }
 
-        public void set(int errorHttp, String httpMessage, int httpCode, String httpMessage1) {
-
-        }
-
         public ErrorInfo getInfo() {
             return errorInfo;
         }
