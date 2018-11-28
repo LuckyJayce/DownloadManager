@@ -60,7 +60,7 @@ public class DownloadService extends Service {
         }
 
         @Override
-        public DownloadInfoListAidl createDownloadInfoList(int statusFlags) throws RemoteException {
+        public DownloadInfoListAidl createDownloadInfoListByStatus(int statusFlags) throws RemoteException {
             final DownloadInfoList downloadInfoList = downloadManager.createDownloadInfoList(statusFlags);
             return new DownloadInfoListAidl.Stub() {
                 @Override
@@ -81,13 +81,34 @@ public class DownloadService extends Service {
         }
 
         @Override
-        public long start(DownloadParams downloadParams) throws RemoteException {
-            return downloadManager.start(downloadParams, null);
+        public DownloadInfoListAidl createDownloadInfoList() throws RemoteException {
+            final DownloadInfoList downloadInfoList = downloadManager.createDownloadInfoList();
+            return new DownloadInfoListAidl.Stub() {
+                @Override
+                public int getCount() throws RemoteException {
+                    return downloadInfoList.getCount();
+                }
+
+                @Override
+                public DownloadInfo getDownloadInfo(int position) throws RemoteException {
+                    return downloadInfoList.getDownloadInfo(position);
+                }
+
+                @Override
+                public int getPosition(long downloadId) throws RemoteException {
+                    return downloadInfoList.getPosition(downloadId);
+                }
+            };
         }
 
         @Override
-        public boolean restartPauseOrFail(long downloadId) throws RemoteException {
-            return downloadManager.restartPauseOrFail(downloadId, null);
+        public long start(DownloadParams downloadParams) throws RemoteException {
+            return downloadManager.start(downloadParams);
+        }
+
+        @Override
+        public boolean resume(long downloadId) throws RemoteException {
+            return downloadManager.resume(downloadId);
         }
 
         @Override
@@ -98,6 +119,11 @@ public class DownloadService extends Service {
         @Override
         public void pauseAll() throws RemoteException {
             downloadManager.pauseAll();
+        }
+
+        @Override
+        public void resumeAll() throws RemoteException {
+            downloadManager.resumeAll();
         }
 
         @Override
@@ -123,21 +149,6 @@ public class DownloadService extends Service {
         @Override
         public void unregisterDownloadListener(DownloadListenerAidl downloadListener) throws RemoteException {
             callbackList.unregister(downloadListener);
-        }
-
-        @Override
-        public int getCount() throws RemoteException {
-            return downloadManager.createDownloadInfoList().getCount();
-        }
-
-        @Override
-        public DownloadInfo getDownloadInfoByPosition(int position) throws RemoteException {
-            return downloadManager.createDownloadInfoList().getDownloadInfo(position);
-        }
-
-        @Override
-        public int getPosition(long downloadId) throws RemoteException {
-            return downloadManager.createDownloadInfoList().getPosition(downloadId);
         }
     };
 

@@ -201,13 +201,24 @@ public abstract class DownloadManager {
     }
 
     /**
+     * 开始下载
+     *
      * @param downloadParams
-     * @param downloadListener
      * @return 返回下载的id
      */
-    public abstract long start(DownloadParams downloadParams, DownloadListener downloadListener);
-
     public abstract long start(DownloadParams downloadParams);
+
+    /**
+     * 暂停下载任务
+     *
+     * @param downloadId
+     */
+    public abstract void pause(long downloadId);
+
+    /**
+     * 暂停所有下载任务
+     */
+    public abstract void pauseAll();
 
     /**
      * 执行之前失败,停止且现在未在执行中的任务
@@ -216,16 +227,12 @@ public abstract class DownloadManager {
      * @param downloadId
      * @return
      */
-    public abstract boolean restartPauseOrFail(long downloadId, DownloadListener downloadListener);
+    public abstract boolean resume(long downloadId);
 
     /**
-     * 停止下载任务
-     *
-     * @param downloadId
+     * 恢复所有下载
      */
-    public abstract void pause(long downloadId);
-
-    public abstract void pauseAll();
+    public abstract void resumeAll();
 
     /**
      * 停止并删除下载任务
@@ -234,16 +241,49 @@ public abstract class DownloadManager {
      */
     public abstract void remove(long downloadId);
 
+    /**
+     * 获取下载信息
+     *
+     * @param downloadId
+     * @return
+     */
     public abstract DownloadInfo getDownloadInfo(long downloadId);
 
+    /**
+     * 获取下载参数
+     *
+     * @param downloadId
+     * @return
+     */
     public abstract DownloadParams getDownloadParams(long downloadId);
 
+    /**
+     * 创建下载列表信息查询者
+     *
+     * @return
+     */
     public abstract DownloadInfoList createDownloadInfoList();
 
+    /**
+     * 创建下载列表信息查询者，只返回符合downloadStatus状态的数据列表
+     *
+     * @param downloadStatus 下载的状态 多种状态
+     * @return
+     */
     public abstract DownloadInfoList createDownloadInfoList(final int downloadStatus);
 
+    /**
+     * 注册下载监听
+     *
+     * @param downloadListener
+     */
     public abstract void registerDownloadListener(DownloadListener downloadListener);
 
+    /**
+     * 取消注册下载监听
+     *
+     * @param downloadListener
+     */
     public abstract void unregisterDownloadListener(DownloadListener downloadListener);
 
     @NonNull

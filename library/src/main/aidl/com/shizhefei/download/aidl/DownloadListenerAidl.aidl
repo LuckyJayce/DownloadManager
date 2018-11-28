@@ -3,21 +3,21 @@ import com.shizhefei.download.entity.HttpInfo;
 
 interface DownloadListenerAidl {
 
-     void onPending(long downloadId);
+     oneway void onPending(long downloadId);
 
-     void onStart(long downloadId, long current, long total);
+     oneway void onStart(long downloadId, long current, long total);
 
-     void onDownloadResetSchedule(long downloadId, int reason, long current, long total);
+     oneway void onDownloadResetSchedule(long downloadId, int reason, long current, long total);
    
-     void onDownloadIng(long downloadId, long current, long total);
+     oneway void onDownloadIng(long downloadId, long current, long total);
    
-     void onConnected(long downloadId, in HttpInfo httpInfo, String saveDir, String saveFileName, String tempFileName, long current, long total);
+     oneway void onConnected(long downloadId, in HttpInfo httpInfo, String saveDir, String saveFileName, String tempFileName, long current, long total);
    
-     void onPaused(long downloadId);
+     oneway void onPaused(long downloadId);
    
-     void onComplete(long downloadId);
+     oneway void onComplete(long downloadId);
    
-     void onError(long downloadId, int errorCode, String errorMessage);
+     oneway void onError(long downloadId, int errorCode, String errorMessage);
    
-     void onRemove(long downloadId);
+     oneway void onRemove(long downloadId);
 }

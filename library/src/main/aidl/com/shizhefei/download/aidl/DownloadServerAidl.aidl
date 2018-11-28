@@ -12,7 +12,9 @@ interface DownloadServerAidl {
 
        DownloadInfo findFirstByUrlAndFileName(String url, String dir, String fileName);
 
-       DownloadInfoListAidl createDownloadInfoList(int statusFlags);
+       DownloadInfoListAidl createDownloadInfoListByStatus(int statusFlags);
+
+       DownloadInfoListAidl createDownloadInfoList();
 
        /**
         * @param downloadParams
@@ -28,35 +30,31 @@ interface DownloadServerAidl {
         * @param downloadId
         * @return
         */
-       boolean restartPauseOrFail(long downloadId);
+       boolean resume(long downloadId);
+
+       oneway void resumeAll();
 
        /**
         * 停止下载任务
         *
         * @param downloadId
         */
-       void pause(long downloadId);
+       oneway void pause(long downloadId);
 
-       void pauseAll();
+       oneway void pauseAll();
 
        /**
         * 停止并删除下载任务
         *
         * @param downloadId
         */
-       void remove(long downloadId);
+       oneway void remove(long downloadId);
 
        DownloadInfo getDownloadInfo(long downloadId);
 
        DownloadParams getDownloadParams(long downloadId);
 
-       void registerDownloadListener(in DownloadListenerAidl downloadListener);
+       oneway void registerDownloadListener(in DownloadListenerAidl downloadListener);
 
-       void unregisterDownloadListener(in DownloadListenerAidl downloadListener);
-
-       int getCount();
-
-       DownloadInfo getDownloadInfoByPosition(int position);
-
-       int getPosition(long downloadId);
+       oneway void unregisterDownloadListener(in DownloadListenerAidl downloadListener);
 }

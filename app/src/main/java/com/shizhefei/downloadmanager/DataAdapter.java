@@ -115,7 +115,7 @@ public class DataAdapter extends RecyclerView.Adapter {
                 } else if (v == pauseButton) {
                     downloadManager.pause(downloadInfo.getId());
                 } else if (v == startButton) {
-                    downloadManager.restartPauseOrFail(downloadInfo.getId(), null);
+                    downloadManager.resume(downloadInfo.getId());
                 }
             }
         };

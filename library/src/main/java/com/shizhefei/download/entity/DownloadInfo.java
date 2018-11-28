@@ -169,10 +169,6 @@ public class DownloadInfo implements Parcelable {
         return errorInfo;
     }
 
-    public boolean isRunning() {
-        return status != DownloadManager.STATUS_ERROR && status != DownloadManager.STATUS_FINISHED && status != DownloadManager.STATUS_CONNECTED;
-    }
-
     public String getDownloadTaskName() {
         return downloadTaskName;
     }

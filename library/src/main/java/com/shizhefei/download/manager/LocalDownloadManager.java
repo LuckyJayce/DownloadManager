@@ -36,7 +36,6 @@ public class LocalDownloadManager extends DownloadManager {
     private IdGenerator idGenerator;
     private TaskHelper taskHelper = new TaskHelper();
     private LongSparseArray<DownloadData> tasks = new LongSparseArray<>();
-    private LongSparseArray<DownloadListener> listeners = new LongSparseArray<>();
     private Set<DownloadListener> downloadListeners = new HashSet<>();
     private List<DownloadInfo> downloadInfoList;
     private Executor executor;
@@ -68,42 +67,6 @@ public class LocalDownloadManager extends DownloadManager {
             downloadInfoList.add(info.getInfo());
             DownloadUtils.logD("LocalDownloadManager :%s", info);
         }
-    }
-
-    @Override
-    public long start(DownloadParams downloadParams) {
-        return start(downloadParams, null);
-    }
-
-    @Override
-    public boolean restartPauseOrFail(long downloadId, DownloadListener downloadListener) {
-        int index = -1;
-        DownloadInfo downloadInfo = null;
-        for (int i = 0; i < downloadInfoList.size(); i++) {
-            DownloadInfo info = downloadInfoList.get(i);
-            if (info.getId() == downloadId) {
-                downloadInfo = info;
-                index = i;
-                break;
-            }
-        }
-        if (downloadInfo != null) {
-            int status = downloadInfo.getStatus();
-            if (status == DownloadManager.STATUS_PAUSED || status == DownloadManager.STATUS_ERROR) {
-                DownloadParams downloadParams = downloadInfo.getDownloadParams();
-                if (downloadListener != null) {
-                    listeners.put(downloadId, downloadListener);
-                }
-
-                AbsDownloadTask downloadTask = downloadTaskFactory.buildDownloadTask(downloadId, false, downloadParams, downloadDB, executor);
-                downloadInfoList.set(index, downloadTask.getDownloadInfo());
-
-                TaskHandle taskHandle = taskHelper.execute(downloadTask, new DownloadListenerProxy(downloadId, proxyDownloadListener));
-                tasks.put(downloadId, new DownloadData(taskHandle, downloadTask));
-                return true;
-            }
-        }
-        return false;
     }
 
     @NonNull
@@ -142,11 +105,8 @@ public class LocalDownloadManager extends DownloadManager {
     }
 
     @Override
-    public long start(DownloadParams downloadParams, DownloadListener downloadListener) {
+    public long start(DownloadParams downloadParams) {
         long downloadId = idGenerator.generateId(downloadParams);
-        if (downloadListener != null) {
-            listeners.put(downloadId, downloadListener);
-        }
 
         AbsDownloadTask downloadTask = downloadTaskFactory.buildDownloadTask(downloadId, false, downloadParams, downloadDB, executor);
         downloadInfoList.add(downloadTask.getDownloadInfo());
@@ -173,6 +133,42 @@ public class LocalDownloadManager extends DownloadManager {
             data.requestHandle.cancle();
         }
         tasks.clear();
+    }
+
+
+    @Override
+    public boolean resume(long downloadId) {
+        int index = -1;
+        DownloadInfo downloadInfo = null;
+        for (int i = 0; i < downloadInfoList.size(); i++) {
+            DownloadInfo info = downloadInfoList.get(i);
+            if (info.getId() == downloadId) {
+                downloadInfo = info;
+                index = i;
+                break;
+            }
+        }
+        if (downloadInfo != null) {
+            int status = downloadInfo.getStatus();
+            if (status == DownloadManager.STATUS_PAUSED || status == DownloadManager.STATUS_ERROR) {
+                DownloadParams downloadParams = downloadInfo.getDownloadParams();
+
+                AbsDownloadTask downloadTask = downloadTaskFactory.buildDownloadTask(downloadId, false, downloadParams, downloadDB, executor);
+                downloadInfoList.set(index, downloadTask.getDownloadInfo());
+
+                TaskHandle taskHandle = taskHelper.execute(downloadTask, new DownloadListenerProxy(downloadId, proxyDownloadListener));
+                tasks.put(downloadId, new DownloadData(taskHandle, downloadTask));
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public void resumeAll() {
+        for (DownloadInfo downloadInfo : downloadInfoList) {
+            resume(downloadInfo.getId());
+        }
     }
 
     @Override
@@ -305,19 +301,11 @@ public class LocalDownloadManager extends DownloadManager {
             for (DownloadListener downloadListener : downloadListeners) {
                 downloadListener.onPending(downloadId);
             }
-            DownloadListener downloadListener = listeners.get(downloadId);
-            if (downloadListener != null) {
-                downloadListener.onPending(downloadId);
-            }
         }
 
         @Override
         public void onStart(long downloadId, long current, long total) {
             for (DownloadListener downloadListener : downloadListeners) {
-                downloadListener.onStart(downloadId, current, total);
-            }
-            DownloadListener downloadListener = listeners.get(downloadId);
-            if (downloadListener != null) {
                 downloadListener.onStart(downloadId, current, total);
             }
         }
@@ -327,19 +315,11 @@ public class LocalDownloadManager extends DownloadManager {
             for (DownloadListener downloadListener : downloadListeners) {
                 downloadListener.onDownloadIng(downloadId, current, total);
             }
-            DownloadListener downloadListener = listeners.get(downloadId);
-            if (downloadListener != null) {
-                downloadListener.onDownloadIng(downloadId, current, total);
-            }
         }
 
         @Override
         public void onDownloadResetSchedule(long downloadId, int reason, long current, long total) {
             for (DownloadListener downloadListener : downloadListeners) {
-                downloadListener.onDownloadResetSchedule(downloadId, reason, current, total);
-            }
-            DownloadListener downloadListener = listeners.get(downloadId);
-            if (downloadListener != null) {
                 downloadListener.onDownloadResetSchedule(downloadId, reason, current, total);
             }
         }
@@ -349,19 +329,11 @@ public class LocalDownloadManager extends DownloadManager {
             for (DownloadListener downloadListener : downloadListeners) {
                 downloadListener.onConnected(downloadId, httpInfo, saveDir, saveFileName, tempFileName, current, total);
             }
-            DownloadListener downloadListener = listeners.get(downloadId);
-            if (downloadListener != null) {
-                downloadListener.onConnected(downloadId, httpInfo, saveDir, saveFileName, tempFileName, current, total);
-            }
         }
 
         @Override
         public void onPaused(long downloadId) {
             for (DownloadListener downloadListener : downloadListeners) {
-                downloadListener.onPaused(downloadId);
-            }
-            DownloadListener downloadListener = listeners.get(downloadId);
-            if (downloadListener != null) {
                 downloadListener.onPaused(downloadId);
             }
             tasks.remove(downloadId);
@@ -372,11 +344,6 @@ public class LocalDownloadManager extends DownloadManager {
             for (DownloadListener downloadListener : downloadListeners) {
                 downloadListener.onComplete(downloadId);
             }
-            DownloadListener downloadListener = listeners.get(downloadId);
-            if (downloadListener != null) {
-                downloadListener.onComplete(downloadId);
-                listeners.remove(downloadId);
-            }
             tasks.remove(downloadId);
         }
 
@@ -385,11 +352,6 @@ public class LocalDownloadManager extends DownloadManager {
             for (DownloadListener downloadListener : downloadListeners) {
                 downloadListener.onError(downloadId, errorCode, errorMessage);
             }
-            DownloadListener downloadListener = listeners.get(downloadId);
-            if (downloadListener != null) {
-                downloadListener.onError(downloadId, errorCode, errorMessage);
-                listeners.remove(downloadId);
-            }
             tasks.remove(downloadId);
         }
 
@@ -397,11 +359,6 @@ public class LocalDownloadManager extends DownloadManager {
         public void onRemove(long downloadId) {
             for (DownloadListener downloadListener : downloadListeners) {
                 downloadListener.onRemove(downloadId);
-            }
-            DownloadListener downloadListener = listeners.get(downloadId);
-            if (downloadListener != null) {
-                downloadListener.onRemove(downloadId);
-                listeners.remove(downloadId);
             }
             tasks.remove(downloadId);
         }
