@@ -22,12 +22,14 @@
             android:id="@+id/play_button"
             android:layout_width="150dp"
             android:layout_height="wrap_content"
+            android:background="@drawable/button_bg"
             android:text="Play" />
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp">
 
         <EditText
             android:id="@+id/editText"
@@ -40,6 +42,7 @@
             android:id="@+id/button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:background="@drawable/button_bg"
             android:text="下载" />
     </LinearLayout>
 
@@ -58,6 +61,7 @@
             android:id="@+id/button2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:background="@drawable/button_bg"
             android:text="下载" />
     </LinearLayout>
 
