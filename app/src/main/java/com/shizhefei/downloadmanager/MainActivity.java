@@ -13,6 +13,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -40,12 +41,14 @@ public class MainActivity extends AppCompatActivity {
     private ViewPager viewPager;
     private Indicator indicatorView;
     private View resumeAllButton;
+    private Button playButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         downloadManager = DownloadManager.getRemote();
+        permissionHelper = new PermissionHelper(this);
 
         addButton = findViewById(R.id.button);
         editText = findViewById(R.id.editText);
@@ -53,27 +56,16 @@ public class MainActivity extends AppCompatActivity {
         editText2 = findViewById(R.id.editText2);
         pauseAllButton = findViewById(R.id.pause_all_button);
         resumeAllButton = findViewById(R.id.resume_all_button);
+        playButton = findViewById(R.id.play_button);
+        viewPager = findViewById(R.id.viewPager);
+        indicatorView = findViewById(R.id.indicator);
 
         addButton.setOnClickListener(onClickListener);
         addButton2.setOnClickListener(onClickListener);
         pauseAllButton.setOnClickListener(onClickListener);
         resumeAllButton.setOnClickListener(onClickListener);
+        playButton.setOnClickListener(onClickListener);
 
-        permissionHelper = new PermissionHelper(this);
-
-        findViewById(R.id.play_button).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                EditText editText = findViewById(R.id.editText3);
-                long text = Long.parseLong(editText.getText().toString());
-                Intent intent = new Intent(getApplicationContext(), PlayActivity.class);
-                intent.putExtra(PlayActivity.DOWNLOAD_ID, text);
-                startActivity(intent);
-            }
-        });
-
-        viewPager = findViewById(R.id.viewPager);
-        indicatorView = findViewById(R.id.indicator);
         indicatorView.setScrollBar(new TextWidthColorBar(this, indicatorView, Color.RED, 5));
         IndicatorViewPager indicatorViewPager = new IndicatorViewPager(indicatorView, viewPager);
         indicatorViewPager.setAdapter(new PAdapter(getSupportFragmentManager()));
@@ -118,6 +110,17 @@ public class MainActivity extends AppCompatActivity {
                 downloadManager.pauseAll();
             } else if (v == resumeAllButton) {
                 downloadManager.resumeAll();
+            } else if (v == playButton) {
+                EditText editText = findViewById(R.id.editText3);
+                try {
+                    long downloadId = Long.parseLong(editText.getText().toString());
+                    Intent intent = new Intent(getApplicationContext(), PlayActivity.class);
+                    intent.putExtra(PlayActivity.DOWNLOAD_ID, downloadId);
+                    startActivity(intent);
+                } catch (NumberFormatException e) {
+                    e.printStackTrace();
+                    Toast.makeText(getApplicationContext(), "downloadId不正确", Toast.LENGTH_LONG).show();
+                }
             }
         }
     };
