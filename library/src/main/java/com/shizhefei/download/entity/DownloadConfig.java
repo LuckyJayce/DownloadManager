@@ -104,8 +104,9 @@ public class DownloadConfig {
             return this;
         }
 
-        public void setMinDownloadProgressTime(long minDownloadProgressTime) {
+        public Builder setMinDownloadProgressTime(long minDownloadProgressTime) {
             this.minDownloadProgressTime = minDownloadProgressTime;
+            return this;
         }
 
         public String getDir() {

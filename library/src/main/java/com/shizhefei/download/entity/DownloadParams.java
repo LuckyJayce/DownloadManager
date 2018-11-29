@@ -82,6 +82,18 @@ public class DownloadParams implements Parcelable {
         }
     };
 
+    public Map<String, String> getExtDataMap() {
+        return extData;
+    }
+
+    public String getExtData(String key) {
+        return extData.get(key);
+    }
+
+    void setExtData(Map<String, String> extData) {
+        this.extData = extData;
+    }
+
     public long getTotalSize() {
         return totalSize;
     }
@@ -90,7 +102,7 @@ public class DownloadParams implements Parcelable {
         return isWifiRequired;
     }
 
-    public void setWifiRequired(boolean wifiRequired) {
+    void setWifiRequired(boolean wifiRequired) {
         isWifiRequired = wifiRequired;
     }
 
@@ -98,7 +110,7 @@ public class DownloadParams implements Parcelable {
         return url;
     }
 
-    public void setUrl(String url) {
+    void setUrl(String url) {
         this.url = url;
     }
 
@@ -110,7 +122,7 @@ public class DownloadParams implements Parcelable {
         return dir;
     }
 
-    public void setDir(String dir) {
+    void setDir(String dir) {
         this.dir = dir;
     }
 
@@ -118,18 +130,7 @@ public class DownloadParams implements Parcelable {
         return fileName;
     }
 
-    /**
-     * 设置下载保存文件名
-     *
-     * @param fileName   下载保存的文件名
-     * @param isOverride 是否覆盖已有的文件
-     */
-    public void setFileName(String fileName, boolean isOverride) {
-        this.fileName = fileName;
-        this.override = isOverride;
-    }
-
-    public void setFileName(String fileName) {
+    void setFileName(String fileName) {
         this.fileName = fileName;
         this.override = false;
     }
@@ -138,7 +139,7 @@ public class DownloadParams implements Parcelable {
         return params;
     }
 
-    public void setParams(Map<String, List<String>> params) {
+    void setParams(Map<String, List<String>> params) {
         this.params = params;
     }
 
@@ -319,8 +320,9 @@ public class DownloadParams implements Parcelable {
             return this;
         }
 
-        public void addExtData(String key, String value) {
+        public Builder addExtData(String key, String value) {
             extData.put(key, value);
+            return this;
         }
 
         public DownloadParams build() {

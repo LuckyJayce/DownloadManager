@@ -1,11 +1,14 @@
 package com.shizhefei.download.utils;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.StatFs;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 
 import com.shizhefei.download.entity.DownloadInfo;
@@ -43,8 +46,8 @@ public class DownloadUtils {
         return info == null || info.getType() != ConnectivityManager.TYPE_WIFI;
     }
 
-    public static boolean checkPermission(String accessNetworkState) {
-        return false;
+    public static boolean checkPermission(Context context, String permission) {
+        return ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED;
     }
 
     public static String findEtag(long downloadId, HttpURLConnection httpURLConnection) {

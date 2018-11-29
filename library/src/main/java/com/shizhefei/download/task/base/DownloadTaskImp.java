@@ -253,7 +253,7 @@ public class DownloadTaskImp {
 
     private void checkupWifiConnect() throws Exception {
         if (downloadParams.isWifiRequired()
-                && !DownloadUtils.checkPermission(Manifest.permission.ACCESS_NETWORK_STATE)) {
+                && !DownloadUtils.checkPermission(DownloadManager.getApplicationContext(), Manifest.permission.ACCESS_NETWORK_STATE)) {
             throw new DownloadException(downloadId, DownloadManager.ERROR_PERMISSION, Manifest.permission.ACCESS_NETWORK_STATE);
         }
         if (downloadParams.isWifiRequired() && DownloadUtils.isNetworkNotOnWifiType()) {
