@@ -25,7 +25,7 @@ dependencies {
     implementation 'com.shizhefei:task-core:1.0.1'
     implementation 'com.shizhefei:task-tasks:1.0.1'
     implementation 'com.android.support:recyclerview-v7:28.0.0'
-    implementation project(':library')
+    implementation project(':download')
     implementation 'com.google.code.gson:gson:2.8.5'
     implementation 'com.iheartradio.m3u8:open-m3u8:0.2.4'
     implementation 'com.shizhefei:ViewPagerIndicator:1.1.7'
