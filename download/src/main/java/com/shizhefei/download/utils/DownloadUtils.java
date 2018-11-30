@@ -62,7 +62,6 @@ public class DownloadUtils {
         return newEtag;
     }
 
-
     public static boolean isPreconditionFailed(HttpURLConnection connection, int httpCode, DownloadInfo entity, boolean isAcceptRange) throws Exception {
         final boolean onlyFromBeginning = (httpCode == HttpURLConnection.HTTP_OK
                 || httpCode == HttpURLConnection.HTTP_CREATED);
@@ -168,15 +167,21 @@ public class DownloadUtils {
     }
 
     public static void logD(String msg, Object... args) {
-        Log.d(DownloadManager.LIB_NAME, formatString(msg, args));
+        if (DownloadManager.getDownloadConfig().isDebug()) {
+            Log.d(DownloadManager.LIB_NAME, formatString(msg, args));
+        }
     }
 
     public static void logE(Throwable e, String msg, Object... args) {
-        Log.e(DownloadManager.LIB_NAME, formatString(msg, args), e);
+        if (DownloadManager.getDownloadConfig().isDebug()) {
+            Log.e(DownloadManager.LIB_NAME, formatString(msg, args), e);
+        }
     }
 
     public static void logE(String msg, Object... args) {
-        Log.e(DownloadManager.LIB_NAME, formatString(msg, args));
+        if (DownloadManager.getDownloadConfig().isDebug()) {
+            Log.e(DownloadManager.LIB_NAME, formatString(msg, args));
+        }
     }
 
     //-----------------------------------------------------------------------

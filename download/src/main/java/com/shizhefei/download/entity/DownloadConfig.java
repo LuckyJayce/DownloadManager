@@ -15,6 +15,11 @@ public class DownloadConfig {
     private Executor executor;
     private String userAgent;
     private long minDownloadProgressTime;
+    private boolean isDebug;
+
+    public boolean isDebug() {
+        return isDebug;
+    }
 
     public long getMinDownloadProgressTime() {
         return minDownloadProgressTime;
@@ -56,6 +61,7 @@ public class DownloadConfig {
         private Executor executor;
         private String userAgent;
         private long minDownloadProgressTime;
+        private boolean isDebug;
 
         public Builder() {
         }
@@ -68,6 +74,7 @@ public class DownloadConfig {
             isWifiRequired = config.isWifiRequired();
             userAgent = config.getUserAgent();
             minDownloadProgressTime = config.getMinDownloadProgressTime();
+            isDebug = config.isDebug;
         }
 
         public Builder setBlockSize(int blockSize) {
@@ -87,6 +94,15 @@ public class DownloadConfig {
 
         public Builder setUserAgent(String userAgent) {
             this.userAgent = userAgent;
+            return this;
+        }
+
+        public boolean isDebug() {
+            return isDebug;
+        }
+
+        public Builder setDebug(boolean debug) {
+            isDebug = debug;
             return this;
         }
 
@@ -134,6 +150,7 @@ public class DownloadConfig {
             downloadConfig.isWifiRequired = this.isWifiRequired;
             downloadConfig.userAgent = this.userAgent;
             downloadConfig.minDownloadProgressTime = this.minDownloadProgressTime;
+            downloadConfig.isDebug = isDebug;
             return downloadConfig;
         }
     }

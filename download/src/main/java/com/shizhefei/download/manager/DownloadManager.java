@@ -1,7 +1,6 @@
 package com.shizhefei.download.manager;
 
 import android.content.Context;
-import android.os.AsyncTask;
 import android.os.Environment;
 import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
@@ -20,6 +19,13 @@ import com.shizhefei.download.utils.DownloadUtils;
 
 import java.io.File;
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Executor;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 建议在不要多线程调用
@@ -131,7 +137,7 @@ public abstract class DownloadManager {
             builder.setDownloadTaskFactory(new DefaultDownloadTaskFactory());
         }
         if (builder.getExecutor() == null) {
-            builder.setExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            builder.setExecutor(createDefaultExecutor());
         }
         if (TextUtils.isEmpty(builder.getUserAgent())) {
             builder.setUserAgent(defaultUserAgent());
@@ -142,6 +148,18 @@ public abstract class DownloadManager {
         downloadConfig = builder.build();
         DownloadManager.context = context.getApplicationContext();
         isInit = true;
+    }
+
+    private static Executor createDefaultExecutor() {
+        BlockingQueue<Runnable> sPoolWorkQueue = new LinkedBlockingQueue<Runnable>(128);
+        ThreadFactory sThreadFactory = new ThreadFactory() {
+            private final AtomicInteger mCount = new AtomicInteger(1);
+
+            public Thread newThread(Runnable r) {
+                return new Thread(r, "DownloadManager Task #" + mCount.getAndIncrement());
+            }
+        };
+        return new ThreadPoolExecutor(1, 2, 30, TimeUnit.SECONDS, sPoolWorkQueue, sThreadFactory);
     }
 
     @NonNull
