@@ -1,6 +1,8 @@
 package com.shizhefei.download.task.single;
 
 
+import android.text.TextUtils;
+
 import com.shizhefei.download.db.DownloadDB;
 import com.shizhefei.download.entity.DownloadInfo;
 import com.shizhefei.download.entity.DownloadParams;
@@ -14,10 +16,15 @@ import com.shizhefei.download.task.base.DownloadProgressListener;
 import com.shizhefei.download.task.base.DownloadTaskImp;
 import com.shizhefei.mvc.ProgressSender;
 import com.shizhefei.task.ITask;
+import com.shizhefei.task.function.Func1;
+
+import java.io.File;
 
 class SingleThreadDownloadImp implements ITask<Void> {
-    private final DownloadTaskImp downloadTask;
+    private volatile DownloadTaskImp downloadTask;
     private final DownloadInfo downloadInfo;
+    private final Func1<String, String> transformRealUrl;
+    private final DownloadParams downloadParams;
     private long downloadId;
     private DownloadDB downloadDB;
     private ErrorInfo.Agency errorInfoAgency;
@@ -27,9 +34,11 @@ class SingleThreadDownloadImp implements ITask<Void> {
     private volatile boolean isRemove;
     private volatile boolean isCancel;
 
-    public SingleThreadDownloadImp(long downloadId, DownloadParams downloadParams, DownloadDB downloadDB, boolean isOnlyRemove) {
+    public SingleThreadDownloadImp(long downloadId, DownloadParams downloadParams, DownloadDB downloadDB, boolean isOnlyRemove, Func1<String, String> transformRealUrl) {
         this.downloadId = downloadId;
         this.downloadDB = downloadDB;
+        this.transformRealUrl = transformRealUrl;
+        this.downloadParams = downloadParams;
         downloadInfoAgency = downloadDB.find(downloadId);
         if (downloadInfoAgency == null) {
             downloadInfoAgency = build(downloadParams);
@@ -42,9 +51,7 @@ class SingleThreadDownloadImp implements ITask<Void> {
             downloadInfoAgency.setStartTime(System.currentTimeMillis());
             downloadDB.replace(downloadParams, downloadInfoAgency.getInfo());
         }
-
         downloadInfo = downloadInfoAgency.getInfo();
-        downloadTask = new DownloadTaskImp(downloadId, downloadParams, downloadParams.getUrl(), downloadInfo.getDir(), downloadInfo.getCurrent(), downloadInfo.getTotal(), downloadInfo.getFileName(), downloadInfo.getTempFileName(), downloadInfo.getHttpInfo().isAcceptRange(), downloadInfo.getHttpInfo().getETag());
     }
 
 
@@ -52,6 +59,13 @@ class SingleThreadDownloadImp implements ITask<Void> {
     public Void execute(ProgressSender progressSender) throws Exception {
         isRunning = true;
         try {
+            String url;
+            if (transformRealUrl != null) {
+                url = transformRealUrl.call(downloadParams.getUrl());
+            } else {
+                url = downloadParams.getUrl();
+            }
+            downloadTask = new DownloadTaskImp(downloadId, downloadParams, url, downloadInfo.getDir(), downloadInfo.getCurrent(), downloadInfo.getTotal(), downloadInfo.getFileName(), downloadInfo.getTempFileName(), downloadInfo.getHttpInfo().isAcceptRange(), downloadInfo.getHttpInfo().getETag());
             final DownloadProgressSenderProxy progressSenderProxy = new DownloadProgressSenderProxy(downloadId, progressSender);
             progressSenderProxy.sendStart(downloadInfo.getCurrent(), downloadInfo.getTotal());
             downloadTask.execute(new DownloadProgressListener() {
@@ -109,20 +123,34 @@ class SingleThreadDownloadImp implements ITask<Void> {
     @Override
     public void cancel() {
         isCancel = true;
+        if (downloadTask != null) {
+            downloadTask.cancel();
+        }
         downloadInfoAgency.setStatus(DownloadManager.STATUS_PAUSED);
         downloadDB.updateStatus(downloadInfoAgency.getId(), DownloadManager.STATUS_PAUSED);
-        downloadTask.cancel();
     }
 
     public void remove() {
         isRemove = true;
-        downloadTask.remove();
+        if (downloadTask != null) {
+            downloadTask.remove();
+        }
         if (!isRunning) {
             removeFiles();
         }
     }
 
     private void removeFiles() {
+        try {
+            if (!TextUtils.isEmpty(downloadInfo.getFileName())) {
+                new File(downloadInfo.getDir(), downloadInfo.getFileName()).delete();
+            }
+            if (!TextUtils.isEmpty(downloadInfo.getTempFileName())) {
+                new File(downloadInfo.getDir(), downloadInfo.getTempFileName()).delete();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         downloadDB.delete(downloadId);
     }
 

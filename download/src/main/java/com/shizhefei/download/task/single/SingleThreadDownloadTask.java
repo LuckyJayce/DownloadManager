@@ -6,6 +6,7 @@ import com.shizhefei.download.entity.DownloadInfo;
 import com.shizhefei.download.entity.DownloadParams;
 import com.shizhefei.mvc.RequestHandle;
 import com.shizhefei.mvc.ResponseSender;
+import com.shizhefei.task.function.Func1;
 import com.shizhefei.task.tasks.Tasks;
 
 import java.util.concurrent.Executor;
@@ -16,8 +17,12 @@ public class SingleThreadDownloadTask extends AbsDownloadTask {
     public static final String DOWNLOAD_TASK_NAME = "SingleThreadDownloadTask";
 
     public SingleThreadDownloadTask(long downloadId, DownloadParams downloadParams, DownloadDB downloadDB, Executor executor, boolean isOnlyRemove) {
+       this(downloadId, downloadParams, downloadDB, executor, isOnlyRemove, null);
+    }
+
+    public SingleThreadDownloadTask(long downloadId, DownloadParams downloadParams, DownloadDB downloadDB, Executor executor, boolean isOnlyRemove, Func1<String, String> transformRealUrl) {
         this.executor = executor;
-        downloadTask = new SingleThreadDownloadImp(downloadId, downloadParams, downloadDB, isOnlyRemove);
+        downloadTask = new SingleThreadDownloadImp(downloadId, downloadParams, downloadDB, isOnlyRemove, transformRealUrl);
     }
 
     @Override

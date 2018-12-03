@@ -25,6 +25,7 @@ import com.shizhefei.download.utils.DownloadUtils;
 import com.shizhefei.download.utils.FileNameUtils;
 import com.shizhefei.mvc.ProgressSender;
 import com.shizhefei.task.ITask;
+import com.shizhefei.task.function.Func1;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -36,6 +37,7 @@ import java.util.List;
 
 class M3u8DownloadTaskImp implements ITask<Void> {
     private final DownloadInfo downloadInfo;
+    private final Func1<String, String> transformRealUrl;
     private long downloadId;
     private DownloadDB downloadDB;
     private ErrorInfo.Agency errorInfoAgency;
@@ -46,12 +48,13 @@ class M3u8DownloadTaskImp implements ITask<Void> {
     private volatile boolean isRemove;
     private volatile boolean isCancel;
     private volatile boolean isRunning;
-    private ITask<Long> requestTotalTask;
+//    private ITask<Long> requestTotalTask;
 
-    public M3u8DownloadTaskImp(long downloadId, DownloadParams downloadParams, DownloadDB downloadDB, boolean isOnlyRemove) {
+    public M3u8DownloadTaskImp(long downloadId, DownloadParams downloadParams, DownloadDB downloadDB, boolean isOnlyRemove, Func1<String, String> transformRealUrl) {
         this.downloadId = downloadId;
         this.downloadParams = downloadParams;
         this.downloadDB = downloadDB;
+        this.transformRealUrl = transformRealUrl;
         downloadInfoAgency = downloadDB.find(downloadId);
         if (downloadInfoAgency == null) {
             downloadInfoAgency = build(downloadParams);
@@ -353,9 +356,9 @@ class M3u8DownloadTaskImp implements ITask<Void> {
     public void remove() {
         isRemove = true;
         isCancel = true;
-        if (requestTotalTask != null) {
-            requestTotalTask.cancel();
-        }
+//        if (requestTotalTask != null) {
+//            requestTotalTask.cancel();
+//        }
         if (downloadTask != null) {
             downloadTask.remove();
         }
@@ -378,9 +381,9 @@ class M3u8DownloadTaskImp implements ITask<Void> {
     @Override
     public void cancel() {
         isCancel = true;
-        if (requestTotalTask != null) {
-            requestTotalTask.cancel();
-        }
+//        if (requestTotalTask != null) {
+//            requestTotalTask.cancel();
+//        }
         downloadInfoAgency.setStatus(DownloadManager.STATUS_PAUSED);
         downloadDB.updateStatus(downloadInfoAgency.getId(), DownloadManager.STATUS_PAUSED);
         if (downloadTask != null) {
@@ -426,8 +429,14 @@ class M3u8DownloadTaskImp implements ITask<Void> {
         return currentItemInfo;
     }
 
-    private DownloadTaskImp buildFromExtInfo(long downloadId, String dir, DownloadParams downloadParams, M3u8ExtInfo.ItemInfo itemInfo) {
-        return new DownloadTaskImp(downloadId, downloadParams, itemInfo.getUrl(), dir, itemInfo.getCurrent(), itemInfo.getTotal(), itemInfo.getFileName(), itemInfo.getTempFileName(), downloadInfo.getHttpInfo().isAcceptRange(), downloadInfo.getHttpInfo().getETag());
+    private DownloadTaskImp buildFromExtInfo(long downloadId, String dir, DownloadParams downloadParams, M3u8ExtInfo.ItemInfo itemInfo) throws Exception {
+        String url;
+        if (transformRealUrl != null) {
+            url = transformRealUrl.call(itemInfo.getUrl());
+        } else {
+            url = itemInfo.getUrl();
+        }
+        return new DownloadTaskImp(downloadId, downloadParams, url, dir, itemInfo.getCurrent(), itemInfo.getTotal(), itemInfo.getFileName(), itemInfo.getTempFileName(), downloadInfo.getHttpInfo().isAcceptRange(), downloadInfo.getHttpInfo().getETag());
     }
 
     private String getItemFileName(String uri, int elementIndex) {
