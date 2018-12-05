@@ -144,15 +144,7 @@ class M3u8DownloadTaskImp implements ITask<Void> {
                     playlist = parser.parse();
                 } catch (Exception e) {
                     DownloadUtils.logD("M3u8DownloadTaskImp m3u8 file parse fail re-download m3u8 file m3u8File", downloadId);
-                    //解析失败重新下载
-                    m3u8Info = new M3u8ExtInfo.ItemInfo();
-                    m3u8Info.setCurrent(0);
-                    m3u8Info.setTotal(0);
-                    m3u8Info.setFileName(m3u8File.getName());
-                    m3u8Info.setUrl(downloadParams.getUrl());
-                    m3U8ExtInfo.setM3u8Info(m3u8Info);
-                    m3U8ExtInfo.setCurrentItemInfo(null);
-                    downloadTask = buildFromExtInfo(downloadId, dir, downloadParams, m3u8Info);
+                    m3u8Info = null;
                 } finally {
                     try {
                         if (inputStream != null) {
@@ -163,21 +155,30 @@ class M3u8DownloadTaskImp implements ITask<Void> {
                     }
                 }
             }
-        } else {
+        }
+        if (m3u8Info == null) {
+            String realM3u8Url = downloadParams.getUrl();
+            if (transformRealUrl != null) {
+                try {
+                    realM3u8Url = transformRealUrl.call(downloadParams.getUrl());
+                } catch (Exception e) {
+                    throw new DownloadException(downloadId, DownloadManager.ERROR_M3U8_URL_TRANSFORM_FAIL, e.getMessage());
+                }
+            }
             m3u8Info = new M3u8ExtInfo.ItemInfo();
             m3u8Info.setCurrent(0);
             m3u8Info.setTotal(0);
             m3u8Info.setFileName(m3u8File.getName());
-            m3u8Info.setUrl(downloadParams.getUrl());
+            m3u8Info.setUrl(realM3u8Url);
             m3U8ExtInfo.setM3u8Info(m3u8Info);
             m3U8ExtInfo.setCurrentItemInfo(null);
             downloadTask = buildFromExtInfo(downloadId, dir, downloadParams, m3u8Info);
+            downloadDB.update(downloadInfoAgency.getInfo());
         }
         //下载m3u8文件
         if (!isCancel) {
             if (downloadTask != null) {
                 DownloadUtils.logD("M3u8DownloadTaskImp  downloadId=%d start download m3u8 file", downloadId);
-                downloadDB.update(downloadInfoAgency.getInfo());
                 downloadTask.execute(new DownloadProgressListener() {
                     @Override
                     public void onDownloadResetSchedule(long downloadId, int reason, long current, long total) {
@@ -251,7 +252,7 @@ class M3u8DownloadTaskImp implements ITask<Void> {
                 for (int i = startIndex; i < tracksSize && !isCancel; i++) {
                     final TrackData trackData = tracks.get(i);
                     if (currentItemInfo == null || currentItemInfo.getCurrent() == 0) {
-                        currentItemInfo = buildItemInfo(i, trackData);
+                        currentItemInfo = buildItemInfo(m3u8Info, i, trackData);
                         m3U8ExtInfo.setCurrentItemInfo(currentItemInfo);
                         downloadInfoAgency.setExtInfo(m3U8ExtInfo.getJson());
                         downloadDB.updateExtInfo(downloadInfoAgency.getId(), downloadInfoAgency.getExtInfo());
@@ -417,8 +418,8 @@ class M3u8DownloadTaskImp implements ITask<Void> {
         return downloadInfoAgency;
     }
 
-    private M3u8ExtInfo.ItemInfo buildItemInfo(int index, TrackData trackData) {
-        String url = getTsUrl(downloadInfo.getUrl(), trackData.getUri());
+    private M3u8ExtInfo.ItemInfo buildItemInfo(M3u8ExtInfo.ItemInfo m3u8Info, int index, TrackData trackData) {
+        String url = getTsUrl(m3u8Info.getUrl(), trackData.getUri());
         M3u8ExtInfo.ItemInfo currentItemInfo = new M3u8ExtInfo.ItemInfo();
         currentItemInfo.setCurrent(0);
         currentItemInfo.setTotal(0);
@@ -430,13 +431,7 @@ class M3u8DownloadTaskImp implements ITask<Void> {
     }
 
     private DownloadTaskImp buildFromExtInfo(long downloadId, String dir, DownloadParams downloadParams, M3u8ExtInfo.ItemInfo itemInfo) throws Exception {
-        String url;
-        if (transformRealUrl != null) {
-            url = transformRealUrl.call(itemInfo.getUrl());
-        } else {
-            url = itemInfo.getUrl();
-        }
-        return new DownloadTaskImp(downloadId, downloadParams, url, dir, itemInfo.getCurrent(), itemInfo.getTotal(), itemInfo.getFileName(), itemInfo.getTempFileName(), downloadInfo.getHttpInfo().isAcceptRange(), downloadInfo.getHttpInfo().getETag());
+        return new DownloadTaskImp(downloadId, downloadParams, itemInfo.getUrl(), dir, itemInfo.getCurrent(), itemInfo.getTotal(), itemInfo.getFileName(), itemInfo.getTempFileName(), downloadInfo.getHttpInfo().isAcceptRange(), downloadInfo.getHttpInfo().getETag());
     }
 
     private String getItemFileName(String uri, int elementIndex) {

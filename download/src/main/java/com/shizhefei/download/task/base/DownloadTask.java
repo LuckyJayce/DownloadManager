@@ -1,6 +1,5 @@
 package com.shizhefei.download.task.base;
 
-import com.shizhefei.download.entity.DownloadInfo;
 import com.shizhefei.download.entity.DownloadParams;
 import com.shizhefei.download.entity.HttpInfo;
 import com.shizhefei.download.task.DownloadProgressSenderProxy;
@@ -13,12 +12,11 @@ public class DownloadTask implements ITask<Void> {
     private final long downloadId;
     private DownloadTaskImp taskImp;
 
-    public DownloadTask(long downloadId, DownloadInfo downloadInfo) {
-        current = downloadInfo.getCurrent();
-        total = downloadInfo.getTotal();
-        this.downloadId = downloadId;
-        DownloadParams downloadParams = downloadInfo.getDownloadParams();
-        taskImp = new DownloadTaskImp(downloadId, downloadParams, downloadParams.getUrl(), downloadInfo.getDir(), downloadInfo.getCurrent(), downloadInfo.getTotal(), downloadInfo.getFileName(), downloadInfo.getTempFileName(), downloadInfo.getHttpInfo().isAcceptRange(), downloadInfo.getHttpInfo().getETag());
+    public DownloadTask(DownloadParams downloadParams) {
+        current = 0;
+        total = 0;
+        downloadId = 0;
+        taskImp = new DownloadTaskImp(downloadId, downloadParams, downloadParams.getUrl(), downloadParams.getDir(), current, total, downloadParams.getFileName(), null, false, null);
     }
 
     public void onRemove() {

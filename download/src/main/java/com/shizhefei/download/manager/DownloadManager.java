@@ -76,6 +76,10 @@ public abstract class DownloadManager {
      * m3u8文件解析失败
      */
     public static final int ERROR_M3U8_FILE_PARSE_FAIL = 10;
+    /**
+     * m3u8 url地址解析失败
+     */
+    public static final int ERROR_M3U8_URL_TRANSFORM_FAIL = 11;
     //---------------------     error code---------------------------------------------------------//
 
 
