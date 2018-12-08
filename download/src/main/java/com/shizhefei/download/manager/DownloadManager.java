@@ -163,7 +163,7 @@ public abstract class DownloadManager {
                 return new Thread(r, "DownloadManager Task #" + mCount.getAndIncrement());
             }
         };
-        return new ThreadPoolExecutor(1, 2, 30, TimeUnit.SECONDS, sPoolWorkQueue, sThreadFactory);
+        return new ThreadPoolExecutor(2, 4, 30, TimeUnit.SECONDS, sPoolWorkQueue, sThreadFactory);
     }
 
     @NonNull
