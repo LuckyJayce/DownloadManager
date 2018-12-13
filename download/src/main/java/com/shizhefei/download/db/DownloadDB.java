@@ -31,7 +31,7 @@ public class DownloadDB {
     private TaskHelper taskHelper;
 
     public DownloadDB(Context context, Executor executor) {
-        dbHelper = new DBHelper(context, "DownloadDB", null, DB_VERSION);
+        dbHelper = new DBHelper(context, "DownloadDB.db", null, DB_VERSION);
         taskHelper = new TaskHelper();
         taskHelper.setThreadExecutor(executor);
     }
