@@ -26,8 +26,8 @@ import com.shizhefei.task.TaskHandle;
 import com.shizhefei.task.TaskHelper;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executor;
@@ -38,8 +38,8 @@ public class LocalDownloadManager extends DownloadManager {
     private IdGenerator idGenerator;
     private TaskHelper taskHelper = new TaskHelper();
     private LongSparseArray<DownloadData> tasks = new LongSparseArray<>();
-    private Set<DownloadListener> downloadListeners = new HashSet<>();
-    private List<DownloadInfo> downloadInfoList;
+    private Set<DownloadListener> downloadListeners = new LinkedHashSet<>();
+    private List<DownloadInfo.Agency> downloadInfoAgencyList;
     private Executor executor;
     private SpeedMonitorImp speedMonitor;
 
@@ -54,22 +54,22 @@ public class LocalDownloadManager extends DownloadManager {
         this.executor = executor;
         this.idGenerator = new DefaultIdGenerator(context);
         List<DownloadInfo.Agency> infoList = downloadDB.findAll();
-        downloadInfoList = new ArrayList<>(infoList.size());
-        for (DownloadInfo.Agency info : infoList) {
-            switch (info.getStatus()) {
+        downloadInfoAgencyList = new ArrayList<>(infoList.size());
+        for (DownloadInfo.Agency infoAgency : infoList) {
+            switch (infoAgency.getStatus()) {
                 case DownloadManager.STATUS_CONNECTED:
                 case DownloadManager.STATUS_PROGRESS:
                 case DownloadManager.STATUS_PENDING:
                 case DownloadManager.STATUS_START:
                 case DownloadManager.STATUS_DOWNLOAD_RESET_SCHEDULE:
-                    info.setStatus(DownloadManager.STATUS_PAUSED);
+                    infoAgency.setStatus(DownloadManager.STATUS_PAUSED);
                     break;
             }
-            if (!info.getHttpInfo().isAcceptRange()) {
-                info.setCurrent(0);
+            if (!infoAgency.getHttpInfo().isAcceptRange()) {
+                infoAgency.setCurrent(0);
             }
-            downloadInfoList.add(info.getInfo());
-            DownloadUtils.logD("LocalDownloadManager :%s", info);
+            downloadInfoAgencyList.add(infoAgency);
+            DownloadUtils.logD("LocalDownloadManager :%s", infoAgency.getInfo());
         }
     }
 
@@ -77,9 +77,9 @@ public class LocalDownloadManager extends DownloadManager {
     @Override
     public List<DownloadInfo> find(String url) {
         List<DownloadInfo> list = new ArrayList<>(2);
-        for (DownloadInfo downloadInfo : downloadInfoList) {
-            if (downloadInfo.getDownloadParams().getUrl().equals(url)) {
-                list.add(downloadInfo);
+        for (DownloadInfo.Agency infoAgency : downloadInfoAgencyList) {
+            if (infoAgency.getDownloadParams().getUrl().equals(url)) {
+                list.add(infoAgency.getInfo());
             }
         }
         return list;
@@ -87,9 +87,9 @@ public class LocalDownloadManager extends DownloadManager {
 
     @Override
     public DownloadInfo findFirst(String url) {
-        for (DownloadInfo downloadInfo : downloadInfoList) {
-            if (downloadInfo.getDownloadParams().getUrl().equals(url)) {
-                return downloadInfo;
+        for (DownloadInfo.Agency infoAgency : downloadInfoAgencyList) {
+            if (infoAgency.getDownloadParams().getUrl().equals(url)) {
+                return infoAgency.getInfo();
             }
         }
         return null;
@@ -97,12 +97,12 @@ public class LocalDownloadManager extends DownloadManager {
 
     @Override
     public DownloadInfo findFirst(String url, String dir, String fileName) {
-        for (DownloadInfo downloadInfo : downloadInfoList) {
-            DownloadParams downloadParams = downloadInfo.getDownloadParams();
+        for (DownloadInfo.Agency infoAgency : downloadInfoAgencyList) {
+            DownloadParams downloadParams = infoAgency.getDownloadParams();
             if (downloadParams.getUrl().equals(url) &&
                     downloadParams.getDir().equals(dir)
                     && (downloadParams.getFileName() != null && downloadParams.getFileName().equals(fileName))) {
-                return downloadInfo;
+                return infoAgency.getInfo();
             }
         }
         return null;
@@ -112,8 +112,10 @@ public class LocalDownloadManager extends DownloadManager {
     public long start(DownloadParams downloadParams) {
         long downloadId = idGenerator.generateId(downloadParams);
 
-        AbsDownloadTask downloadTask = downloadTaskFactory.buildDownloadTask(downloadId, false, downloadParams, downloadDB, executor);
-        downloadInfoList.add(downloadTask.getDownloadInfo());
+        DownloadInfo.Agency infoAgency = buildDownloadInfoAgency(downloadId, downloadParams);
+
+        AbsDownloadTask downloadTask = downloadTaskFactory.buildDownloadTask(downloadId, false, infoAgency, downloadDB, executor);
+        downloadInfoAgencyList.add(infoAgency);
 
         TaskHandle taskHandle = taskHelper.execute(downloadTask, new DownloadListenerProxy(downloadId, proxyDownloadListener));
         tasks.put(downloadId, new DownloadData(taskHandle, downloadTask));
@@ -142,24 +144,19 @@ public class LocalDownloadManager extends DownloadManager {
 
     @Override
     public boolean resume(long downloadId) {
-        int index = -1;
-        DownloadInfo downloadInfo = null;
-        for (int i = 0; i < downloadInfoList.size(); i++) {
-            DownloadInfo info = downloadInfoList.get(i);
-            if (info.getId() == downloadId) {
-                downloadInfo = info;
-                index = i;
+        DownloadInfo.Agency infoAgency = null;
+        for (DownloadInfo.Agency agency : downloadInfoAgencyList) {
+            if (agency.getId() == downloadId) {
+                infoAgency = agency;
                 break;
             }
         }
-        if (downloadInfo != null) {
-            int status = downloadInfo.getStatus();
+
+        if (infoAgency != null) {
+            int status = infoAgency.getStatus();
             if (status == DownloadManager.STATUS_PAUSED || status == DownloadManager.STATUS_ERROR) {
-                DownloadParams downloadParams = downloadInfo.getDownloadParams();
 
-                AbsDownloadTask downloadTask = downloadTaskFactory.buildDownloadTask(downloadId, false, downloadParams, downloadDB, executor);
-                downloadInfoList.set(index, downloadTask.getDownloadInfo());
-
+                AbsDownloadTask downloadTask = downloadTaskFactory.buildDownloadTask(downloadId, false, infoAgency, downloadDB, executor);
                 TaskHandle taskHandle = taskHelper.execute(downloadTask, new DownloadListenerProxy(downloadId, proxyDownloadListener));
                 tasks.put(downloadId, new DownloadData(taskHandle, downloadTask));
                 return true;
@@ -170,19 +167,19 @@ public class LocalDownloadManager extends DownloadManager {
 
     @Override
     public void resumeAll() {
-        for (DownloadInfo downloadInfo : downloadInfoList) {
-            resume(downloadInfo.getId());
+        for (DownloadInfo.Agency infoAgency : downloadInfoAgencyList) {
+            resume(infoAgency.getId());
         }
     }
 
     @Override
     public void remove(long downloadId) {
-        DownloadInfo downloadInfo = null;
-        Iterator<DownloadInfo> iterator = downloadInfoList.iterator();
+        DownloadInfo.Agency infoAgency = null;
+        Iterator<DownloadInfo.Agency> iterator = downloadInfoAgencyList.iterator();
         while (iterator.hasNext()) {
-            DownloadInfo info = iterator.next();
+            DownloadInfo.Agency info = iterator.next();
             if (info.getId() == downloadId) {
-                downloadInfo = info;
+                infoAgency = info;
                 iterator.remove();
                 break;
             }
@@ -194,8 +191,8 @@ public class LocalDownloadManager extends DownloadManager {
             tasks.remove(downloadId);
             downloadDB.delete(downloadId);
         } else {//没有在执行，直接删除数据库中的
-            if (downloadInfo != null) {
-                AbsDownloadTask downloadTask = downloadTaskFactory.buildDownloadTask(downloadId, true, downloadInfo.getDownloadParams(), downloadDB, executor);
+            if (infoAgency != null) {
+                AbsDownloadTask downloadTask = downloadTaskFactory.buildDownloadTask(downloadId, true, infoAgency, downloadDB, executor);
                 downloadTask.remove();
             }
         }
@@ -205,9 +202,9 @@ public class LocalDownloadManager extends DownloadManager {
 
     @Override
     public DownloadInfo getDownloadInfo(long downloadId) {
-        for (DownloadInfo downloadInfo : downloadInfoList) {
-            if (downloadInfo.getId() == downloadId) {
-                return downloadInfo;
+        for (DownloadInfo.Agency infoAgency : downloadInfoAgencyList) {
+            if (infoAgency.getId() == downloadId) {
+                return infoAgency.getInfo();
             }
         }
         return null;
@@ -215,9 +212,9 @@ public class LocalDownloadManager extends DownloadManager {
 
     @Override
     public DownloadParams getDownloadParams(long downloadId) {
-        for (DownloadInfo downloadInfo : downloadInfoList) {
-            if (downloadInfo.getId() == downloadId) {
-                return downloadInfo.getDownloadParams();
+        for (DownloadInfo.Agency infoAgency : downloadInfoAgencyList) {
+            if (infoAgency.getId() == downloadId) {
+                return infoAgency.getDownloadParams();
             }
         }
         return null;
@@ -238,8 +235,8 @@ public class LocalDownloadManager extends DownloadManager {
             @Override
             public int getCount() {
                 int count = 0;
-                for (DownloadInfo downloadInfo : downloadInfoList) {
-                    if (isNeed(downloadInfo)) {
+                for (DownloadInfo.Agency infoAgency : downloadInfoAgencyList) {
+                    if (isNeed(infoAgency)) {
                         count++;
                     }
                 }
@@ -249,10 +246,10 @@ public class LocalDownloadManager extends DownloadManager {
             @Override
             public DownloadInfo getDownloadInfo(int position) {
                 int p = 0;
-                for (DownloadInfo downloadInfo : downloadInfoList) {
-                    if (isNeed(downloadInfo)) {
+                for (DownloadInfo.Agency infoAgency : downloadInfoAgencyList) {
+                    if (isNeed(infoAgency)) {
                         if (p == position) {
-                            return downloadInfo;
+                            return infoAgency.getInfo();
                         }
                         p++;
                     }
@@ -263,21 +260,21 @@ public class LocalDownloadManager extends DownloadManager {
             @Override
             public int getPosition(long downloadId) {
                 int p = 0;
-                for (DownloadInfo downloadInfo : downloadInfoList) {
-                    if (isNeed(downloadInfo)) {
-                        if (downloadInfo.getId() == downloadId) {
+                for (DownloadInfo.Agency infoAgency : downloadInfoAgencyList) {
+                    if (isNeed(infoAgency)) {
+                        if (infoAgency.getId() == downloadId) {
                             return p;
                         }
                         p++;
-                    } else if (downloadInfo.getId() == downloadId) {
+                    } else if (infoAgency.getId() == downloadId) {
                         break;
                     }
                 }
                 return DownloadManager.INVALID_POSITION;
             }
 
-            private boolean isNeed(DownloadInfo downloadInfo) {
-                return (downloadInfo.getStatus() & downloadStatus) != 0;
+            private boolean isNeed(DownloadInfo.Agency infoAgency) {
+                return (infoAgency.getStatus() & downloadStatus) != 0;
             }
         };
     }
@@ -384,19 +381,19 @@ public class LocalDownloadManager extends DownloadManager {
     private DownloadInfoList downloadInfoListProxy = new DownloadInfoList() {
         @Override
         public int getCount() {
-            return downloadInfoList.size();
+            return downloadInfoAgencyList.size();
         }
 
         @Override
         public DownloadInfo getDownloadInfo(int position) {
-            return downloadInfoList.get(position);
+            return downloadInfoAgencyList.get(position).getInfo();
         }
 
         @Override
         public int getPosition(long downloadId) {
-            for (int i = 0; i < downloadInfoList.size(); i++) {
-                DownloadInfo downloadInfo = downloadInfoList.get(i);
-                if (downloadInfo.getId() == downloadId) {
+            for (int i = 0; i < downloadInfoAgencyList.size(); i++) {
+                DownloadInfo.Agency infoAgency = downloadInfoAgencyList.get(i);
+                if (infoAgency.getId() == downloadId) {
                     return i;
                 }
             }
@@ -466,5 +463,22 @@ public class LocalDownloadManager extends DownloadManager {
             private long speed;
             private long lastRefreshTime;
         }
+    }
+
+    private DownloadInfo.Agency buildDownloadInfoAgency(long downloadId, DownloadParams downloadParams) {
+        DownloadInfo.Agency downloadInfoAgency = new DownloadInfo.Agency(downloadParams);
+        downloadInfoAgency.setId(downloadId);
+        downloadInfoAgency.setUrl(downloadParams.getUrl());
+        downloadInfoAgency.setCurrent(0);
+        if (downloadParams.getTotalSize() > 0) {
+            downloadInfoAgency.setTotal(downloadParams.getTotalSize());
+        } else {
+            downloadInfoAgency.setTotal(0);
+        }
+        downloadInfoAgency.setStartTime(System.currentTimeMillis());
+        downloadInfoAgency.setStatus(DownloadManager.STATUS_PENDING);
+        downloadInfoAgency.setFilename(downloadParams.getFileName());
+        downloadInfoAgency.setDir(downloadParams.getDir());
+        return downloadInfoAgency;
     }
 }

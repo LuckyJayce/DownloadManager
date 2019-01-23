@@ -3,7 +3,6 @@ package com.shizhefei.download.task.single;
 import com.shizhefei.download.base.AbsDownloadTask;
 import com.shizhefei.download.db.DownloadDB;
 import com.shizhefei.download.entity.DownloadInfo;
-import com.shizhefei.download.entity.DownloadParams;
 import com.shizhefei.mvc.RequestHandle;
 import com.shizhefei.mvc.ResponseSender;
 import com.shizhefei.task.function.Func1;
@@ -16,13 +15,13 @@ public class SingleThreadDownloadTask extends AbsDownloadTask {
     private final Executor executor;
     public static final String DOWNLOAD_TASK_NAME = "SingleThreadDownloadTask";
 
-    public SingleThreadDownloadTask(long downloadId, DownloadParams downloadParams, DownloadDB downloadDB, Executor executor, boolean isOnlyRemove) {
-       this(downloadId, downloadParams, downloadDB, executor, isOnlyRemove, null);
+    public SingleThreadDownloadTask(long downloadId, DownloadInfo.Agency downloadInfoAgency, DownloadDB downloadDB, Executor executor, boolean isOnlyRemove) {
+       this(downloadId, downloadInfoAgency, downloadDB, executor, isOnlyRemove, null);
     }
 
-    public SingleThreadDownloadTask(long downloadId, DownloadParams downloadParams, DownloadDB downloadDB, Executor executor, boolean isOnlyRemove, Func1<String, String> transformRealUrl) {
+    public SingleThreadDownloadTask(long downloadId, DownloadInfo.Agency downloadInfoAgency, DownloadDB downloadDB, Executor executor, boolean isOnlyRemove, Func1<String, String> transformRealUrl) {
         this.executor = executor;
-        downloadTask = new SingleThreadDownloadImp(downloadId, downloadParams, downloadDB, isOnlyRemove, transformRealUrl);
+        downloadTask = new SingleThreadDownloadImp(downloadId, downloadInfoAgency, downloadDB, isOnlyRemove, transformRealUrl);
     }
 
     @Override

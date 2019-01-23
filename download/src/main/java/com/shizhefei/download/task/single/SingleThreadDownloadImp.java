@@ -34,17 +34,16 @@ class SingleThreadDownloadImp implements ITask<Void> {
     private volatile boolean isRemove;
     private volatile boolean isCancel;
 
-    public SingleThreadDownloadImp(long downloadId, DownloadParams downloadParams, DownloadDB downloadDB, boolean isOnlyRemove, Func1<String, String> transformRealUrl) {
+    public SingleThreadDownloadImp(long downloadId, DownloadInfo.Agency downloadInfoAgency, DownloadDB downloadDB, boolean isOnlyRemove, Func1<String, String> transformRealUrl) {
         this.downloadId = downloadId;
         this.downloadDB = downloadDB;
         this.transformRealUrl = transformRealUrl;
-        this.downloadParams = downloadParams;
-        downloadInfoAgency = downloadDB.find(downloadId);
-        if (downloadInfoAgency == null) {
-            downloadInfoAgency = build(downloadParams);
-        }
+        this.downloadInfoAgency = downloadInfoAgency;
+        this.downloadParams = downloadInfoAgency.getInfo().getDownloadParams();
         errorInfoAgency = downloadInfoAgency.getErrorInfoAgency();
         httpInfoAgency = downloadInfoAgency.getHttpInfoAgency();
+
+        downloadInfoAgency.setDownloadTaskName(SingleThreadDownloadTask.DOWNLOAD_TASK_NAME);
 
         if (!isOnlyRemove) {
             downloadInfoAgency.setStatus(DownloadManager.STATUS_PENDING);
@@ -156,27 +155,5 @@ class SingleThreadDownloadImp implements ITask<Void> {
 
     public DownloadInfo getDownloadInfo() {
         return downloadInfoAgency.getInfo();
-    }
-
-    public String getDownloadTaskName() {
-        return SingleThreadDownloadTask.DOWNLOAD_TASK_NAME;
-    }
-
-    private DownloadInfo.Agency build(DownloadParams downloadParams) {
-        DownloadInfo.Agency downloadInfoAgency = new DownloadInfo.Agency(downloadParams);
-        downloadInfoAgency.setId(downloadId);
-        downloadInfoAgency.setUrl(downloadParams.getUrl());
-        downloadInfoAgency.setCurrent(0);
-        if (downloadParams.getTotalSize() > 0) {
-            downloadInfoAgency.setTotal(downloadParams.getTotalSize());
-        } else {
-            downloadInfoAgency.setTotal(0);
-        }
-        downloadInfoAgency.setDownloadTaskName(getDownloadTaskName());
-        downloadInfoAgency.setStartTime(System.currentTimeMillis());
-        downloadInfoAgency.setStatus(DownloadManager.STATUS_PENDING);
-        downloadInfoAgency.setFilename(downloadParams.getFileName());
-        downloadInfoAgency.setDir(downloadParams.getDir());
-        return downloadInfoAgency;
     }
 }

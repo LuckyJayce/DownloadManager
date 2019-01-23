@@ -277,6 +277,10 @@ public class DownloadInfo implements Parcelable {
             return downloadInfo;
         }
 
+        public DownloadParams getDownloadParams() {
+            return downloadInfo.getDownloadParams();
+        }
+
         public long getStartTime() {
             return downloadInfo.getStartTime();
         }

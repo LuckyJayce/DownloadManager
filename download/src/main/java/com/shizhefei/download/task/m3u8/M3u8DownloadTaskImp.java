@@ -50,15 +50,16 @@ class M3u8DownloadTaskImp implements ITask<Void> {
     private volatile boolean isRunning;
 //    private ITask<Long> requestTotalTask;
 
-    public M3u8DownloadTaskImp(long downloadId, DownloadParams downloadParams, DownloadDB downloadDB, boolean isOnlyRemove, Func1<String, String> transformRealUrl) {
+    public M3u8DownloadTaskImp(long downloadId, DownloadInfo.Agency downloadInfoAgency, DownloadDB downloadDB, boolean isOnlyRemove, Func1<String, String> transformRealUrl) {
         this.downloadId = downloadId;
-        this.downloadParams = downloadParams;
+        this.downloadParams = downloadInfoAgency.getDownloadParams();
         this.downloadDB = downloadDB;
         this.transformRealUrl = transformRealUrl;
-        downloadInfoAgency = downloadDB.find(downloadId);
-        if (downloadInfoAgency == null) {
-            downloadInfoAgency = build(downloadParams);
-        }
+        this.downloadInfoAgency = downloadInfoAgency;
+
+        downloadInfoAgency.setDownloadTaskName(M3u8DownloadTask.DOWNLOAD_TASK_NAME);
+        downloadInfoAgency.setDir(downloadParams.getDir() + File.separator + downloadId + "_" + downloadInfoAgency.getStartTime());
+
         errorInfoAgency = downloadInfoAgency.getErrorInfoAgency();
         httpInfoAgency = downloadInfoAgency.getHttpInfoAgency();
         downloadInfo = downloadInfoAgency.getInfo();
@@ -398,24 +399,6 @@ class M3u8DownloadTaskImp implements ITask<Void> {
         int index = m38uUrl.lastIndexOf("/");
         String urlPre = m38uUrl.substring(0, index + 1);
         return urlPre + tsUri;
-    }
-
-    private DownloadInfo.Agency build(DownloadParams downloadParams) {
-        DownloadInfo.Agency downloadInfoAgency = new DownloadInfo.Agency(downloadParams);
-        downloadInfoAgency.setId(downloadId);
-        downloadInfoAgency.setUrl(downloadParams.getUrl());
-        downloadInfoAgency.setCurrent(0);
-        if (downloadParams.getTotalSize() > 0) {
-            downloadInfoAgency.setTotal(downloadParams.getTotalSize());
-        } else {
-            downloadInfoAgency.setTotal(0);
-        }
-        downloadInfoAgency.setStatus(DownloadManager.STATUS_PENDING);
-        downloadInfoAgency.setFilename(downloadParams.getFileName());
-        downloadInfoAgency.setStartTime(System.currentTimeMillis());
-        downloadInfoAgency.setDownloadTaskName(M3u8DownloadTask.DOWNLOAD_TASK_NAME);
-        downloadInfoAgency.setDir(downloadParams.getDir() + File.separator + downloadId + "_" + downloadInfoAgency.getStartTime());
-        return downloadInfoAgency;
     }
 
     private M3u8ExtInfo.ItemInfo buildItemInfo(M3u8ExtInfo.ItemInfo m3u8Info, int index, TrackData trackData) {
