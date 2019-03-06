@@ -26,10 +26,14 @@ public abstract class DownloadListener {
     public void onPaused(long downloadId) {
 
     }
-//
-//    public void onBlockComplete(long downloadId) {
-//
-//    }
+
+    public void onBlockStart(long downloadId, String blockName, String blockInfo, long current, long total, long blockCurrent, long blockTotal) {
+
+    }
+
+    public void onBlockComplete(long downloadId, String blockName, String blockInfo, long current, long total, long blockCurrent, long blockTotal) {
+
+    }
 
     public abstract void onComplete(long downloadId);
 

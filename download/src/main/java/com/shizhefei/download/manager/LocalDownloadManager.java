@@ -342,6 +342,24 @@ public class LocalDownloadManager extends DownloadManager {
         }
 
         @Override
+        public void onBlockStart(long downloadId, String blockName, String blockInfo, long current, long total, long blockCurrent, long blockTotal) {
+            super.onBlockStart(downloadId, blockName, blockInfo, current, total, blockCurrent, blockTotal);
+            speedMonitor.setProgress(downloadId, current, total);
+            for (DownloadListener downloadListener : downloadListeners) {
+                downloadListener.onBlockStart(downloadId, blockName, blockInfo, current, total, blockCurrent, blockTotal);
+            }
+        }
+
+        @Override
+        public void onBlockComplete(long downloadId, String blockName, String blockInfo, long current, long total, long blockCurrent, long blockTotal) {
+            super.onBlockComplete(downloadId, blockName, blockInfo, current, total, blockCurrent, blockTotal);
+            speedMonitor.setProgress(downloadId, current, total);
+            for (DownloadListener downloadListener : downloadListeners) {
+                downloadListener.onBlockComplete(downloadId, blockName, blockInfo, current, total, blockCurrent, blockTotal);
+            }
+        }
+
+        @Override
         public void onPaused(long downloadId) {
             speedMonitor.stop(downloadId);
             for (DownloadListener downloadListener : downloadListeners) {

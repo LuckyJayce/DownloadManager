@@ -15,7 +15,13 @@ public class DownloadProgressSenderProxy {
     public static final String PARAM_SAVEFILENAME = "saveFileName";
     public static final String PARAM_TEMPFILENAME = "tempFileName";
     public static final String PARAM_DOWNLOADFR_RESET_SCHEDULE = "downloadFrombeginReason";
+    public static final String PARAM_BLOCK_NAME = "param_block_name";
+    public static final String PARAM_BLOCK_INFO = "param_block_info";
+    public static final String PARAM_BLOCK_TOTAL = "block_total";
+    public static final String PARAM_BLOCK_CURRENT = "block_current";
     public static final String PROGRESS_STATUS = "status";
+    public static final int STATUS_BLOCK_START = 10000;
+    public static final int STATUS_BLOCK_COMPLETE = 10001;
     private static Pools.SynchronizedPool<Bundle> bundleSynchronizedPool = new Pools.SynchronizedPool<>(10);
 
     public DownloadProgressSenderProxy(long downloadId, ProgressSender progressSender) {
@@ -47,6 +53,26 @@ public class DownloadProgressSenderProxy {
 
     public void sendDownloading(long current, long total) {
         progressSender.sendProgress(current, total, DownloadManager.STATUS_PROGRESS);
+    }
+
+    public void sendBlockStart(String blockName, String info, long current, long total, long blockCurrent, long blockTotal) {
+        Bundle bundle = new Bundle();
+        bundle.putInt(PROGRESS_STATUS, STATUS_BLOCK_START);
+        bundle.putString(PARAM_BLOCK_NAME, blockName);
+        bundle.putString(PARAM_BLOCK_INFO, info);
+        bundle.putLong(PARAM_BLOCK_CURRENT, blockCurrent);
+        bundle.putLong(PARAM_BLOCK_TOTAL, blockTotal);
+        progressSender.sendProgress(current, total, bundle);
+    }
+
+    public void sendBlockComplete(String blockName, String info, long current, long total, long blockCurrent, long blockTotal) {
+        Bundle bundle = new Bundle();
+        bundle.putInt(PROGRESS_STATUS, STATUS_BLOCK_COMPLETE);
+        bundle.putString(PARAM_BLOCK_NAME, blockName);
+        bundle.putString(PARAM_BLOCK_INFO, info);
+        bundle.putLong(PARAM_BLOCK_CURRENT, blockCurrent);
+        bundle.putLong(PARAM_BLOCK_TOTAL, blockTotal);
+        progressSender.sendProgress(current, total, bundle);
     }
 
     public static void release(Bundle bundle) {

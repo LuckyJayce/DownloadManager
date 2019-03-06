@@ -42,6 +42,24 @@ public class DownloadListenerProxy implements ICallback<Void> {
             case DownloadManager.STATUS_PROGRESS:
                 downloadListener.onProgressUpdate(downloadId, current, total);
                 break;
+            case DownloadProgressSenderProxy.STATUS_BLOCK_START:
+                if (bundle != null) {
+                    long blockTotal = bundle.getLong(DownloadProgressSenderProxy.PARAM_BLOCK_TOTAL);
+                    long blockCurrent = bundle.getLong(DownloadProgressSenderProxy.PARAM_BLOCK_CURRENT);
+                    String blockName = bundle.getString(DownloadProgressSenderProxy.PARAM_BLOCK_NAME);
+                    String blockInfo = bundle.getString(DownloadProgressSenderProxy.PARAM_BLOCK_INFO);
+                    downloadListener.onBlockStart(downloadId, blockName, blockInfo, current, total, blockCurrent, blockTotal);
+                }
+                break;
+            case DownloadProgressSenderProxy.STATUS_BLOCK_COMPLETE:
+                if (bundle != null) {
+                    long blockTotal = bundle.getLong(DownloadProgressSenderProxy.PARAM_BLOCK_TOTAL);
+                    long blockCurrent = bundle.getLong(DownloadProgressSenderProxy.PARAM_BLOCK_CURRENT);
+                    String blockName = bundle.getString(DownloadProgressSenderProxy.PARAM_BLOCK_NAME);
+                    String blockInfo = bundle.getString(DownloadProgressSenderProxy.PARAM_BLOCK_INFO);
+                    downloadListener.onBlockComplete(downloadId, blockName, blockInfo, current, total, blockCurrent, blockTotal);
+                }
+                break;
             case DownloadManager.STATUS_START:
                 downloadListener.onStart(downloadId, current, total);
                 break;
