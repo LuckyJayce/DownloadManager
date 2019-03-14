@@ -8,18 +8,18 @@ import android.support.annotation.NonNull;
 import android.util.LongSparseArray;
 
 import com.shizhefei.download.base.AbsDownloadTask;
+import com.shizhefei.download.base.DownloadInfoList;
+import com.shizhefei.download.base.DownloadListener;
+import com.shizhefei.download.base.DownloadTaskFactory;
+import com.shizhefei.download.base.IdGenerator;
 import com.shizhefei.download.base.SpeedMonitor;
 import com.shizhefei.download.db.DownloadDB;
 import com.shizhefei.download.entity.DownloadInfo;
-import com.shizhefei.download.base.DownloadListener;
 import com.shizhefei.download.entity.DownloadParams;
-import com.shizhefei.download.base.DownloadTaskFactory;
-import com.shizhefei.download.base.IdGenerator;
 import com.shizhefei.download.entity.HttpInfo;
 import com.shizhefei.download.idgenerator.DefaultIdGenerator;
-import com.shizhefei.download.taskfactory.DefaultDownloadTaskFactory;
-import com.shizhefei.download.base.DownloadInfoList;
 import com.shizhefei.download.task.DownloadListenerProxy;
+import com.shizhefei.download.taskfactory.DefaultDownloadTaskFactory;
 import com.shizhefei.download.utils.DownloadUtils;
 import com.shizhefei.mvc.RequestHandle;
 import com.shizhefei.task.TaskHandle;
@@ -198,6 +198,14 @@ public class LocalDownloadManager extends DownloadManager {
         }
         //通知移除
         proxyDownloadListener.onRemove(downloadId);
+    }
+
+    @Override
+    public void removeAll() {
+        ArrayList<DownloadInfo.Agency> list = new ArrayList<>(downloadInfoAgencyList);
+        for (DownloadInfo.Agency agency : list) {
+            remove(agency.getId());
+        }
     }
 
     @Override
