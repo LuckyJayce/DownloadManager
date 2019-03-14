@@ -8,13 +8,13 @@ import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
 import com.shizhefei.download.BuildConfig;
-import com.shizhefei.download.base.SpeedMonitor;
-import com.shizhefei.download.entity.DownloadInfo;
+import com.shizhefei.download.base.DownloadInfoList;
 import com.shizhefei.download.base.DownloadListener;
+import com.shizhefei.download.base.SpeedMonitor;
+import com.shizhefei.download.entity.DownloadConfig;
+import com.shizhefei.download.entity.DownloadInfo;
 import com.shizhefei.download.entity.DownloadParams;
 import com.shizhefei.download.taskfactory.DefaultDownloadTaskFactory;
-import com.shizhefei.download.entity.DownloadConfig;
-import com.shizhefei.download.base.DownloadInfoList;
 import com.shizhefei.download.utils.DownloadUtils;
 
 import java.io.File;
@@ -263,6 +263,11 @@ public abstract class DownloadManager {
      * @param downloadId
      */
     public abstract void remove(long downloadId);
+
+    /**
+     * 删除全部下载任务（正在下载，已完成等等下载任务）和已下载的文件
+     */
+    public abstract void removeAll();
 
     /**
      * 获取下载信息

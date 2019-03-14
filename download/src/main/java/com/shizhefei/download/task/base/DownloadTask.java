@@ -6,11 +6,14 @@ import com.shizhefei.download.task.DownloadProgressSenderProxy;
 import com.shizhefei.mvc.ProgressSender;
 import com.shizhefei.task.ITask;
 
-public class DownloadTask implements ITask<Void> {
+import java.io.File;
+
+public class DownloadTask implements ITask<File> {
     private final long current;
     private final long total;
     private final long downloadId;
     private DownloadTaskImp taskImp;
+    private File saveFile;
 
     public DownloadTask(DownloadParams downloadParams) {
         current = 0;
@@ -24,10 +27,10 @@ public class DownloadTask implements ITask<Void> {
     }
 
     @Override
-    public Void execute(ProgressSender progressSender) throws Exception {
+    public File execute(ProgressSender progressSender) throws Exception {
         final DownloadProgressSenderProxy downloadProgressSenderProxy = new DownloadProgressSenderProxy(downloadId, progressSender);
         downloadProgressSenderProxy.sendStart(current, total);
-        return taskImp.execute(new DownloadProgressListener() {
+        taskImp.execute(new DownloadProgressListener() {
             @Override
             public void onDownloadResetSchedule(long downloadId, int reason, long current, long total) {
                 downloadProgressSenderProxy.sendDownloadResetSchedule(current, total, reason);
@@ -36,6 +39,7 @@ public class DownloadTask implements ITask<Void> {
             @Override
             public void onConnected(long downloadId, HttpInfo info, String saveDir, String saveFileName, String tempFileName, long current, long total) {
                 downloadProgressSenderProxy.sendConnected(info, saveDir, saveFileName, tempFileName, current, total);
+                saveFile = new File(saveFileName);
             }
 
             @Override
@@ -43,6 +47,7 @@ public class DownloadTask implements ITask<Void> {
                 downloadProgressSenderProxy.sendDownloading(current, total);
             }
         });
+        return saveFile;
     }
 
     @Override

@@ -133,6 +133,11 @@ public class DownloadService extends Service {
         }
 
         @Override
+        public void removeAll() throws RemoteException {
+            downloadManager.removeAll();
+        }
+
+        @Override
         public DownloadInfo getDownloadInfo(long downloadId) throws RemoteException {
             return downloadManager.getDownloadInfo(downloadId);
         }

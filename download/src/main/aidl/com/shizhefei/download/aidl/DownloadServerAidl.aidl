@@ -51,6 +51,8 @@ interface DownloadServerAidl {
         */
        oneway void remove(long downloadId);
 
+	   oneway void removeAll();
+
        DownloadInfo getDownloadInfo(long downloadId);
 
        DownloadParams getDownloadParams(long downloadId);
