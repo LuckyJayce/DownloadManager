@@ -7,6 +7,8 @@ import com.shizhefei.download.aidl.SpeedMonitorAidl;
 
 interface DownloadServerAidl {
 
+       oneway void setIsWifiRequired(long downloadId, boolean isWifiRequired);
+
        DownloadInfo findFirstByUrl(String url);
 
        List<DownloadInfo> findByUrl(String url);
@@ -52,6 +54,8 @@ interface DownloadServerAidl {
        oneway void remove(long downloadId);
 
 	   oneway void removeAll();
+
+	   oneway void removeByStatus(int statusFlags);
 
        DownloadInfo getDownloadInfo(long downloadId);
 

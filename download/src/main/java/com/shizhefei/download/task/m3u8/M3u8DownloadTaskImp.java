@@ -179,6 +179,7 @@ class M3u8DownloadTaskImp implements ITask<Void> {
         //下载m3u8文件
         if (!isCancel) {
             if (downloadTask != null) {
+                downloadTask.setRetryTimes(2);
                 DownloadUtils.logD("M3u8DownloadTaskImp  downloadId=%d start download m3u8 file", downloadId);
                 downloadTask.execute(new DownloadProgressListener() {
                     @Override
@@ -260,6 +261,7 @@ class M3u8DownloadTaskImp implements ITask<Void> {
                         DownloadUtils.logD("M3u8DownloadTaskImp  downloadId=%d currentItemInfo=%s", downloadId, currentItemInfo);
                     }
                     downloadTask = buildFromExtInfo(downloadId, dir, downloadParams, currentItemInfo);
+                    downloadTask.setRetryTimes(2);
                     final long startTotalCurrent = downloadInfoAgency.getCurrent();
                     final long startItemCurrent = currentItemInfo.getCurrent();
                     final long startItemOffset = startTotalCurrent - startItemCurrent;
@@ -424,5 +426,9 @@ class M3u8DownloadTaskImp implements ITask<Void> {
             path = path.substring(index, path.length());
         }
         return FileNameUtils.toValidFileName(elementIndex + "_" + path);
+    }
+
+    public void setIsWifiRequired(boolean isWifiRequired) {
+        //TODO
     }
 }

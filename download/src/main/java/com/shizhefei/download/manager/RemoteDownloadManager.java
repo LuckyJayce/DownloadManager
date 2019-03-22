@@ -39,6 +39,16 @@ public class RemoteDownloadManager extends DownloadManager {
         this.handler = new Handler(Looper.getMainLooper());
     }
 
+    @Override
+    public void setIsWifiRequired(long downloadId, boolean isWifiRequired) {
+        checkHasExecuteBind();
+        try {
+            eventServiceExecutor.setIsWifiRequired(downloadId, isWifiRequired);
+        } catch (Exception e) {
+            DownloadUtils.logE(e, "RemoteDownloadManager findFirst error");
+        }
+    }
+
     @Nullable
     @Override
     public DownloadInfo findFirst(String url) {
@@ -144,6 +154,16 @@ public class RemoteDownloadManager extends DownloadManager {
         checkHasExecuteBind();
         try {
             eventServiceExecutor.removeAll();
+        } catch (Exception e) {
+            DownloadUtils.logE(e, "RemoteDownloadManager remove error");
+        }
+    }
+
+    @Override
+    public void removeByStatus(int statusFlag) {
+        checkHasExecuteBind();
+        try {
+            eventServiceExecutor.removeByStatus(statusFlag);
         } catch (Exception e) {
             DownloadUtils.logE(e, "RemoteDownloadManager remove error");
         }

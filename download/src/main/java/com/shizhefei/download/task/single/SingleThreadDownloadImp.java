@@ -65,6 +65,7 @@ class SingleThreadDownloadImp implements ITask<Void> {
                 url = downloadParams.getUrl();
             }
             downloadTask = new DownloadTaskImp(downloadId, downloadParams, url, downloadInfo.getDir(), downloadInfo.getCurrent(), downloadInfo.getTotal(), downloadInfo.getFileName(), downloadInfo.getTempFileName(), downloadInfo.getHttpInfo().isAcceptRange(), downloadInfo.getHttpInfo().getETag());
+            downloadTask.setRetryTimes(2);
             final DownloadProgressSenderProxy progressSenderProxy = new DownloadProgressSenderProxy(downloadId, progressSender);
             progressSenderProxy.sendStart(downloadInfo.getCurrent(), downloadInfo.getTotal());
             downloadTask.execute(new DownloadProgressListener() {

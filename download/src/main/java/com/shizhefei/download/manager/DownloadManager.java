@@ -171,6 +171,8 @@ public abstract class DownloadManager {
         return DownloadUtils.formatString("%s/%s", LIB_NAME, BuildConfig.VERSION_NAME);
     }
 
+    public abstract void setIsWifiRequired(long downloadId, boolean isWifiRequired);
+
     @Nullable
     public abstract DownloadInfo findFirst(String url);
 
@@ -268,6 +270,11 @@ public abstract class DownloadManager {
      * 删除全部下载任务（正在下载，已完成等等下载任务）和已下载的文件
      */
     public abstract void removeAll();
+
+    /**
+     * 删除对应状态的任务
+     */
+    public abstract void removeByStatus(int statusFlag);
 
     /**
      * 获取下载信息

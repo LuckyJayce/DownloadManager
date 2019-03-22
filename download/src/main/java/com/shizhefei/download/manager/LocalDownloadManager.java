@@ -86,6 +86,16 @@ public class LocalDownloadManager extends DownloadManager {
     }
 
     @Override
+    public void setIsWifiRequired(long downloadId, boolean isWifiRequired) {
+        DownloadInfo.Agency infoAgency = getDownloadInfoAgency(downloadId);
+        if (infoAgency != null) {
+            DownloadParams downloadParams = infoAgency.getDownloadParams();
+            downloadParams.setWifiRequired(isWifiRequired);
+            downloadDB.updateDownloadParams(downloadId, downloadParams);
+        }
+    }
+
+    @Override
     public DownloadInfo findFirst(String url) {
         for (DownloadInfo.Agency infoAgency : downloadInfoAgencyList) {
             if (infoAgency.getDownloadParams().getUrl().equals(url)) {
@@ -118,7 +128,7 @@ public class LocalDownloadManager extends DownloadManager {
         downloadInfoAgencyList.add(infoAgency);
 
         TaskHandle taskHandle = taskHelper.execute(downloadTask, new DownloadListenerProxy(downloadId, proxyDownloadListener));
-        tasks.put(downloadId, new DownloadData(taskHandle, downloadTask));
+        tasks.put(downloadId, new DownloadData(taskHandle, infoAgency, downloadTask));
         return downloadId;
     }
 
@@ -158,7 +168,7 @@ public class LocalDownloadManager extends DownloadManager {
 
                 AbsDownloadTask downloadTask = downloadTaskFactory.buildDownloadTask(downloadId, false, infoAgency, downloadDB, executor);
                 TaskHandle taskHandle = taskHelper.execute(downloadTask, new DownloadListenerProxy(downloadId, proxyDownloadListener));
-                tasks.put(downloadId, new DownloadData(taskHandle, downloadTask));
+                tasks.put(downloadId, new DownloadData(taskHandle, infoAgency, downloadTask));
                 return true;
             }
         }
@@ -209,10 +219,29 @@ public class LocalDownloadManager extends DownloadManager {
     }
 
     @Override
+    public void removeByStatus(int statusFlag) {
+        ArrayList<DownloadInfo.Agency> list = new ArrayList<>(downloadInfoAgencyList);
+        for (DownloadInfo.Agency agency : list) {
+            if (matches(agency, statusFlag)) {
+                remove(agency.getId());
+            }
+        }
+    }
+
+    @Override
     public DownloadInfo getDownloadInfo(long downloadId) {
         for (DownloadInfo.Agency infoAgency : downloadInfoAgencyList) {
             if (infoAgency.getId() == downloadId) {
                 return infoAgency.getInfo();
+            }
+        }
+        return null;
+    }
+
+    private DownloadInfo.Agency getDownloadInfoAgency(long downloadId) {
+        for (DownloadInfo.Agency infoAgency : downloadInfoAgencyList) {
+            if (infoAgency.getId() == downloadId) {
+                return infoAgency;
             }
         }
         return null;
@@ -244,7 +273,7 @@ public class LocalDownloadManager extends DownloadManager {
             public int getCount() {
                 int count = 0;
                 for (DownloadInfo.Agency infoAgency : downloadInfoAgencyList) {
-                    if (isNeed(infoAgency)) {
+                    if (matches(infoAgency, downloadStatus)) {
                         count++;
                     }
                 }
@@ -255,7 +284,7 @@ public class LocalDownloadManager extends DownloadManager {
             public DownloadInfo getDownloadInfo(int position) {
                 int p = 0;
                 for (DownloadInfo.Agency infoAgency : downloadInfoAgencyList) {
-                    if (isNeed(infoAgency)) {
+                    if (matches(infoAgency, downloadStatus)) {
                         if (p == position) {
                             return infoAgency.getInfo();
                         }
@@ -269,7 +298,7 @@ public class LocalDownloadManager extends DownloadManager {
             public int getPosition(long downloadId) {
                 int p = 0;
                 for (DownloadInfo.Agency infoAgency : downloadInfoAgencyList) {
-                    if (isNeed(infoAgency)) {
+                    if (matches(infoAgency, downloadStatus)) {
                         if (infoAgency.getId() == downloadId) {
                             return p;
                         }
@@ -280,11 +309,11 @@ public class LocalDownloadManager extends DownloadManager {
                 }
                 return DownloadManager.INVALID_POSITION;
             }
-
-            private boolean isNeed(DownloadInfo.Agency infoAgency) {
-                return (infoAgency.getStatus() & downloadStatus) != 0;
-            }
         };
+    }
+
+    private boolean matches(DownloadInfo.Agency infoAgency, int downloadStatus) {
+        return (infoAgency.getStatus() & downloadStatus) != 0;
     }
 
     @Override
@@ -299,10 +328,12 @@ public class LocalDownloadManager extends DownloadManager {
     }
 
     private static class DownloadData {
+        private final DownloadInfo.Agency infoAgency;
         private RequestHandle requestHandle;
         private AbsDownloadTask task;
 
-        public DownloadData(RequestHandle requestHandle, AbsDownloadTask task) {
+        public DownloadData(RequestHandle requestHandle, DownloadInfo.Agency infoAgency, AbsDownloadTask task) {
+            this.infoAgency = infoAgency;
             this.requestHandle = requestHandle;
             this.task = task;
         }

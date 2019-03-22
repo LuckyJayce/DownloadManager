@@ -43,6 +43,7 @@ public class DownloadTaskImp {
     private DownloadParams downloadParams;
     private File saveFileTemp = null;
     private File saveFile = null;
+    private int retryTimes;
 
     //    public DownloadTask(long downloadId, String dir, String url, long current, long total, boolean isOverride, String saveFileName, String tempFileName, String eTag, boolean isAcceptRange, boolean isWifiRequired,Map<String, List<String>> headers) {
     public DownloadTaskImp(long downloadId, DownloadParams downloadParams, String url, String dir, long current, long total, String saveFileName, String tempFileName, boolean isAcceptRange, String etag) {
@@ -58,7 +59,46 @@ public class DownloadTaskImp {
         this.etag = etag;
     }
 
+    public int getRetryTimes() {
+        return retryTimes;
+    }
+
+    public void setRetryTimes(int retryTimes) {
+        this.retryTimes = retryTimes;
+    }
+
     public Void execute(DownloadProgressListener downloadListener) throws DownloadException {
+        int time = retryTimes + 1;
+        DownloadException exception = null;
+        for (int i = 0; i < time; i++) {
+            if (cancel) {
+                break;
+            }
+            exception = executeReturnException(downloadListener);
+            if (exception == null) {
+                break;
+            }
+        }
+        if (cancel) {//停止下载
+            if (remove) {//移除下载
+                removeFiles();
+            }
+        } else if (exception != null) {//下载时出现异常，下载失败
+            DownloadUtils.logE(exception, "DownloadTask exception");
+            isRunning = false;
+            throw exception;
+        } else {// 下载成功
+            if (saveFile.exists()) {
+                saveFile.delete();
+            }
+            boolean success = saveFileTemp.renameTo(saveFile);
+            DownloadUtils.logD("DownloadTask renameTo success " + success);
+        }
+        isRunning = false;
+        return null;
+    }
+
+    private DownloadException executeReturnException(DownloadProgressListener downloadListener) {
         isRunning = true;
         DownloadException exception = null;
         try {
@@ -81,23 +121,7 @@ public class DownloadTaskImp {
             String errorMessage = DownloadUtils.formatStringE(e, "UNKNOWN");
             exception = new DownloadException(downloadId, DownloadManager.ERROR_UNKNOW, errorMessage, e.getCause());
         }
-        if (cancel) {//停止下载
-            if (remove) {//移除下载
-                removeFiles();
-            }
-        } else if (exception != null) {//下载时出现异常，下载失败
-            DownloadUtils.logE(exception, "DownloadTask exception");
-            isRunning = false;
-            throw exception;
-        } else {// 下载成功
-            if (saveFile.exists()) {
-                saveFile.delete();
-            }
-            boolean success = saveFileTemp.renameTo(saveFile);
-            DownloadUtils.logD("DownloadTask renameTo success " + success);
-        }
-        isRunning = false;
-        return null;
+        return exception;
     }
 
     private void executeDownload(DownloadProgressListener downloadListener) throws Exception {

@@ -16,7 +16,7 @@ public class SingleThreadDownloadTask extends AbsDownloadTask {
     public static final String DOWNLOAD_TASK_NAME = "SingleThreadDownloadTask";
 
     public SingleThreadDownloadTask(long downloadId, DownloadInfo.Agency downloadInfoAgency, DownloadDB downloadDB, Executor executor, boolean isOnlyRemove) {
-       this(downloadId, downloadInfoAgency, downloadDB, executor, isOnlyRemove, null);
+        this(downloadId, downloadInfoAgency, downloadDB, executor, isOnlyRemove, null);
     }
 
     public SingleThreadDownloadTask(long downloadId, DownloadInfo.Agency downloadInfoAgency, DownloadDB downloadDB, Executor executor, boolean isOnlyRemove, Func1<String, String> transformRealUrl) {
