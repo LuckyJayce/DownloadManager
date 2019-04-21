@@ -138,7 +138,7 @@ public class DownloadDB {
         contentValues.put(DownloadManager.FIELD_STATUS, DownloadManager.STATUS_PROGRESS);
         contentValues.put(DownloadManager.FIELD_CURRENT, current);
         contentValues.put(DownloadManager.FIELD_TOTAL, total);
-        contentValues.put(DownloadManager.FIELD_ERROR_INFO, extInfo);
+        contentValues.put(DownloadManager.FIELD_EXT_INFO, extInfo);
         updateContent(downloadId, contentValues);
     }
 
@@ -147,13 +147,13 @@ public class DownloadDB {
         contentValues.put(DownloadManager.FIELD_STATUS, DownloadManager.STATUS_DOWNLOAD_RESET_SCHEDULE);
         contentValues.put(DownloadManager.FIELD_CURRENT, current);
         contentValues.put(DownloadManager.FIELD_TOTAL, total);
-        contentValues.put(DownloadManager.FIELD_ERROR_INFO, extInfo);
+        contentValues.put(DownloadManager.FIELD_EXT_INFO, extInfo);
         updateContent(downloadId, contentValues);
     }
 
     public void updateExtInfo(long downloadId, String extInfo) {
         ContentValues contentValues = new ContentValues();
-        contentValues.put(DownloadManager.FIELD_ERROR_INFO, extInfo);
+        contentValues.put(DownloadManager.FIELD_EXT_INFO, extInfo);
         updateContent(downloadId, contentValues);
     }
 
