@@ -102,7 +102,7 @@ public class DownloadParams implements Parcelable {
         return isWifiRequired;
     }
 
-    void setWifiRequired(boolean wifiRequired) {
+    public void setWifiRequired(boolean wifiRequired) {
         isWifiRequired = wifiRequired;
     }
 

@@ -46,6 +46,11 @@ public class DownloadService extends Service {
     private final DownloadServerAidl.Stub server = new DownloadServerAidl.Stub() {
 
         @Override
+        public void setIsWifiRequired(long downloadId, boolean isWifiRequired) throws RemoteException {
+            downloadManager.setIsWifiRequired(downloadId, isWifiRequired);
+        }
+
+        @Override
         public DownloadInfo findFirstByUrl(String url) throws RemoteException {
             return downloadManager.findFirst(url);
         }
@@ -130,6 +135,16 @@ public class DownloadService extends Service {
         @Override
         public void remove(long downloadId) throws RemoteException {
             downloadManager.remove(downloadId);
+        }
+
+        @Override
+        public void removeAll() throws RemoteException {
+            downloadManager.removeAll();
+        }
+
+        @Override
+        public void removeByStatus(int statusFlags) throws RemoteException {
+            downloadManager.removeByStatus(statusFlags);
         }
 
         @Override

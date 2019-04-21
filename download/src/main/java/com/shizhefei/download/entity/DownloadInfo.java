@@ -4,7 +4,6 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.text.format.Formatter;
 
 import com.shizhefei.download.manager.DownloadManager;
 
@@ -180,6 +179,15 @@ public class DownloadInfo implements Parcelable {
      * @return 0-100
      */
     public int getProgress() {
+        return getProgress(100);
+    }
+
+    /**
+     * 获取进度
+     *
+     * @return 0-maxProgress
+     */
+    public int getProgress(int maxProgress) {
         long finalTotal;
         if (total != 0) {
             finalTotal = total;
@@ -192,7 +200,7 @@ public class DownloadInfo implements Parcelable {
         if (finalTotal <= 0) {
             p = 0;
         } else {
-            p = (int) (1.0 * current / finalTotal * 100);
+            p = (int) (1.0 * current / finalTotal * maxProgress);
         }
         return p;
     }

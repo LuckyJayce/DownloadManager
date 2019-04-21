@@ -7,8 +7,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import com.shizhefei.download.entity.DownloadParams;
 import com.shizhefei.download.entity.DownloadInfo;
+import com.shizhefei.download.entity.DownloadParams;
 import com.shizhefei.download.entity.ErrorInfo;
 import com.shizhefei.download.manager.DownloadManager;
 import com.shizhefei.download.utils.DownloadUtils;
@@ -167,6 +167,10 @@ public class DownloadDB {
         taskHelper.execute(new UpdateContentTask(dbHelper, downloadId, contentValues), null);
     }
 
+    public void updateDownloadParams(long downloadId, DownloadParams downloadParams) {
+        taskHelper.execute(new UpdateDownloadParamsTask(dbHelper, downloadId, downloadParams), null);
+    }
+
     public void update(DownloadInfo downloadInfo) {
         taskHelper.execute(new UpdateTask(dbHelper, downloadInfo), null);
     }
@@ -235,6 +239,36 @@ public class DownloadDB {
             int result = database.update(DownloadManager.TABLE_NAME, contentValues, DownloadManager.FIELD_KEY + " = ?", new String[]{String.valueOf(downloadInfo.getId())});
             if (result <= 0) {
                 DownloadUtils.logE("db update downloadId=%d result=%d", downloadInfo.getId(), result);
+            }
+            return null;
+        }
+
+        @Override
+        public void cancel() {
+
+        }
+    }
+
+    private static class UpdateDownloadParamsTask implements ITask<Void> {
+        private final DownloadParams downloadParams;
+        private final long downloadId;
+        private DBHelper dbHelper;
+
+        public UpdateDownloadParamsTask(DBHelper dbHelper, long downloadId, DownloadParams downloadParams) {
+            this.dbHelper = dbHelper;
+            this.downloadParams = downloadParams;
+            this.downloadId = downloadId;
+        }
+
+        @Override
+        public Void execute(ProgressSender progressSender) throws Exception {
+            SQLiteDatabase database = dbHelper.getWritableDatabase();
+            ContentValues contentValues = new ContentValues();
+            contentValues.put(DownloadManager.FIELD_KEY, downloadId);
+            contentValues.put(DownloadManager.FIELD_DOWNLOAD_PARAMS, downloadParams.toJson());
+            long result = database.replace(DownloadManager.TABLE_NAME, null, contentValues);
+            if (result <= 0) {
+                DownloadUtils.logE("db UpdateDownloadParams downloadId=%d result=%d", downloadId, result);
             }
             return null;
         }

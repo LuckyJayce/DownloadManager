@@ -15,11 +15,11 @@ import com.shizhefei.download.aidl.DownloadInfoListAidl;
 import com.shizhefei.download.aidl.DownloadListenerAidl;
 import com.shizhefei.download.aidl.DownloadServerAidl;
 import com.shizhefei.download.aidl.SpeedMonitorAidl;
+import com.shizhefei.download.base.DownloadInfoList;
+import com.shizhefei.download.base.DownloadListener;
 import com.shizhefei.download.base.SpeedMonitor;
 import com.shizhefei.download.entity.DownloadInfo;
-import com.shizhefei.download.base.DownloadListener;
 import com.shizhefei.download.entity.DownloadParams;
-import com.shizhefei.download.base.DownloadInfoList;
 import com.shizhefei.download.entity.HttpInfo;
 import com.shizhefei.download.service.DownloadService;
 import com.shizhefei.download.utils.DownloadUtils;
@@ -37,6 +37,16 @@ public class RemoteDownloadManager extends DownloadManager {
 
     public RemoteDownloadManager() {
         this.handler = new Handler(Looper.getMainLooper());
+    }
+
+    @Override
+    public void setIsWifiRequired(long downloadId, boolean isWifiRequired) {
+        checkHasExecuteBind();
+        try {
+            eventServiceExecutor.setIsWifiRequired(downloadId, isWifiRequired);
+        } catch (Exception e) {
+            DownloadUtils.logE(e, "RemoteDownloadManager findFirst error");
+        }
     }
 
     @Nullable
@@ -134,6 +144,26 @@ public class RemoteDownloadManager extends DownloadManager {
         checkHasExecuteBind();
         try {
             eventServiceExecutor.remove(downloadId);
+        } catch (Exception e) {
+            DownloadUtils.logE(e, "RemoteDownloadManager remove error");
+        }
+    }
+
+    @Override
+    public void removeAll() {
+        checkHasExecuteBind();
+        try {
+            eventServiceExecutor.removeAll();
+        } catch (Exception e) {
+            DownloadUtils.logE(e, "RemoteDownloadManager remove error");
+        }
+    }
+
+    @Override
+    public void removeByStatus(int statusFlag) {
+        checkHasExecuteBind();
+        try {
+            eventServiceExecutor.removeByStatus(statusFlag);
         } catch (Exception e) {
             DownloadUtils.logE(e, "RemoteDownloadManager remove error");
         }
